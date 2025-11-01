@@ -7,8 +7,7 @@ type Step = 'email' | 'code' | 'password' | 'success';
 export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
-  
-  const [step, setStep] = useState<Step>('email');
+  const [step, setStep] = useState<Step>('email'); 
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -16,7 +15,7 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  
   const handleRequestCode = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -114,18 +113,23 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                 </h2>
               </div>
               <div className="flex gap-2">
-                {(['email', 'code', 'password'] as const).map((s, i) => (
-                  <div
-                    key={s}
-                    className={`h-2 flex-1 rounded-full transition ${
-                      step === s || (['email', 'code', 'password'].indexOf(step) > i)
-                        ? 'bg-emerald-500'
-                        : isLightMode
-                          ? 'bg-gray-300'
-                          : 'bg-white/20'
-                    }`}
-                  />
-                ))}
+                {(['email', 'code', 'password'] as const).map((s, i) => {
+                  const allSteps = ['email', 'code', 'password', 'success'] as const;
+                  const stepIndex = allSteps.indexOf(step);
+                  const isActive = stepIndex >= i;
+                  return (
+                    <div
+                      key={s}
+                      className={`h-2 flex-1 rounded-full transition ${
+                        isActive
+                          ? 'bg-emerald-500'
+                          : isLightMode
+                            ? 'bg-gray-300'
+                            : 'bg-white/20'
+                      }`}
+                    />
+                  );
+                })}
               </div>
             </div>
 
@@ -333,20 +337,7 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
                 </div>
               </form>
             )}
-
-            {step !== 'success' && (
-              <button
-                type="button"
-                onClick={onClose}
-                className={`w-full text-sm font-semibold transition ${
-                  isLightMode
-                    ? 'text-emerald-600 hover:text-emerald-700'
-                    : 'text-sky-300 hover:text-sky-200'
-                }`}
-              >
-                Back to Sign In
-              </button>
-            )}
+            {(step as any) !== 'success' && <button onClick={onClose}>Back to Sign In</button>}
           </div>
         )}
       </div>

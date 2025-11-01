@@ -10,11 +10,11 @@ import { requestChat } from '../services/chatLauncher';
 import { FlashcardsTab } from '../components/FlashcardsTab';
 
 const cardShellClasses =
-  'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-7 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl';
+  'rounded-3xl border border-blue-500/20 bg-[#002459]/80 p-7 shadow-[0_18px_40px_rgba(0,36,89,0.45)] backdrop-blur-xl';
 const accentButtonClasses =
-  'rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:border-indigo-400 hover:bg-indigo-500/20';
+  'rounded-2xl border border-blue-500/30 px-5 py-3 font-semibold text-white transition hover:border-blue-400 hover:bg-blue-500/30';
 const quietButtonClasses =
-  'rounded-2xl border border-white/10 px-5 py-3 font-semibold text-white/80 transition hover:border-rose-400 hover:bg-rose-500/20';
+  'rounded-2xl border border-blue-500/20 px-5 py-3 font-semibold text-white/80 transition hover:border-rose-400 hover:bg-rose-500/20';
 
 export function AdminPortalPage() {
   const { session, logout, refreshOnlineUsers, refreshPresenceOverview, presenceOverview } = useAuth();
@@ -126,7 +126,7 @@ export function AdminPortalPage() {
       </div>
       {isAdminAuthenticated ? (
         <>
-          <div className="flex gap-2 border-b border-white/10">
+          <div className="flex gap-2 border-b border-blue-500/20">
             <button
               onClick={() => setActiveTab('presence')}
               className={`px-4 py-3 font-semibold transition ${
@@ -158,7 +158,7 @@ export function AdminPortalPage() {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
-                className="w-56 rounded-2xl border border-white/20 bg-[#080c14]/60 px-3 py-2 text-sm text-white"
+                className="w-56 rounded-2xl border border-blue-500/30 bg-[#001a4d]/60 px-3 py-2 text-sm text-white"
                 placeholder="Search users"
                 value={query}
                 onInput={e => setQuery((e.target as HTMLInputElement).value)}
@@ -221,12 +221,12 @@ export function AdminPortalPage() {
 
           <div className="space-y-3">
             <h4 className="text-sm font-semibold text-white/80">Recent activity</h4>
-            <ul className="scrollbar-custom max-h-[400px] overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-2 space-y-2">
+            <ul className="scrollbar-custom max-h-[400px] overflow-y-auto rounded-2xl border border-blue-500/20 bg-blue-500/10 p-2 space-y-2">
               {events.length ? (
                 events.map(ev => (
                   <li
                     key={ev.id}
-                    className="flex cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-[#060c14]/60 px-4 py-3 text-sm transition hover:border-indigo-400/50 hover:bg-indigo-500/10"
+                    className="flex cursor-pointer items-center justify-between rounded-xl border border-blue-500/20 bg-[#001a4d]/60 px-4 py-3 text-sm transition hover:border-blue-400/50 hover:bg-blue-500/20"
                     onClick={() => setSelectedEvent(ev)}
                     role="button"
                     tabIndex={0}
@@ -236,7 +236,7 @@ export function AdminPortalPage() {
                   </li>
                 ))
               ) : (
-                <li className="rounded-xl border border-dashed border-white/20 bg-white/5 px-4 py-6 text-center text-sm text-white/70">
+                <li className="rounded-xl border border-dashed border-blue-500/30 bg-blue-500/10 px-4 py-6 text-center text-sm text-white/70">
                   No activity recorded yet
                 </li>
               )}
@@ -261,7 +261,7 @@ export function AdminPortalPage() {
 
           {selectedEvent && (
             <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-6 backdrop-blur-sm">
-              <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#0b111a]/90 p-8 shadow-[0_18px_40px_rgba(4,10,20,0.55)] backdrop-blur-xl space-y-6">
+              <div className="w-full max-w-lg rounded-3xl border border-blue-500/20 bg-[#002459]/90 p-8 shadow-[0_18px_40px_rgba(0,36,89,0.55)] backdrop-blur-xl space-y-6">
                 <header className="space-y-2">
                   <h3 className="text-2xl font-semibold text-white">Activity Details</h3>
                   <p className="text-sm text-white/70">Event log entry information</p>
@@ -270,7 +270,7 @@ export function AdminPortalPage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Event Type</p>
-                    <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+                    <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3">
                       <p className="text-white font-medium capitalize">{selectedEvent.type}</p>
                     </div>
                   </div>
@@ -278,13 +278,13 @@ export function AdminPortalPage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Username</p>
-                      <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+                      <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3">
                         <p className="text-white font-medium">{selectedEvent.username}</p>
                       </div>
                     </div>
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Role</p>
-                      <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+                      <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3">
                         <p className={`font-medium capitalize ${selectedEvent.role === 'admin' ? 'text-indigo-300' : 'text-sky-300'}`}>
                           {selectedEvent.role}
                         </p>
@@ -294,7 +294,7 @@ export function AdminPortalPage() {
 
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Timestamp</p>
-                    <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+                    <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3">
                       <p className="text-white font-medium">{new Date(selectedEvent.timestamp).toLocaleString()}</p>
                       <p className="text-xs text-white/60 mt-1">
                         {new Date(selectedEvent.timestamp).toLocaleTimeString()}
@@ -304,7 +304,7 @@ export function AdminPortalPage() {
 
                   <div className="space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Event ID</p>
-                    <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+                    <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-3">
                       <p className="text-white/90 font-mono text-xs break-all">{selectedEvent.id}</p>
                     </div>
                   </div>

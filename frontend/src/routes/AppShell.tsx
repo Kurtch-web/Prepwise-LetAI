@@ -174,7 +174,7 @@ function HeaderBanner() {
       <header className={`sticky top-0 z-40 rounded-b-[40px] px-6 py-5 backdrop-blur-2xl sm:px-8 lg:px-16 transition-colors duration-200 ${
         isLightMode
           ? 'light-mode-header'
-          : 'border-b border-white/10 bg-[#0a0d0fcc] shadow-[0_25px_60px_rgba(6,12,20,0.55)]'
+          : 'border-b border-blue-500/20 bg-[#002459cc] shadow-[0_25px_60px_rgba(0,36,89,0.55)]'
       }`}>
         <div className="flex items-center justify-between gap-4">
           {/* Logo Section */}
@@ -185,7 +185,7 @@ function HeaderBanner() {
               className={`lg:hidden inline-flex flex-col gap-1.5 p-2 rounded-lg transition duration-200 ${
                 isLightMode
                   ? 'hover:bg-emerald-100 text-slate-900'
-                  : 'hover:bg-white/10 text-white'
+                  : 'hover:bg-blue-500/20 text-white'
               }`}
               aria-label="Toggle menu"
               aria-expanded={mobileMenuOpen}
@@ -209,8 +209,7 @@ function HeaderBanner() {
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-2xl sm:text-3xl">💡</span>
-                <p className={`text-lg sm:text-2xl font-bold truncate ${isLightMode ? 'light-mode-text-primary' : 'text-white'}`}>LET AI Control Hub</p>
+                <p className={`text-lg sm:text-2xl font-bold truncate ${isLightMode ? 'light-mode-text-primary' : 'text-white'}`}>💡 LET AI Control Hub</p>
               </div>
               <p className={`hidden sm:block text-xs sm:text-sm ${isLightMode ? 'light-mode-text-secondary' : 'text-white/70'}`}>Monitor and guide every live workspace</p>
             </div>
@@ -220,7 +219,7 @@ function HeaderBanner() {
           <nav className={`hidden lg:flex items-center gap-3 rounded-full p-1.5 ${
             isLightMode
               ? 'border border-emerald-200 bg-emerald-50/50'
-              : 'border border-white/10 bg-white/10'
+              : 'border border-blue-500/30 bg-blue-500/10'
           }`} aria-label="Primary">
             {navItems.map((item) => {
               const isActive = activePath === item.path;
@@ -246,14 +245,14 @@ function HeaderBanner() {
               );
             })}
             {isUserRole && (
-              <div className="hidden lg:flex items-center gap-1 pl-1.5 border-l border-white/10">
+              <div className="hidden lg:flex items-center gap-1 pl-1.5 border-l border-blue-500/20">
                 <button
                   type="button"
                   onClick={toggleTheme}
                   className={`rounded-full px-3 py-2 text-sm font-semibold transition duration-200 ${
                     isLightMode
                       ? 'bg-gradient-to-br from-emerald-500 to-green-400 text-white shadow-lg shadow-emerald-500/20'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                      : 'text-blue-200 hover:text-white hover:bg-blue-500/20'
                   }`}
                   title={isLightMode ? 'Switch to dark mode' : 'Switch to light mode'}
                 >
@@ -287,8 +286,8 @@ function HeaderBanner() {
       {mobileMenuOpen && (
         <div
           className={`fixed inset-0 top-[72px] z-30 lg:hidden backdrop-blur-sm ${
-            isLightMode ? 'bg-slate-900/10' : 'bg-[#04070f]/40'
-          }`}
+          isLightMode ? 'bg-slate-900/10' : 'bg-[#001233]/40'
+        }`}
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -299,7 +298,7 @@ function HeaderBanner() {
         } ${
           isLightMode
             ? 'light-mode-sidebar border-r'
-            : 'bg-[#0a0d0f] border-r border-white/10'
+            : 'bg-[#001233] border-r border-blue-500/20'
         }`}
         aria-label="Mobile navigation"
       >
@@ -352,7 +351,7 @@ function HeaderBanner() {
                     className={`w-full rounded-lg px-4 py-2 text-sm font-semibold transition mb-3 flex items-center justify-between ${
                       isLightMode
                         ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                        : 'bg-white/10 text-white hover:bg-white/20'
+                        : 'bg-blue-500/20 text-white hover:bg-blue-500/30'
                     }`}
                   >
                     <span>{isLightMode ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
@@ -364,7 +363,7 @@ function HeaderBanner() {
                   className={`w-full rounded-lg px-4 py-2 text-sm font-semibold transition ${
                     isLightMode
                       ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
-                      : 'bg-white/10 text-white hover:bg-white/20'
+                      : 'bg-blue-500/20 text-white hover:bg-blue-500/30'
                   }`}
                 >
                   Sign out
@@ -394,7 +393,7 @@ export function AppShell() {
 
   return (
     <div className={`flex min-h-screen flex-col transition-colors duration-200 ${
-      isLightMode ? 'bg-gradient-to-b from-green-50 to-emerald-50' : 'bg-[#050709]'
+      isLightMode ? 'bg-gradient-to-b from-green-50 to-emerald-50' : 'bg-[#001233]'
     }`}>
       <HeaderBanner />
       {session && <EmailVerificationBanner />}

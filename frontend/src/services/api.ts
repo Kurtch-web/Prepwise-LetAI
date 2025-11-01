@@ -144,6 +144,7 @@ export interface FlashcardItem {
   uploader: string;
   createdAt: string;
   url?: string | null;
+  totalQuestions?: number;
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {

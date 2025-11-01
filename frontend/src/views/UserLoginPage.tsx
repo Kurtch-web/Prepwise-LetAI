@@ -7,12 +7,12 @@ import type { SignupResponse } from '../services/api';
 
 const getCardShellClasses = (isDark: boolean) =>
   isDark
-    ? 'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-7 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl'
+    ? 'rounded-3xl border border-blue-500/20 bg-[#002459]/80 p-7 shadow-[0_18px_40px_rgba(0,36,89,0.45)] backdrop-blur-xl'
     : 'light-mode-card rounded-3xl border p-7 shadow-[0_18px_40px_rgba(0,0,0,0.08)] backdrop-blur-sm';
 
 const getSubtleButtonClasses = (isDark: boolean) =>
   isDark
-    ? 'rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:border-indigo-400 hover:bg-indigo-500/20'
+    ? 'rounded-2xl border border-blue-500/30 px-5 py-3 font-semibold text-white transition hover:border-blue-400 hover:bg-blue-500/30'
     : 'light-mode-button-secondary rounded-2xl border px-5 py-3 font-semibold transition';
 
 type EntryStep = 'choice' | 'signup';
@@ -88,12 +88,12 @@ export function UserLoginPage() {
       </div>
       {!isUserAuthenticated && isEntryModalOpen && (
         <div className={`fixed inset-0 z-50 grid place-items-center px-4 sm:px-6 backdrop-blur-xl ${
-          isLightMode ? 'light-mode-modal-overlay' : 'bg-[#04070f]/80'
+          isLightMode ? 'light-mode-modal-overlay' : 'bg-[#001233]/80'
         }`}>
           <div className={`w-full max-w-xl space-y-6 rounded-3xl sm:rounded-[36px] border p-6 sm:p-8 shadow-[0_30px_60px_rgba(4,10,20,0.65)] ${
             isLightMode
               ? 'light-mode-modal'
-              : 'border-white/10 bg-[#0b111a]/95'
+              : 'border-blue-500/20 bg-[#002459]/95'
           }`}>
             {entryStep === 'choice' ? (
               <div className="space-y-6 text-center">

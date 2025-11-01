@@ -5,12 +5,12 @@ import { api, CommunityPost, CommunityComment } from '../services/api';
 import { MediaStack } from '../components/MediaStack';
 import { GalleryModal } from '../components/GalleryModal';
 
-const shellCard = 'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-7 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl';
-const primaryButton = 'rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:border-indigo-400 hover:bg-indigo-500/20';
-const subtleButton = 'rounded-2xl border border-white/10 px-5 py-3 font-semibold text-white/80 transition hover:border-rose-400 hover:bg-rose-500/20';
-const inputField = 'w-full rounded-2xl border border-white/20 bg-[#080c14]/60 px-3 py-2 text-sm text-white';
-const chip = 'inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/80';
-const actionBtn = 'rounded-2xl border border-white/10 px-3 py-1 text-xs font-semibold text-white/80 transition hover:border-indigo-400 hover:bg-indigo-500/20';
+const shellCard = 'rounded-3xl border border-blue-500/20 bg-[#002459]/80 p-7 shadow-[0_18px_40px_rgba(0,36,89,0.45)] backdrop-blur-xl';
+const primaryButton = 'rounded-2xl border border-blue-500/30 px-5 py-3 font-semibold text-white transition hover:border-blue-400 hover:bg-blue-500/30';
+const subtleButton = 'rounded-2xl border border-blue-500/20 px-5 py-3 font-semibold text-white/80 transition hover:border-rose-400 hover:bg-rose-500/20';
+const inputField = 'w-full rounded-2xl border border-blue-500/30 bg-[#001a4d]/60 px-3 py-2 text-sm text-white';
+const chip = 'inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-white/80';
+const actionBtn = 'rounded-2xl border border-blue-500/20 px-3 py-1 text-xs font-semibold text-white/80 transition hover:border-blue-400 hover:bg-blue-500/20';
 
 function extractHashtags(text: string): string[] {
   const tags = new Set<string>();
@@ -390,7 +390,7 @@ export function CommunityPage() {
                     <button
                       key={user.username}
                       onClick={() => navigate(`/user/${user.username}`)}
-                      className="w-full text-left rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition hover:border-indigo-400 hover:bg-indigo-500/10"
+                      className="w-full text-left rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 transition hover:border-blue-400 hover:bg-blue-500/20"
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -572,7 +572,7 @@ export function CommunityPage() {
 
         {reportTarget ? (
           <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-6">
-            <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#0b111a]/90 p-6 shadow-[0_18px_40px_rgba(4,10,20,0.55)] backdrop-blur-xl">
+            <div className="w-full max-w-lg rounded-3xl border border-blue-500/20 bg-[#002459]/90 p-6 shadow-[0_18px_40px_rgba(0,36,89,0.55)] backdrop-blur-xl">
               <header className="mb-3 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">Report post</h3>
                 <button className={subtleButton} onClick={() => setReportTarget(null)}>Close</button>
@@ -603,7 +603,7 @@ export function CommunityPage() {
 
         {deleteTarget ? (
           <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-6">
-            <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#0b111a]/90 p-6 shadow-[0_18px_40px_rgba(4,10,20,0.55)] backdrop-blur-xl">
+            <div className="w-full max-w-lg rounded-3xl border border-blue-500/20 bg-[#002459]/90 p-6 shadow-[0_18px_40px_rgba(0,36,89,0.55)] backdrop-blur-xl">
               <header className="mb-3 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">Delete post</h3>
                 <button className={subtleButton} onClick={() => setDeleteTarget(null)} disabled={deleting}>Close</button>
