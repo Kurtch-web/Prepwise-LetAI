@@ -208,7 +208,10 @@ function HeaderBanner() {
             </button>
 
             <div className="min-w-0">
-              <p className={`text-lg sm:text-2xl font-bold truncate ${isLightMode ? 'light-mode-text-primary' : 'text-white'}`}>LET AI Control Hub</p>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl sm:text-3xl">💡</span>
+                <p className={`text-lg sm:text-2xl font-bold truncate ${isLightMode ? 'light-mode-text-primary' : 'text-white'}`}>LET AI Control Hub</p>
+              </div>
               <p className={`hidden sm:block text-xs sm:text-sm ${isLightMode ? 'light-mode-text-secondary' : 'text-white/70'}`}>Monitor and guide every live workspace</p>
             </div>
           </div>
