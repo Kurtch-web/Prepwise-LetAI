@@ -56,5 +56,12 @@ export const chatApi = {
       body: JSON.stringify({ body })
     }),
   markRead: (token: string, conversationId: ConversationId) =>
-    request<void>(`/chat/conversations/${conversationId}/read`, token, { method: 'POST' })
+    request<void>(`/chat/conversations/${conversationId}/read`, token, { method: 'POST' }),
+  deleteConversation: (token: string, conversationId: ConversationId) =>
+    request<void>(`/chat/conversations/${conversationId}`, token, { method: 'DELETE' }),
+  addParticipants: (token: string, conversationId: ConversationId, participants: { username: string; role: UserRole }[]) =>
+    request<{ conversation: ConversationSummary }>(`/chat/conversations/${conversationId}/participants`, token, {
+      method: 'POST',
+      body: JSON.stringify({ participants })
+    })
 };

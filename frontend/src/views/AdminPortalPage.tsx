@@ -8,6 +8,7 @@ import { UsersModal } from '../components/UsersModal';
 import { MembersModal } from '../components/MembersModal';
 import { requestChat } from '../services/chatLauncher';
 import { FlashcardsTab } from '../components/FlashcardsTab';
+import { ReportedPostsTab } from '../components/ReportedPostsTab';
 
 const cardShellClasses =
   'rounded-3xl border border-blue-500/20 bg-[#002459]/80 p-7 shadow-[0_18px_40px_rgba(0,36,89,0.45)] backdrop-blur-xl';
@@ -25,7 +26,7 @@ export function AdminPortalPage() {
   const [showUsersModal, setShowUsersModal] = useState<null | 'all' | 'admin' | 'user'>(null);
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [query, setQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'presence' | 'flashcards'>('presence');
+  const [activeTab, setActiveTab] = useState<'presence' | 'flashcards' | 'reported-posts'>('presence');
   const [selectedEvent, setSelectedEvent] = useState<PresenceEvent | null>(null);
   const [verifiedUsers, setVerifiedUsers] = useState<Set<string>>(new Set());
 
@@ -146,6 +147,16 @@ export function AdminPortalPage() {
               }`}
             >
               Flashcards
+            </button>
+            <button
+              onClick={() => setActiveTab('reported-posts')}
+              className={`px-4 py-3 font-semibold transition ${
+                activeTab === 'reported-posts'
+                  ? 'border-b-2 border-indigo-400 text-white'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              Reported Posts
             </button>
           </div>
 
@@ -325,6 +336,10 @@ export function AdminPortalPage() {
 
           {activeTab === 'flashcards' && (
             <FlashcardsTab token={session?.token || ''} isAdmin={true} />
+          )}
+
+          {activeTab === 'reported-posts' && (
+            <ReportedPostsTab token={session?.token || ''} />
           )}
         </>
       ) : (

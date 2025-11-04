@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://backend-thesis-1.onrender.com',
+        target: 'http://0.0.0.0:8000',
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, '')
       }

@@ -84,6 +84,7 @@ export function ChatWidget() {
   const [isComposerOpen, setComposerOpen] = useState(false);
   const [participantQuery, setParticipantQuery] = useState('');
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
+  const [conversationQuery, setConversationQuery] = useState('');
   const [sending, setSending] = useState(false);
   const conversationsLoadingRef = useRef(false);
   const messagesLoadingRef = useRef(false);
@@ -95,6 +96,15 @@ export function ChatWidget() {
     conversations.forEach(c => map.set(c.id, c));
     return Array.from(map.values());
   }, [conversations]);
+
+  const filteredConversations = useMemo(() => {
+    const query = conversationQuery.trim().toLowerCase();
+    if (!query) return dedupedConversations;
+    return dedupedConversations.filter(c =>
+      c.participants.some(p => p.username.toLowerCase().includes(query))
+    );
+  }, [dedupedConversations, conversationQuery]);
+
   const selected = useMemo(() => dedupedConversations.find(c => c.id === selectedId) || null, [dedupedConversations, selectedId]);
 
   const presenceEntries = useMemo(
@@ -267,12 +277,18 @@ export function ChatWidget() {
       .filter((option): option is ParticipantOption => Boolean(option))
       .map(option => ({ username: option.username, role: option.role }));
     try {
-      await openConversationWithParticipants(targets);
+      if (selectedId && selected) {
+        // Adding participants to existing group
+        await addParticipantsToGroup(targets);
+      } else {
+        // Creating new conversation
+        await openConversationWithParticipants(targets);
+      }
       setSelectedParticipants([]);
       setParticipantQuery('');
       setComposerOpen(false);
     } catch {}
-  }, [selectedParticipants, participantOptions, openConversationWithParticipants]);
+  }, [selectedParticipants, participantOptions, openConversationWithParticipants, selectedId, selected]);
 
   const getConversationLabel = useCallback(
     (conversation: ConversationSummary) => {
@@ -331,6 +347,50 @@ export function ChatWidget() {
     }
   };
 
+  const deleteConversation = async (conversationId: ConversationId) => {
+    if (!session) return;
+    try {
+      await chatApi.deleteConversation(session.token, conversationId);
+      setConversations(prev => prev.filter(c => c.id !== conversationId));
+      if (selectedId === conversationId) {
+        setSelectedId(null);
+        setMessages([]);
+      }
+    } catch {
+      /* silent */
+    }
+  };
+
+  const createEmptyGroup = async () => {
+    if (!session) return;
+    setLoading(true);
+    try {
+      const response = await chatApi.openConversation(session.token, [
+        { username: session.username, role: session.role }
+      ]);
+      setOpen(true);
+      setSelectedId(response.conversation.id);
+      setConversations(prev => {
+        const exists = prev.some(c => c.id === response.conversation.id);
+        return exists ? prev : [response.conversation, ...prev];
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addParticipantsToGroup = async (targets: { username: string; role: UserRole }[]) => {
+    if (!session || !selectedId) return;
+    try {
+      const response = await chatApi.addParticipants(session.token, selectedId, targets);
+      setConversations(prev =>
+        prev.map(c => (c.id === selectedId ? response.conversation : c))
+      );
+    } catch {
+      /* silent */
+    }
+  };
+
   if (!session) return null;
 
   return (
@@ -367,6 +427,9 @@ export function ChatWidget() {
               <div className="flex-1 space-y-2 overflow-y-auto">
                 <button className={accentButton} disabled={loading} onClick={startChatWithAdmins} type="button">
                   Contact admin
+                </button>
+                <button className={accentButton} disabled={loading} onClick={createEmptyGroup} type="button">
+                  New group conversation
                 </button>
                 <button
                   className={accentButton}
@@ -472,7 +535,7 @@ export function ChatWidget() {
                         disabled={!selectedParticipants.length || loading}
                         onClick={startSelectedConversation}
                       >
-                        Start chat
+                        {selectedId && selected ? 'Add to group' : 'Start chat'}
                       </button>
                       <button
                         className={quietButton}
@@ -497,27 +560,60 @@ export function ChatWidget() {
                 )}
                 <div className="h-px w-full bg-white/10" />
                 {dedupedConversations.length ? (
-                  dedupedConversations.map(c => (
-                    <button
+                  <>
+                    <input
+                      className={inputBase}
+                      placeholder="Search conversations"
+                      value={conversationQuery}
+                      onChange={e => setConversationQuery(e.target.value)}
+                    />
+                    {filteredConversations.map(c => (
+                    <div
                       key={c.id}
-                      type="button"
-                      className={`${panelShell} w-full rounded-2xl p-3 text-left transition hover:bg-white/10 ${
+                      className={`${panelShell} group w-full rounded-2xl p-3 transition hover:bg-white/10 ${
                         selectedId === c.id ? 'border-indigo-400/40 bg-indigo-500/10' : 'border-white/10 bg-white/5'
                       }`}
-                      onClick={() => setSelectedId(c.id)}
                     >
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold text-white/90">{getConversationLabel(c)}</p>
-                        {c.unreadCount ? (
-                          <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">{c.unreadCount}</span>
-                        ) : null}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="flex-1 text-left"
+                          onClick={() => setSelectedId(c.id)}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-sm font-semibold text-white/90">{getConversationLabel(c)}</p>
+                            {c.unreadCount ? (
+                              <span className="rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">{c.unreadCount}</span>
+                            ) : null}
+                          </div>
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
+                            {c.participants.length > 2 ? `${c.participants.length} participants` : 'Direct chat'}
+                          </p>
+                          <p className="truncate text-xs text-white/60">{c.lastMessagePreview ?? 'No messages yet'}</p>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            deleteConversation(c.id);
+                          }}
+                          className="flex-shrink-0 p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-rose-500/20 transition opacity-0 group-hover:opacity-100"
+                          title="Delete conversation"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-white/50">
-                        {c.participants.length > 2 ? `${c.participants.length} participants` : 'Direct chat'}
+                    </div>
+                  ))}
+                    {!filteredConversations.length && conversationQuery && (
+                      <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 px-4 py-6 text-center text-xs text-white/60">
+                        No conversations match your search.
                       </p>
-                      <p className="truncate text-xs text-white/60">{c.lastMessagePreview ?? 'No messages yet'}</p>
-                    </button>
-                  ))
+                    )}
+                  </>
                 ) : (
                   <p className="rounded-2xl border border-dashed border-white/20 bg-white/5 px-4 py-6 text-center text-xs text-white/60">
                     No conversations yet. Start one to begin chatting.
@@ -529,7 +625,21 @@ export function ChatWidget() {
             <section className="flex min-h-0 flex-1 flex-col">
               {selected ? (
                 <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Participants</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-white/60">Participants</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setParticipantQuery('');
+                        setSelectedParticipants([]);
+                        setComposerOpen(true);
+                      }}
+                      className="text-xs font-semibold text-indigo-300 hover:text-indigo-200 transition"
+                      title="Add participants to group"
+                    >
+                      + Add
+                    </button>
+                  </div>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     {selected.participants.map(participant => {
                       const presence = presenceIndex.get(participant.username);

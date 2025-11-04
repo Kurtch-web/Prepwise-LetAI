@@ -388,6 +388,34 @@ export const api = {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     }),
+  fetchReportedPosts: (token: string) =>
+    request<{ reports: Array<{
+      id: string;
+      postId: string;
+      postAuthor: string;
+      postAuthorId: number | null;
+      postBody: string;
+      postCreatedAt: string;
+      attachments: Array<{
+        id: string;
+        filename: string;
+        contentType: string;
+        url: string | null;
+      }>;
+      reportedBy: string;
+      category: string;
+      reason: string;
+      createdAt: string;
+    }> }>(`/admin/reported-posts`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` }
+    }),
+  deleteReportedPost: (token: string, reportId: string, customReason?: string) =>
+    request<void>(`/admin/reported-posts/${reportId}/delete-post`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ customReason: customReason || '' })
+    }),
 
   // Flashcards API
   uploadFlashcard: (token: string, category: string, file: File) => {
