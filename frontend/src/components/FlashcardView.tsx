@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
+import { useIsOnline } from '../hooks/useOnlineStatus';
+import { getFlashcardDataWithOfflineSupport } from '../services/apiOffline';
 
 const cardShellClasses =
   'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-7 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl';
@@ -24,6 +26,9 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [showAnswers, setShowAnswers] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [fromCache, setFromCache] = useState(false);
+  const isOnline = useIsOnline();
 
   useEffect(() => {
     loadFlashcard();
@@ -33,8 +38,10 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getFlashcardQuestions(token, flashcardId);
-      setFlashcard(data);
+      const result = await getFlashcardDataWithOfflineSupport(token, flashcardId, api);
+      setFlashcard(result.data);
+      setIsOffline(result.isOffline);
+      setFromCache(result.fromCache);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load flashcard');
     } finally {
@@ -92,7 +99,14 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
     <section className={`${cardShellClasses} space-y-4 sm:space-y-6 mx-4 sm:mx-0`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div className="min-w-0">
-          <h3 className="text-lg sm:text-xl font-semibold text-white truncate">{flashcard.filename}</h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-lg sm:text-xl font-semibold text-white truncate">{flashcard.filename}</h3>
+            {fromCache && (
+              <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300 whitespace-nowrap flex-shrink-0">
+                {isOffline ? '📴 Offline' : '💾 Cached'}
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-xs text-white/60 truncate">
             {flashcard.category} • {flashcard.parsedData.total_questions} questions
           </p>

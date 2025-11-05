@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api, FlashcardItem } from '../services/api';
 import { FlashcardView } from './FlashcardView';
+import { useIsOnline } from '../hooks/useOnlineStatus';
+import { getFlashcardsWithOfflineSupport } from '../services/apiOffline';
 
 const cardShellClasses =
   'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-7 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl';
@@ -23,6 +25,9 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
   const [uploading, setUploading] = useState(false);
   const [adminMode, setAdminMode] = useState<'upload' | 'view'>('view');
   const [selectedFlashcard, setSelectedFlashcard] = useState<string | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [fromCache, setFromCache] = useState(false);
+  const isOnline = useIsOnline();
 
   const categories = ['General Education', 'Professional Education', 'Custom name'];
 
@@ -30,8 +35,10 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.fetchFlashcards(token);
+      const result = await getFlashcardsWithOfflineSupport(token, api);
       setFlashcards(result.flashcards);
+      setIsOffline(result.isOffline);
+      setFromCache(result.fromCache);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load flashcards');
     } finally {
@@ -208,14 +215,21 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-white/80">
-                  Available Flashcards ({flashcards.length})
-                </h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-white/80">
+                    Available Flashcards ({flashcards.length})
+                  </h4>
+                  {fromCache && (
+                    <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300">
+                      {isOffline ? '📴 Offline' : '💾 Cached'}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={loadFlashcards}
                   className={`${accentButtonClasses} text-xs px-3 py-2`}
                 >
-                  Refresh
+                  {loading ? 'Loading...' : 'Refresh'}
                 </button>
               </div>
 

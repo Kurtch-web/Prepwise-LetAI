@@ -30,3 +30,15 @@ if (!container._rootInitialized) {
   );
   container._rootInitialized = true;
 }
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('[App] Service Worker registered successfully:', registration);
+      })
+      .catch(error => {
+        console.warn('[App] Service Worker registration failed:', error);
+      });
+  });
+}
