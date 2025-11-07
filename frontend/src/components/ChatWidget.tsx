@@ -405,6 +405,7 @@ export function ChatWidget() {
             if (selectedId) loadMessages(selectedId);
           }
         }}
+        data-chat-widget="true"
       >
         Chat
         {unreadTotal ? (

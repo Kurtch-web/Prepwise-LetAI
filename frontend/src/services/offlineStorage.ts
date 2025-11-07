@@ -28,6 +28,7 @@ const STORAGE_PREFIX = 'prepwise_offline_';
 const FLASHCARD_KEY = 'flashcards_list';
 const FLASHCARD_DATA_KEY = 'flashcard_data_';
 const SYNC_QUEUE_KEY = 'sync_queue';
+const QUIZ_SESSION_KEY = 'quiz_session_';
 
 class OfflineStorage {
   private isAvailable: boolean;
@@ -199,12 +200,64 @@ class OfflineStorage {
 
   clearSyncQueue(): boolean {
     if (!this.isAvailable) return false;
-    
+
     try {
       localStorage.removeItem(this.getKey(SYNC_QUEUE_KEY));
       return true;
     } catch (e) {
       console.error('[Offline Storage] Error clearing sync queue:', e);
+      return false;
+    }
+  }
+
+  setQuizSession(flashcardId: string, sessionData: {
+    flashcardId: string;
+    currentQuestionIndex: number;
+    selectedAnswers: Record<number, string>;
+    studyMode: string;
+    quizTimer: number;
+    selectedTimerPerQuestion: number;
+    quizStarted: boolean;
+    timestamp: number;
+  }): boolean {
+    if (!this.isAvailable) return false;
+
+    try {
+      const item: StorageItem = {
+        timestamp: Date.now(),
+        data: sessionData
+      };
+      localStorage.setItem(this.getKey(`${QUIZ_SESSION_KEY}${flashcardId}`), JSON.stringify(item));
+      return true;
+    } catch (e) {
+      console.error('[Offline Storage] Error saving quiz session:', e);
+      return false;
+    }
+  }
+
+  getQuizSession(flashcardId: string): any | null {
+    if (!this.isAvailable) return null;
+
+    try {
+      const stored = localStorage.getItem(this.getKey(`${QUIZ_SESSION_KEY}${flashcardId}`));
+      if (!stored) return null;
+
+      const item: StorageItem = JSON.parse(stored);
+      return item.data;
+    } catch (e) {
+      console.error('[Offline Storage] Error retrieving quiz session:', e);
+      return null;
+    }
+  }
+
+  deleteQuizSession(flashcardId: string): boolean {
+    if (!this.isAvailable) return false;
+
+    try {
+      localStorage.removeItem(this.getKey(`${QUIZ_SESSION_KEY}${flashcardId}`));
+      return true;
+    } catch (e) {
+      console.error('[Offline Storage] Error deleting quiz session:', e);
       return false;
     }
   }
