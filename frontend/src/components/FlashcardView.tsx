@@ -21,6 +21,7 @@ interface FlashcardViewProps {
 }
 
 type StudyMode = 'flashcard' | 'quiz';
+type QuizDifficulty = 'hard' | 'medium' | 'easy' | 'practice';
 
 export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps) {
   const [flashcard, setFlashcard] = useState<any>(null);
@@ -39,6 +40,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
   const [quizStarted, setQuizStarted] = useState(false);
   const [easyModeTime, setEasyModeTime] = useState(30);
   const [selectedTimerPerQuestion, setSelectedTimerPerQuestion] = useState(10);
+  const [quizDifficulty, setQuizDifficulty] = useState<QuizDifficulty | null>(null);
   const [connectionLost, setConnectionLost] = useState(false);
   const [offlineSince, setOfflineSince] = useState<number | null>(null);
   const [cheatingDetected, setCheatingDetected] = useState(false);
@@ -53,6 +55,17 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
       return true;
     }
   });
+  const [aiEnabled, setAiEnabled] = useState(() => {
+    try {
+      const stored = localStorage.getItem('flashcard-ai-enabled');
+      return stored === null ? false : stored === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const isOnline = useIsOnline();
 
   useEffect(() => {
@@ -67,6 +80,15 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
       console.warn('Failed to save sound preference:', e);
     }
   }, [soundEnabled]);
+
+  // Persist AI preference
+  useEffect(() => {
+    try {
+      localStorage.setItem('flashcard-ai-enabled', String(aiEnabled));
+    } catch (e) {
+      console.warn('Failed to save AI preference:', e);
+    }
+  }, [aiEnabled]);
 
   // Play flip sound effect
   const playFlipSound = () => {
@@ -202,9 +224,9 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
     };
   }, [studyMode, quizStarted, quizFinished, quizAborted, connectionLost]);
 
-  // Quiz timer effect (paused while offline)
+  // Quiz timer effect (paused while offline, skipped for practice mode)
   useEffect(() => {
-    if (studyMode !== 'quiz' || !quizStarted || quizFinished || quizAborted || loading || connectionLost) return;
+    if (studyMode !== 'quiz' || !quizStarted || quizFinished || quizAborted || loading || connectionLost || quizDifficulty === 'practice') return;
 
     const timer = setInterval(() => {
       setQuizTimer(prev => {
@@ -277,12 +299,76 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
     return shuffled;
   };
 
+  const detectLanguage = (text: string): 'english' | 'tagalog' => {
+    // Tagalog/Filipino keywords
+    const filipinoKeywords = ['ano', 'ang', 'sa', 'ng', 'mga', 'ba', 'kung', 'ay', 'ito', 'yung', 'kang', 'mo', 'ko', 'nyo', 'natin', 'kami'];
+    const lowerText = text.toLowerCase();
+
+    const filipinoMatches = filipinoKeywords.filter(word =>
+      new RegExp(`\\b${word}\\b`).test(lowerText)
+    ).length;
+
+    return filipinoMatches >= 2 ? 'tagalog' : 'english';
+  };
+
+  const buildExplanationPrompt = (language: 'english' | 'tagalog') => {
+    if (language === 'tagalog') {
+      return 'Magbigay ng detalyadong paliwanag para sa bawat pagpipilian - kung bakit tama ang tamang sagot at kung bakit mali ang bawat isa sa mga maling sumagot.';
+    } else {
+      return 'Provide detailed explanations for each choice - why the correct answer is right and why each wrong answer is incorrect.';
+    }
+  };
+
+  const fetchAIExplanation = async () => {
+    if (aiLoading || aiExplanation) return;
+
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const detectedLanguage = detectLanguage(currentQuestion.question);
+      const explanationPrompt = buildExplanationPrompt(detectedLanguage);
+
+      const response = await fetch('https://cheiken021-letai.hf.space/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: currentQuestion.question,
+          choices: currentQuestion.choices,
+          correct_answer: currentQuestion.correct_answer,
+          max_new_tokens: 600,
+          temperature: 0.7,
+          language: detectedLanguage,
+          explanation_instruction: explanationPrompt
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAiExplanation(data.explanation);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to generate explanation';
+      setAiError(errorMsg);
+      console.error('AI explanation error:', err);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const moveToNextQuestion = () => {
     const questions = shuffledQuestions.length > 0 ? shuffledQuestions : (flashcard?.parsedData?.questions || []);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setShowAnswers(false);
-      setQuizTimer(selectedTimerPerQuestion);
+      setAiExplanation(null);
+      setAiError(null);
+      if (quizDifficulty !== 'practice') {
+        setQuizTimer(selectedTimerPerQuestion);
+      }
     } else {
       submitQuiz();
     }
@@ -294,10 +380,11 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
     setQuizFinished(true);
   };
 
-  const startQuizWithDifficulty = (difficulty: 'hard' | 'medium' | 'easy', customTime?: number) => {
+  const startQuizWithDifficulty = (difficulty: QuizDifficulty, customTime?: number) => {
     const questionsToShuffle = flashcard?.parsedData?.questions || [];
     const shuffled: Question[] = shuffleArray(questionsToShuffle as Question[]);
     setShuffledQuestions(shuffled);
+    setQuizDifficulty(difficulty);
 
     let timePerQuestion = 10;
     if (difficulty === 'hard') {
@@ -306,6 +393,8 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
       timePerQuestion = 20;
     } else if (difficulty === 'easy' && customTime && customTime >= 30) {
       timePerQuestion = customTime;
+    } else if (difficulty === 'practice') {
+      timePerQuestion = 0;
     }
     setSelectedTimerPerQuestion(timePerQuestion);
     setQuizTimer(timePerQuestion);
@@ -475,6 +564,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
               setQuizStarted(false);
               setQuizTimer(selectedTimerPerQuestion);
               setShuffledQuestions([]);
+              setQuizDifficulty(null);
             }}
             className="w-full rounded-2xl border border-indigo-400/50 bg-indigo-500/20 px-4 py-2 sm:py-3 text-sm font-semibold text-indigo-300 hover:bg-indigo-500/30 transition"
           >
@@ -500,6 +590,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
             setCurrentQuestionIndex(0);
             setQuizStarted(false);
             setShuffledQuestions([]);
+            setQuizDifficulty(null);
           }}
           className={`flex-1 md:flex-initial text-left rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base font-semibold transition ${
             studyMode === 'flashcard'
@@ -519,6 +610,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
             setQuizAborted(false);
             setEasyModeTime(30);
             setShuffledQuestions([]);
+            setQuizDifficulty(null);
           }}
           className={`flex-1 md:flex-initial text-left rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base font-semibold transition ${
             studyMode === 'quiz'
@@ -531,7 +623,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
       </div>
 
       {/* Main Content */}
-      <section className={`${cardShellClasses} space-y-4 sm:space-y-6 flex-1`}>
+      <section className={`${cardShellClasses} space-y-4 sm:space-y-6 flex-1 overflow-y-auto max-h-[calc(100vh-150px)]`}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
@@ -670,12 +762,68 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
               </div>
             </div>
 
+            {isFlipped && (
+              <div className="space-y-3">
+                {!aiExplanation && !aiError && (
+                  <button
+                    onClick={fetchAIExplanation}
+                    disabled={aiLoading}
+                    className="w-full rounded-2xl border border-sky-400/50 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-300 hover:bg-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    {aiLoading ? 'Generating Explanation...' : '✨ Get AI Explanation'}
+                  </button>
+                )}
+
+                {aiLoading && (
+                  <div className="flex items-center justify-center gap-3 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-6">
+                    <div className="flex gap-1">
+                      <div className="h-3 w-3 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
+                      <div className="h-3 w-3 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="h-3 w-3 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                    <span className="text-sm font-semibold text-sky-300">Generating explanation...</span>
+                  </div>
+                )}
+
+                {aiExplanation && (
+                  <div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-4 space-y-3">
+                    <p className="text-xs font-semibold text-sky-300">📚 AI Explanation</p>
+                    <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">{aiExplanation}</p>
+                    <button
+                      onClick={() => setAiExplanation(null)}
+                      className="text-xs font-semibold text-sky-300 hover:text-sky-200 transition"
+                    >
+                      Clear Explanation
+                    </button>
+                  </div>
+                )}
+
+                {aiError && (
+                  <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 px-4 py-3">
+                    <p className="text-xs font-semibold text-orange-300 mb-1">��️ Generation Failed</p>
+                    <p className="text-xs text-orange-200/80">{aiError}</p>
+                    <button
+                      onClick={() => {
+                        setAiError(null);
+                        setAiExplanation(null);
+                      }}
+                      className="mt-2 text-xs font-semibold text-orange-300 hover:text-orange-200 transition"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-2">
               <button
                 onClick={() => {
                   if (currentQuestionIndex > 0) {
                     setCurrentQuestionIndex(currentQuestionIndex - 1);
                     setIsFlipped(false);
+                    setAiExplanation(null);
+                    setAiError(null);
                   }
                 }}
                 disabled={currentQuestionIndex === 0}
@@ -688,6 +836,8 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                   setIsFlipped(false);
                   setSelectedAnswers({});
                   setCurrentQuestionIndex(0);
+                  setAiExplanation(null);
+                  setAiError(null);
                 }}
                 className="flex-1 rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/5"
               >
@@ -698,6 +848,8 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                   if (currentQuestionIndex < questions.length - 1) {
                     setCurrentQuestionIndex(currentQuestionIndex + 1);
                     setIsFlipped(false);
+                    setAiExplanation(null);
+                    setAiError(null);
                   }
                 }}
                 disabled={currentQuestionIndex === questions.length - 1}
@@ -709,13 +861,13 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
           </div>
         ) : studyMode === 'quiz' && !quizStarted ? (
           // Timer Selection Screen
-          <div className="space-y-6 sm:space-y-8 flex flex-col items-center justify-center min-h-96 py-8">
+          <div className="space-y-6 sm:space-y-8 flex flex-col items-center justify-start py-8 overflow-y-auto">
             <div className="text-center space-y-2 w-full">
-              <h3 className="text-2xl sm:text-3xl font-semibold text-white">Choose Your Difficulty</h3>
-              <p className="text-sm text-white/60">Select a difficulty level to test your skill</p>
+              <h3 className="text-2xl sm:text-3xl font-semibold text-white">Choose Your Mode</h3>
+              <p className="text-sm text-white/60">Select a difficulty level or practice mode</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
               <button
                 onClick={() => startQuizWithDifficulty('hard')}
                 className="group rounded-2xl border border-red-400/30 bg-red-500/10 p-6 hover:bg-red-500/20 transition space-y-4 text-center"
@@ -724,6 +876,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                 <div>
                   <h4 className="text-lg font-semibold text-red-300">Hard</h4>
                   <p className="text-xs text-white/60 mt-1">10 seconds per question</p>
+                  <p className="text-xs text-red-300/60 mt-2">No AI assistance</p>
                 </div>
                 <div className="text-sm font-semibold text-white group-hover:text-red-300 transition">
                   Start Quiz
@@ -738,6 +891,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                 <div>
                   <h4 className="text-lg font-semibold text-yellow-300">Medium</h4>
                   <p className="text-xs text-white/60 mt-1">20 seconds per question</p>
+                  <p className="text-xs text-yellow-300/60 mt-2">No AI assistance</p>
                 </div>
                 <div className="text-sm font-semibold text-white group-hover:text-yellow-300 transition">
                   Start Quiz
@@ -752,6 +906,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                 <div>
                   <h4 className="text-lg font-semibold text-emerald-300">Easy</h4>
                   <p className="text-xs text-white/60 mt-1">Custom time per question</p>
+                  <p className="text-xs text-emerald-300/60 mt-2">No AI assistance</p>
                 </div>
                 <div className="space-y-2 mt-2">
                   <div className="flex items-center gap-2 justify-center">
@@ -769,6 +924,21 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                   </div>
                 </div>
               </button>
+
+              <button
+                onClick={() => startQuizWithDifficulty('practice')}
+                className="group rounded-2xl border border-sky-400/30 bg-sky-500/10 p-6 hover:bg-sky-500/20 transition space-y-4 text-center"
+              >
+                <div className="text-4xl">📚</div>
+                <div>
+                  <h4 className="text-lg font-semibold text-sky-300">Practice</h4>
+                  <p className="text-xs text-white/60 mt-1">No time limit</p>
+                  <p className="text-xs text-sky-300/60 mt-2">AI explanations included</p>
+                </div>
+                <div className="text-sm font-semibold text-white group-hover:text-sky-300 transition">
+                  Start Practice
+                </div>
+              </button>
             </div>
           </div>
         ) : (
@@ -781,7 +951,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                   : 'border-orange-400/20 bg-orange-500/10 text-orange-300'
               }`}>
                 <p className="font-semibold mb-2">
-                  {offlineTimeoutWarning ? '⏰ Reconnect Soon' : '📴 Offline Mode'}
+                  {offlineTimeoutWarning ? '⏰ Reconnect Soon' : '�� Offline Mode'}
                 </p>
                 <div className="space-y-1 text-xs">
                   <p>
@@ -798,9 +968,16 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
             )}
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-semibold text-indigo-300">Question {currentQuestion.number}</span>
-              <div className={`text-sm font-semibold px-3 py-1 rounded-full ${quizTimer <= 3 ? 'bg-red-500/20 text-red-300' : 'bg-indigo-500/20 text-indigo-300'}`}>
-                ⏱ {quizTimer}s
-              </div>
+              {quizDifficulty !== 'practice' && (
+                <div className={`text-sm font-semibold px-3 py-1 rounded-full ${quizTimer <= 3 ? 'bg-red-500/20 text-red-300' : 'bg-indigo-500/20 text-indigo-300'}`}>
+                  ⏱ {quizTimer}s
+                </div>
+              )}
+              {quizDifficulty === 'practice' && (
+                <span className="text-xs font-semibold text-sky-300 px-3 py-1 rounded-full bg-sky-500/20">
+                  📚 Practice Mode
+                </span>
+              )}
             </div>
             <div>
               <p className="text-xs sm:text-sm text-white leading-relaxed">{currentQuestion.question}</p>
@@ -853,14 +1030,17 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
                     if (currentQuestionIndex < questions.length - 1) {
                       setCurrentQuestionIndex(currentQuestionIndex + 1);
                       setShowAnswers(false);
-                      setQuizTimer(selectedTimerPerQuestion);
+                      if (quizDifficulty !== 'practice') {
+                        setQuizTimer(selectedTimerPerQuestion);
+                      }
                     } else {
                       submitQuiz();
                     }
                   }}
-                  className="flex-1 rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/5"
+                  disabled={aiLoading}
+                  className="flex-1 rounded-2xl border border-white/10 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {currentQuestionIndex === questions.length - 1 ? 'Submit' : 'Next'}
+                  {aiLoading ? 'Generating...' : currentQuestionIndex === questions.length - 1 ? 'Submit' : 'Next'}
                 </button>
               ) : (
                 <button
@@ -874,20 +1054,76 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
             </div>
 
             {showAnswers && (
-              <div
-                className={`rounded-2xl px-4 py-3 text-sm ${
-                  isCorrect
-                    ? 'border border-emerald-400/20 bg-emerald-500/10 text-emerald-300'
-                    : 'border border-red-400/20 bg-red-500/10 text-red-300'
-                }`}
-              >
-                <p className="font-semibold mb-1">
-                  {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
-                </p>
-                <p className="text-xs">
-                  The correct answer is <span className="font-semibold">{currentQuestion.correct_answer}</span>
-                </p>
-              </div>
+              <>
+                <div
+                  className={`rounded-2xl px-4 py-3 text-sm ${
+                    isCorrect
+                      ? 'border border-emerald-400/20 bg-emerald-500/10 text-emerald-300'
+                      : 'border border-red-400/20 bg-red-500/10 text-red-300'
+                  }`}
+                >
+                  <p className="font-semibold mb-1">
+                    {isCorrect ? '✓ Correct!' : '✗ Incorrect'}
+                  </p>
+                  <p className="text-xs">
+                    The correct answer is <span className="font-semibold">{currentQuestion.correct_answer}</span>
+                  </p>
+                </div>
+
+                {quizDifficulty === 'practice' && (
+                  <>
+                    {!aiExplanation && !aiError && (
+                      <button
+                        onClick={fetchAIExplanation}
+                        disabled={aiLoading}
+                        className="w-full rounded-2xl border border-sky-400/50 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-300 hover:bg-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      >
+                        {aiLoading ? 'Generating Explanation...' : '✨ Get AI Explanation'}
+                      </button>
+                    )}
+
+                    {aiLoading && (
+                      <div className="flex items-center justify-center gap-3 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-6">
+                        <div className="flex gap-1">
+                          <div className="h-3 w-3 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
+                          <div className="h-3 w-3 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="h-3 w-3 rounded-full bg-sky-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                        </div>
+                        <span className="text-sm font-semibold text-sky-300">Generating explanation...</span>
+                      </div>
+                    )}
+
+                    {aiExplanation && (
+                      <div className="rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-4 space-y-3">
+                        <p className="text-xs font-semibold text-sky-300">📚 AI Explanation</p>
+                        <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">{aiExplanation}</p>
+                        <button
+                          onClick={() => setAiExplanation(null)}
+                          className="text-xs font-semibold text-sky-300 hover:text-sky-200 transition"
+                        >
+                          Clear Explanation
+                        </button>
+                      </div>
+                    )}
+
+                    {aiError && (
+                      <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 px-4 py-3">
+                        <p className="text-xs font-semibold text-orange-300 mb-1">⚠️ Generation Failed</p>
+                        <p className="text-xs text-orange-200/80">{aiError}</p>
+                        <button
+                          onClick={() => {
+                            setAiError(null);
+                            setAiExplanation(null);
+                          }}
+                          className="mt-2 text-xs font-semibold text-orange-300 hover:text-orange-200 transition"
+                        >
+                          Try Again
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
             )}
           </div>
         )}

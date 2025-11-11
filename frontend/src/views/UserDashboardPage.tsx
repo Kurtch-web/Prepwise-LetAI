@@ -24,7 +24,7 @@ export function UserDashboardPage() {
 
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
 
-      {session?.token && <FlashcardsTab token={session.token} isAdmin={false} />}
+      {session?.token && <FlashcardsTab token={session.token} isAdmin={session.role === 'admin'} />}
     </div>
   );
 }
