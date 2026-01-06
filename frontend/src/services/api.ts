@@ -127,7 +127,7 @@ export interface CommunityPost {
   canReport: boolean;
 }
 
-import { API_BASE } from '../config/backends';
+import { API_BASE, PASSWORD_RESET_API_BASE } from '../config/backends';
 
 export interface NotificationItem {
   id: string;
@@ -193,6 +193,31 @@ async function requestForm<T>(path: string, form: FormData, options: RequestInit
   return (await response.json()) as T;
 }
 
+async function requestVercel<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${PASSWORD_RESET_API_BASE}${path}`, {
+    credentials: 'include',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers ?? {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
+      (errorBody as { message?: string }).message ??
+      response.statusText;
+    throw new Error(errorMessage);
+  }
+
+  if (response.status === 204) {
+    return {} as T;
+  }
+
+  return (await response.json()) as T;
+}
+
 export const api = {
   signup: (body: SignupRequest) =>
     request<SignupResponse>('/auth/signup', {
@@ -247,7 +272,7 @@ export const api = {
       body: JSON.stringify(body)
     }),
   requestEmailCode: (token: string, email: string) =>
-    request<void>('/user/request-email-code', {
+    requestVercel<void>('/user/request-email-code', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify({ email })
