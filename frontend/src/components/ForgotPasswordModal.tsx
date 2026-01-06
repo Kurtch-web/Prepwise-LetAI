@@ -93,7 +93,7 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
     try {
       await passwordResetRequest<{ message: string }>('/auth/reset-password', {
         method: 'POST',
-        body: JSON.stringify({ email, code, newPassword })
+        body: JSON.stringify({ email, code, new_password: newPassword })
       });
       setStep('success');
     } catch (err: any) {
