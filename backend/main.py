@@ -5,7 +5,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import FRONTEND_ORIGIN
+from app.config import FRONTEND_ORIGINS
 from app.db import init_models
 from app.routers import auth, chat, presence, system, user, community, notifications, flashcards
 
@@ -13,7 +13,7 @@ app = FastAPI(title='Presence Tracking Service', version='0.2.0')
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origins=FRONTEND_ORIGINS,
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
