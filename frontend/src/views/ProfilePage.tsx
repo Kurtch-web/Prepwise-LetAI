@@ -95,7 +95,23 @@ export function ProfilePage() {
   return (
     <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_260px] lg:items-start">
       <aside className="hidden lg:block lg:sticky lg:top-32 lg:self-start">
-        <div className={`${shellCard} min-h-[360px]`} aria-hidden="true" />
+        <div className={`${shellCard} space-y-4`}>
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-4xl font-bold text-white">
+              {username.charAt(0).toUpperCase()}
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-white">{username}</h3>
+              <p className="text-sm text-white/60">Member</p>
+            </div>
+          </div>
+          <div className="border-t border-white/10 pt-4">
+            <p className="text-center text-sm font-semibold text-blue-300 mb-2">Daily Inspiration</p>
+            <p className="text-center text-sm text-white/80 italic">
+              Always be kind and be happy. Your positive attitude creates ripples of joy in the community.
+            </p>
+          </div>
+        </div>
       </aside>
 
       <div className="flex flex-col gap-8">

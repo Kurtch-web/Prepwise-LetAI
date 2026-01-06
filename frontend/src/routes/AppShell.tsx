@@ -244,22 +244,6 @@ function HeaderBanner() {
                 </NavLink>
               );
             })}
-            {isUserRole && (
-              <div className="hidden lg:flex items-center gap-1 pl-1.5 border-l border-blue-500/20">
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className={`rounded-full px-3 py-2 text-sm font-semibold transition duration-200 ${
-                    isLightMode
-                      ? 'bg-gradient-to-br from-emerald-500 to-green-400 text-white shadow-lg shadow-emerald-500/20'
-                      : 'text-blue-200 hover:text-white hover:bg-blue-500/20'
-                  }`}
-                  title={isLightMode ? 'Switch to dark mode' : 'Switch to light mode'}
-                >
-                  {isLightMode ? '☀️' : '🌙'}
-                </button>
-              </div>
-            )}
           </nav>
 
           {/* Session Info */}
@@ -344,19 +328,6 @@ function HeaderBanner() {
                     {session.role === 'admin' ? 'Admin' : 'Member'}: {session.username}
                   </span>
                 </div>
-                {isUserRole && (
-                  <button
-                    type="button"
-                    onClick={toggleTheme}
-                    className={`w-full rounded-lg px-4 py-2 text-sm font-semibold transition mb-3 flex items-center justify-between ${
-                      isLightMode
-                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                        : 'bg-blue-500/20 text-white hover:bg-blue-500/30'
-                    }`}
-                  >
-                    <span>{isLightMode ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
-                  </button>
-                )}
                 <button
                   type="button"
                   onClick={logout}

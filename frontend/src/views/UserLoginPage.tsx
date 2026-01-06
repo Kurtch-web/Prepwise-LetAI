@@ -189,9 +189,9 @@ export function UserLoginPage() {
           </aside>
         ) : (
           <aside className={`${getCardShellClasses(!isLightMode)} space-y-4 lg:col-span-2 xl:col-auto`}>
-            <h3 className={`text-lg font-semibold ${isLightMode ? 'light-mode-text-primary' : 'text-white'}`}>Why stay online?</h3>
-            <p className={`text-sm ${isLightMode ? 'light-mode-text-secondary' : 'text-white/70'}`}>
-              Keeping your session active lets admins see you instantly, ensuring support when you need it.
+            <h3 className={`text-lg font-semibold ${isLightMode ? 'light-mode-text-primary' : 'text-white'}`}>Welcome Back!</h3>
+            <p className={`text-xl ${isLightMode ? 'light-mode-text-secondary' : 'text-white/70'}`}>
+              Our platform supports both general education and professional education, helping you grow and develop your skills in a collaborative learning environment. Whether you're here to enhance your foundational knowledge or advance your professional expertise, we provide the tools and resources you need to succeed. Stay connected with your peers, access curated learning materials, and track your progress every step of the way.
             </p>
           </aside>
         )}

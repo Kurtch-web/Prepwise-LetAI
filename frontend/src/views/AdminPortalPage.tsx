@@ -350,9 +350,9 @@ export function AdminPortalPage() {
             description="Enter your admin credentials to monitor live presence across the workspace."
           />
           <aside className={`${cardShellClasses} space-y-4`}>
-            <h3 className="text-lg font-semibold text-white">Stay informed</h3>
-            <p className="text-sm text-white/70">
-              Once authenticated, you will see who is online in real time, complete with activity timestamps.
+            <h3 className="text-lg font-semibold text-white">Admin Dashboard</h3>
+            <p className="text-xl text-white/70">
+              Monitor and manage all learning activities across your platform. Track user engagement, oversee educational progress in both general and professional development tracks, and ensure seamless collaboration. Get real-time insights into participant activity, manage community interactions, and support your learners every step of their journey toward success.
             </p>
           </aside>
         </div>

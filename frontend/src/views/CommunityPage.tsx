@@ -296,7 +296,24 @@ export function CommunityPage() {
   return (
     <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_260px] lg:items-start">
       <aside className="hidden lg:block lg:sticky lg:top-32 lg:self-start">
-        <div className={`${shellCard} min-h-[360px]`} aria-hidden="true" />
+        <div className={`${shellCard} space-y-4`}>
+          <h2 className="text-lg font-semibold text-white">Welcome to Community</h2>
+          <p className="text-sm text-white/70">Connect with peers, share knowledge, and grow together in our collaborative learning space.</p>
+          <div className="space-y-3 pt-2">
+            <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-3">
+              <h3 className="text-sm font-semibold text-white/90 mb-1">Getting Started</h3>
+              <p className="text-xs text-white/70">Create posts, comment on others' work, and share resources to build our community.</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3">
+              <h3 className="text-sm font-semibold text-white/90 mb-1">Stay Engaged</h3>
+              <p className="text-xs text-white/70">Like posts, participate in discussions, and help fellow members learn and succeed.</p>
+            </div>
+            <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/10 p-3">
+              <h3 className="text-sm font-semibold text-white/90 mb-1">Be Respectful</h3>
+              <p className="text-xs text-white/70">Maintain professionalism and kindness. Report any issues to keep our community safe.</p>
+            </div>
+          </div>
+        </div>
       </aside>
 
       <div className="flex flex-col gap-8">
@@ -645,8 +662,13 @@ export function CommunityPage() {
           <p className="text-sm text-white/70">Keep conversations productive and safe:</p>
           <ul className="list-inside list-disc space-y-2 text-sm text-white/80">
             <li>Focus on workspace topics and helpful updates.</li>
+            <li>Be respectful and inclusive in all interactions.</li>
             <li>Do not share private personal data or credentials.</li>
             <li>Report suspicious links or behavior immediately.</li>
+            <li>Use the report feature for inappropriate content or violations.</li>
+            <li>Treat all community members with dignity and consideration.</li>
+            <li>Avoid harassment, discrimination, or offensive language.</li>
+            <li>Help create a safe and welcoming learning environment for everyone.</li>
           </ul>
         </div>
       </aside>
