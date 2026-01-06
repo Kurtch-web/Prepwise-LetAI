@@ -1,13 +1,39 @@
 import { FormEvent, useState } from 'react';
-import { api } from '../services/api';
 import { useTheme } from '../providers/ThemeProvider';
 
 type Step = 'email' | 'code' | 'password' | 'success';
 
+const VERCEL_API_BASE = 'https://prepwise-let-ai-e789-5icb0ffor-cheikens-projects.vercel.app';
+
+async function vercelRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${VERCEL_API_BASE}${path}`, {
+    credentials: 'include',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers ?? {})
+    }
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => ({}));
+    const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
+      (errorBody as { message?: string }).message ??
+      response.statusText;
+    throw new Error(errorMessage);
+  }
+
+  if (response.status === 204) {
+    return {} as T;
+  }
+
+  return (await response.json()) as T;
+}
+
 export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
-  const [step, setStep] = useState<Step>('email'); 
+  const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -15,13 +41,16 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const handleRequestCode = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await api.requestPasswordReset(email);
+      await vercelRequest<void>('/auth/request-password-reset', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
       setStep('code');
     } catch (err: any) {
       setError(err.message || 'Failed to send reset code');
@@ -35,7 +64,10 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
     setError('');
     setLoading(true);
     try {
-      await api.verifyPasswordResetCode(email, code);
+      await vercelRequest<{ valid: boolean; message: string }>('/auth/verify-password-reset', {
+        method: 'POST',
+        body: JSON.stringify({ email, code })
+      });
       setStep('password');
     } catch (err: any) {
       setError(err.message || 'Invalid or expired code');
@@ -47,12 +79,12 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   const handleResetPassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    
+
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    
+
     if (newPassword.length < 6) {
       setError('Password must be at least 6 characters');
       return;
@@ -60,7 +92,10 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 
     setLoading(true);
     try {
-      await api.resetPassword(email, code, newPassword);
+      await vercelRequest<{ message: string }>('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ email, code, newPassword })
+      });
       setStep('success');
     } catch (err: any) {
       setError(err.message || 'Failed to reset password');
