@@ -1,12 +1,11 @@
 import { FormEvent, useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
+import { PASSWORD_RESET_API_BASE } from '../config/backends';
 
 type Step = 'email' | 'code' | 'password' | 'success';
 
-const VERCEL_API_BASE = 'https://prepwise-let-ai-e789-5icb0ffor-cheikens-projects.vercel.app';
-
-async function vercelRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${VERCEL_API_BASE}${path}`, {
+async function passwordResetRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${PASSWORD_RESET_API_BASE}${path}`, {
     credentials: 'include',
     ...options,
     headers: {
@@ -47,7 +46,7 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
     setError('');
     setLoading(true);
     try {
-      await vercelRequest<void>('/auth/request-password-reset', {
+      await passwordResetRequest<void>('/auth/request-password-reset', {
         method: 'POST',
         body: JSON.stringify({ email })
       });
@@ -64,7 +63,7 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
     setError('');
     setLoading(true);
     try {
-      await vercelRequest<{ valid: boolean; message: string }>('/auth/verify-password-reset', {
+      await passwordResetRequest<{ valid: boolean; message: string }>('/auth/verify-password-reset', {
         method: 'POST',
         body: JSON.stringify({ email, code })
       });
@@ -92,7 +91,7 @@ export function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
 
     setLoading(true);
     try {
-      await vercelRequest<{ message: string }>('/auth/reset-password', {
+      await passwordResetRequest<{ message: string }>('/auth/reset-password', {
         method: 'POST',
         body: JSON.stringify({ email, code, newPassword })
       });

@@ -127,7 +127,7 @@ export interface CommunityPost {
   canReport: boolean;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+import { API_BASE } from '../config/backends';
 
 export interface NotificationItem {
   id: string;
