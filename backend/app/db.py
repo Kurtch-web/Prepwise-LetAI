@@ -9,6 +9,7 @@ from sqlalchemy.orm import DeclarativeBase
 from .config import (
     DATA_DIR,
     DATABASE_URL,
+    DB_CONNECT_TIMEOUT,
     DB_MAX_OVERFLOW,
     DB_POOL_SIZE,
     ssl_context,
@@ -45,6 +46,7 @@ connect_args: dict = {}
 if DB_URL.startswith('postgresql+asyncpg://'):
     connect_args['statement_cache_size'] = 0
     connect_args['prepared_statement_cache_size'] = 0
+    connect_args['timeout'] = DB_CONNECT_TIMEOUT
     if IS_EXTERNAL_DB:
         connect_args['ssl'] = ssl_context
 

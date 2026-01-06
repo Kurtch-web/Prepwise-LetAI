@@ -13,9 +13,10 @@ USERS_FILE = DATA_DIR / 'users.json'
 
 SESSION_TTL_MINUTES = int(os.getenv('SESSION_TTL_MINUTES', '60'))
 FRONTEND_ORIGIN = os.getenv('FRONTEND_ORIGIN', 'http://localhost:5173')
-DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '5'))
-DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', '10'))
+DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '10'))
+DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', '20'))
 DATABASE_URL = os.getenv('DATABASE_URL')
+DB_CONNECT_TIMEOUT = int(os.getenv('DB_CONNECT_TIMEOUT', '10'))
 
 ssl_context = ssl.create_default_context()
 ssl_context.check_hostname = False
