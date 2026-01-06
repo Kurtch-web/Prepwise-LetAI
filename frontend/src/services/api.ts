@@ -258,21 +258,6 @@ export const api = {
       headers: { Authorization: `Bearer ${token}` },
       body: JSON.stringify({ code })
     }),
-  requestPasswordReset: (email: string) =>
-    request<void>('/auth/request-password-reset', {
-      method: 'POST',
-      body: JSON.stringify({ email })
-    }),
-  verifyPasswordResetCode: (email: string, code: string) =>
-    request<{ valid: boolean; message: string }>('/auth/verify-password-reset', {
-      method: 'POST',
-      body: JSON.stringify({ email, code })
-    }),
-  resetPassword: (email: string, code: string, newPassword: string) =>
-    request<{ message: string }>('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify({ email, code, new_password: newPassword })
-    }),
   requestSmsCode: (token: string, phoneE164: string) =>
     request<void>('/user/request-sms-code', {
       method: 'POST',
