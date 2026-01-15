@@ -14,11 +14,15 @@ USERS_FILE = DATA_DIR / 'users.json'
 SESSION_TTL_MINUTES = int(os.getenv('SESSION_TTL_MINUTES', '60'))
 
 # Support multiple FRONTEND_ORIGIN values (comma-separated for production)
+# Examples:
+#   Single origin: https://example.com
+#   Multiple origins: https://vercel-frontend.com,https://render-frontend.com,http://localhost:5173
+# Set via environment variable: FRONTEND_ORIGIN="https://prepwise-let-ai.vercel.app,http://localhost:5173"
 _frontend_origin_str = os.getenv('FRONTEND_ORIGIN', 'http://localhost:5173')
-FRONTEND_ORIGINS = [origin.strip() for origin in _frontend_origin_str.split(',')]
+FRONTEND_ORIGINS = [origin.strip() for origin in _frontend_origin_str.split(',') if origin.strip()]
 
 # For backwards compatibility, keep FRONTEND_ORIGIN as the first origin
-FRONTEND_ORIGIN = FRONTEND_ORIGINS[0]
+FRONTEND_ORIGIN = FRONTEND_ORIGINS[0] if FRONTEND_ORIGINS else 'http://localhost:5173'
 
 DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '10'))
 DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', '20'))

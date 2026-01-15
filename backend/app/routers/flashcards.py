@@ -16,9 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..db import get_db
-from ..dependencies import require_session
 from ..models import Flashcard, UserAccount
-from ..services.sessions import Session
 
 router = APIRouter()
 
@@ -114,12 +112,6 @@ def _sanitize_filename(name: str) -> str:
     return base[:200]
 
 
-async def _get_user(session: Session, db: AsyncSession) -> UserAccount:
-    """Get user from session"""
-    user = await db.scalar(select(UserAccount).where(UserAccount.username == session.username))
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Account not found')
-    return user
 
 
 def clean_text(text: str) -> str:
@@ -296,14 +288,16 @@ def parse_pdf_questions(pdf_bytes: bytes) -> ParseResponse:
 async def upload_flashcard(
     category: str = Form(...),
     file: UploadFile = File(...),
-    session: Session = Depends(require_session),
     db: AsyncSession = Depends(get_db),
 ) -> Dict:
-    """Upload a PDF to flashcards (admin only) and parse it on-the-fly"""
-    user = await _get_user(session, db)
-
-    if user.role != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can upload flashcards')
+    """Upload a PDF to flashcards and parse it on-the-fly"""
+    # Get or create default admin user
+    user = await db.scalar(select(UserAccount).where(UserAccount.role == 'admin'))
+    if not user:
+        # Create a default admin user
+        user = UserAccount(username='admin', password_hash='', role='admin')
+        db.add(user)
+        await db.flush()
 
     if not file.filename or not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Only PDF files are allowed')
@@ -360,10 +354,9 @@ async def upload_flashcard(
 
 @router.get('/flashcards')
 async def list_flashcards(
-    session: Session = Depends(require_session),
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, List[Dict]]:
-    """List all flashcards (visible to all authenticated users)"""
+    """List all flashcards"""
     result = await db.execute(
         select(Flashcard).options(selectinload(Flashcard.uploader)).order_by(Flashcard.created_at.desc())
     )
@@ -388,7 +381,6 @@ async def list_flashcards(
 @router.get('/flashcards/{flashcard_id}')
 async def get_flashcard_questions(
     flashcard_id: str,
-    session: Session = Depends(require_session),
     db: AsyncSession = Depends(get_db),
 ) -> Dict:
     """Get parsed questions from a flashcard (parse on-demand from storage)"""
@@ -431,18 +423,13 @@ async def get_flashcard_questions(
 @router.delete('/flashcards/{flashcard_id}')
 async def delete_flashcard(
     flashcard_id: str,
-    session: Session = Depends(require_session),
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, str]:
-    """Delete a flashcard (admin only, or uploader)"""
-    user = await _get_user(session, db)
+    """Delete a flashcard"""
     flashcard = await db.scalar(select(Flashcard).where(Flashcard.id == flashcard_id))
 
     if not flashcard:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Flashcard not found')
-
-    if user.role != 'admin' and flashcard.uploader_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Cannot delete this flashcard')
 
     try:
         storage = get_flashcard_storage()

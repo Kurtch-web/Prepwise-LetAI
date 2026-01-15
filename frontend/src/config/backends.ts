@@ -1,22 +1,16 @@
 /**
  * Backend Configuration
  *
- * RENDER_API_BASE: Used for main API operations (login, signup, profile, community, etc.)
- * VERCEL_API_BASE: Used specifically for password reset operations
+ * VITE_API_BASE: Points to the FastAPI backend (local or deployed)
  *
- * For local development, both point to http://127.0.0.1:8000
+ * For local development: http://127.0.0.1:8000
+ * For Vercel deployment: Set VITE_API_BASE env var to your Vercel backend URL
+ *   Example: https://your-backend.vercel.app
  */
 
-export const RENDER_API_BASE = import.meta.env.VITE_RENDER_API_BASE || 'http://127.0.0.1:8000';
-export const VERCEL_API_BASE = import.meta.env.VITE_VERCEL_API_BASE || 'http://127.0.0.1:8000';
-
-/**
- * Ensure URLs don't have trailing slashes for consistency
- */
-export const API_BASE = RENDER_API_BASE.replace(/\/$/, '');
-export const PASSWORD_RESET_API_BASE = VERCEL_API_BASE.replace(/\/$/, '');
+export const API_BASE = (import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000').replace(/\/$/, '');
 
 export const BACKENDS = {
   main: API_BASE,
-  passwordReset: PASSWORD_RESET_API_BASE
+  passwordReset: API_BASE
 } as const;

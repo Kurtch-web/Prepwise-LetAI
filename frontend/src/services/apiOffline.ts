@@ -64,10 +64,10 @@ export async function getFlashcardsWithOfflineSupport(
   onlineApi: any
 ): Promise<{ flashcards: any[]; isOffline: boolean; fromCache: boolean }> {
   try {
-    const result = await onlineApi.fetchFlashcards(token);
-    
+    const result = await onlineApi.fetchFlashcards();
+
     offlineStorage.setFlashcardsList(result.flashcards);
-    
+
     return {
       flashcards: result.flashcards,
       isOffline: false,
@@ -75,7 +75,7 @@ export async function getFlashcardsWithOfflineSupport(
     };
   } catch (error) {
     console.warn('[Flashcards] Online fetch failed, checking offline cache:', error);
-    
+
     const cached = offlineStorage.getFlashcardsList();
     if (cached) {
       return {
@@ -84,7 +84,7 @@ export async function getFlashcardsWithOfflineSupport(
         fromCache: true
       };
     }
-    
+
     throw error;
   }
 }
@@ -95,10 +95,10 @@ export async function getFlashcardDataWithOfflineSupport(
   onlineApi: any
 ): Promise<{ data: OfflineFlashcard; isOffline: boolean; fromCache: boolean }> {
   try {
-    const data = await onlineApi.getFlashcardQuestions(token, flashcardId);
-    
+    const data = await onlineApi.getFlashcardQuestions(flashcardId);
+
     offlineStorage.setFlashcardData(flashcardId, data);
-    
+
     return {
       data,
       isOffline: false,
@@ -106,7 +106,7 @@ export async function getFlashcardDataWithOfflineSupport(
     };
   } catch (error) {
     console.warn('[Flashcard Data] Online fetch failed, checking offline cache:', error);
-    
+
     const cached = offlineStorage.getFlashcardData(flashcardId);
     if (cached) {
       return {
@@ -115,7 +115,7 @@ export async function getFlashcardDataWithOfflineSupport(
         fromCache: true
       };
     }
-    
+
     throw error;
   }
 }

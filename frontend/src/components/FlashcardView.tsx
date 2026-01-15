@@ -16,14 +16,13 @@ interface Question {
 
 interface FlashcardViewProps {
   flashcardId: string;
-  token: string;
   onBack: () => void;
 }
 
 type StudyMode = 'flashcard' | 'quiz';
 type QuizDifficulty = 'hard' | 'medium' | 'easy' | 'practice';
 
-export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps) {
+export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
   const [flashcard, setFlashcard] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +69,7 @@ export function FlashcardView({ flashcardId, token, onBack }: FlashcardViewProps
 
   useEffect(() => {
     loadFlashcard();
-  }, [flashcardId, token]);
+  }, [flashcardId]);
 
   // Persist sound preference
   useEffect(() => {

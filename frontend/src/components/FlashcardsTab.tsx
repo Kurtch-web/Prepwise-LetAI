@@ -12,11 +12,10 @@ const quietButtonClasses =
   'rounded-2xl border border-white/10 px-5 py-3 font-semibold text-white/80 transition hover:border-rose-400 hover:bg-rose-500/20';
 
 interface FlashcardsTabProps {
-  token: string;
   isAdmin: boolean;
 }
 
-export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
+export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +34,7 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
     setLoading(true);
     setError(null);
     try {
-      const result = await getFlashcardsWithOfflineSupport(token, api);
+      const result = await getFlashcardsWithOfflineSupport('', api);
       setFlashcards(result.flashcards);
       setIsOffline(result.isOffline);
       setFromCache(result.fromCache);
@@ -48,7 +47,7 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
 
   useEffect(() => {
     loadFlashcards();
-  }, [token]);
+  }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.currentTarget.files?.[0];
@@ -71,7 +70,7 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
     setUploading(true);
     setError(null);
     try {
-      await api.uploadFlashcard(token, selectedCategory, selectedFile);
+      await api.uploadFlashcard(selectedCategory, selectedFile);
       setSelectedFile(null);
       setSelectedCategory('General Education');
       const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
@@ -88,7 +87,7 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
     if (!confirm('Are you sure you want to delete this flashcard?')) return;
 
     try {
-      await api.deleteFlashcard(token, id);
+      await api.deleteFlashcard(id);
       await loadFlashcards();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete flashcard');
@@ -100,7 +99,6 @@ export function FlashcardsTab({ token, isAdmin }: FlashcardsTabProps) {
     return (
       <FlashcardView
         flashcardId={selectedFlashcard}
-        token={token}
         onBack={() => setSelectedFlashcard(null)}
       />
     );

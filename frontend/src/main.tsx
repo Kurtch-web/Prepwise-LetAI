@@ -2,7 +2,6 @@ import { StrictMode } from 'react';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './providers/AuthProvider';
 import { ThemeProvider } from './providers/ThemeProvider';
 import { AppShell } from './routes/AppShell';
 import './styles/base.css';
@@ -21,9 +20,7 @@ if (!container._rootInitialized) {
     <React.StrictMode>
       <ThemeProvider>
         <BrowserRouter>
-          <AuthProvider>
-            <AppShell />
-          </AuthProvider>
+          <AppShell />
         </BrowserRouter>
       </ThemeProvider>
     </React.StrictMode>
