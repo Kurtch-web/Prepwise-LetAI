@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import type { UserInfo } from '../services/api';
 
-const rosterSectionShell = 'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-5 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl';
+const rosterSectionShell = 'rounded-3xl border border-white/10 bg-[#0f3d2f]/80 p-5 shadow-[0_18px_40px_rgba(15,61,47,0.45)] backdrop-blur-xl';
 const rosterListShell = 'mt-4 space-y-3';
-const rosterEntryShell = 'flex w-full items-center justify-between rounded-2xl border border-white/10 bg-[#060c14]/80 px-4 py-3 text-left shadow-[0_18px_30px_rgba(3,6,12,0.4)] transition hover:bg-white/5 focus:outline-none focus-visible:border-indigo-400/60 focus-visible:bg-indigo-500/10';
+const rosterEntryShell = 'flex w-full items-center justify-between rounded-2xl border border-white/10 bg-[#1a2d25]/80 px-4 py-3 text-left shadow-[0_18px_30px_rgba(26,45,37,0.4)] transition hover:bg-white/5 focus:outline-none focus-visible:border-emerald-400/60 focus-visible:bg-emerald-500/10';
 
 const emailBadgeClasses = (verified: boolean) =>
   `inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
@@ -100,7 +100,7 @@ export function PresenceRoster({
                         <div className={`h-1.5 w-1.5 rounded-full ${isVerified ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                         {isVerified ? 'Verified' : 'Unverified'}
                       </span>
-                      <span className="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-200">Admin</span>
+                      <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-200">Admin</span>
                     </div>
                   </button>
                 </li>
@@ -159,7 +159,7 @@ export function PresenceRoster({
                         <div className={`h-1.5 w-1.5 rounded-full ${isVerified ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                         {isVerified ? 'Verified' : 'Unverified'}
                       </span>
-                      <span className="rounded-full bg-sky-400/20 px-3 py-1 text-xs font-semibold text-sky-200">Member</span>
+                      <span className="rounded-full bg-green-400/20 px-3 py-1 text-xs font-semibold text-green-200">Member</span>
                     </div>
                   </button>
                 </li>

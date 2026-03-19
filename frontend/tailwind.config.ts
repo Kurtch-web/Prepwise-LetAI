@@ -9,5 +9,9 @@ export default {
       }
     }
   },
-  plugins: []
+  plugins: [],
+  safelist: [],
+  corePlugins: {
+    preflight: true
+  }
 } satisfies Config;

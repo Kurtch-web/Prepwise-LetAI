@@ -5,7 +5,7 @@ import { getFlashcardDataWithOfflineSupport } from '../services/apiOffline';
 import { offlineStorage } from '../services/offlineStorage';
 
 const cardShellClasses =
-  'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-7 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl';
+  'rounded-3xl border border-white/10 bg-[#0f3d2f]/80 p-7 shadow-[0_18px_40px_rgba(15,61,47,0.45)] backdrop-blur-xl';
 
 interface Question {
   number: number;
@@ -404,7 +404,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
     setLoading(true);
     setError(null);
     try {
-      const result = await getFlashcardDataWithOfflineSupport(token, flashcardId, api);
+      const result = await getFlashcardDataWithOfflineSupport(flashcardId, api);
       setFlashcard(result.data);
       setIsOffline(result.isOffline);
       setFromCache(result.fromCache);
@@ -487,13 +487,13 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
 
     const performanceColor =
       score.percentage >= 80 ? 'text-emerald-300' :
-      score.percentage >= 60 ? 'text-sky-300' :
+      score.percentage >= 60 ? 'text-emerald-300' :
       score.percentage >= 40 ? 'text-yellow-300' :
       'text-red-300';
 
     const performanceBg =
       score.percentage >= 80 ? 'bg-emerald-500/10 border-emerald-400/20' :
-      score.percentage >= 60 ? 'bg-sky-500/10 border-sky-400/20' :
+      score.percentage >= 60 ? 'bg-emerald-500/10 border-emerald-400/20' :
       score.percentage >= 40 ? 'bg-yellow-500/10 border-yellow-400/20' :
       'bg-red-500/10 border-red-400/20';
 
@@ -511,7 +511,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
             <p className="text-xs sm:text-sm text-white/60 truncate">{flashcard.filename}</p>
           </div>
 
-          <div className={`rounded-2xl border px-4 sm:px-6 py-6 sm:py-8 text-center space-y-3 sm:space-y-4 ${performanceBg}`}>
+          <div className={`rounded-2xl border px-4 sm:px-6 py-6 sm:py-8 text-center space-y-3 sm:space-y-4`}>
             <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-white">{score.percentage}%</div>
             <div className={`text-xl sm:text-2xl font-semibold ${performanceColor}`}>{performanceLevel}</div>
             <div className="text-sm sm:text-base text-white/80">
@@ -675,7 +675,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
           </div>
           <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 to-sky-400 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -752,7 +752,10 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
                     <div>
                       <p className="text-xs font-semibold text-emerald-300 mb-4">Answer</p>
                       <p className="text-base sm:text-lg text-white leading-relaxed">
-                        {currentQuestion.choices.find(choice => choice.charAt(0) === currentQuestion.correct_answer) || currentQuestion.correct_answer}
+                        {(() => {
+                          const answerIndex = currentQuestion.correct_answer.charCodeAt(0) - 65;
+                          return currentQuestion.choices[answerIndex] || currentQuestion.correct_answer;
+                        })()}
                       </p>
                       <p className="text-xs text-white/50 mt-6">Click to see question</p>
                     </div>
@@ -926,15 +929,15 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
 
               <button
                 onClick={() => startQuizWithDifficulty('practice')}
-                className="group rounded-2xl border border-sky-400/30 bg-sky-500/10 p-6 hover:bg-sky-500/20 transition space-y-4 text-center"
+                className="group rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-6 hover:bg-emerald-500/20 transition space-y-4 text-center"
               >
                 <div className="text-4xl">📚</div>
                 <div>
-                  <h4 className="text-lg font-semibold text-sky-300">Practice</h4>
+                  <h4 className="text-lg font-semibold text-emerald-300">Practice</h4>
                   <p className="text-xs text-white/60 mt-1">No time limit</p>
-                  <p className="text-xs text-sky-300/60 mt-2">AI explanations included</p>
+                  <p className="text-xs text-emerald-300/60 mt-2">AI explanations included</p>
                 </div>
-                <div className="text-sm font-semibold text-white group-hover:text-sky-300 transition">
+                <div className="text-sm font-semibold text-white group-hover:text-emerald-300 transition">
                   Start Practice
                 </div>
               </button>
@@ -984,7 +987,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
 
             <div className="space-y-2 sm:space-y-2">
               {currentQuestion.choices.map((choice, idx) => {
-                const choiceLetter = choice.charAt(0);
+                const choiceLetter = String.fromCharCode(65 + idx);
                 const isSelected = selectedAnswer === choiceLetter;
                 const isCorrectChoice = choiceLetter === currentQuestion.correct_answer;
 
@@ -1000,8 +1003,8 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
                     textColor = 'text-red-300';
                   }
                 } else if (isSelected) {
-                  bgColor = 'bg-indigo-500/20 border-indigo-400/50';
-                  textColor = 'text-indigo-300';
+                  bgColor = 'bg-emerald-500/20 border-emerald-400/50';
+                  textColor = 'text-emerald-300';
                 }
 
                 return (
@@ -1013,7 +1016,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
                       }
                     }}
                     className={`w-full text-left rounded-2xl border px-4 py-3 transition ${bgColor} ${textColor} ${
-                      !showAnswers ? 'cursor-pointer hover:border-indigo-400' : ''
+                      !showAnswers ? 'cursor-pointer hover:border-emerald-400' : ''
                     }`}
                   >
                     <span className="text-sm font-medium">{choice}</span>
@@ -1045,7 +1048,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
                 <button
                   onClick={() => setShowAnswers(true)}
                   disabled={!selectedAnswer}
-                  className="flex-1 rounded-2xl border border-indigo-400/50 bg-indigo-500/20 px-4 py-2 text-sm font-semibold text-indigo-300 hover:bg-indigo-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 rounded-2xl border border-emerald-400/50 bg-emerald-500/20 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Show Answer
                 </button>

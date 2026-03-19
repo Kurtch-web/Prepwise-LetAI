@@ -60,7 +60,6 @@ export async function fetchWithOfflineFallback<T>(
 }
 
 export async function getFlashcardsWithOfflineSupport(
-  token: string,
   onlineApi: any
 ): Promise<{ flashcards: any[]; isOffline: boolean; fromCache: boolean }> {
   try {
@@ -90,7 +89,6 @@ export async function getFlashcardsWithOfflineSupport(
 }
 
 export async function getFlashcardDataWithOfflineSupport(
-  token: string,
   flashcardId: string,
   onlineApi: any
 ): Promise<{ data: OfflineFlashcard; isOffline: boolean; fromCache: boolean }> {

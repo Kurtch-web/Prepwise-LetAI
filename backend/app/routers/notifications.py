@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -49,6 +49,6 @@ async def mark_notification_read(
     )
     if not notif:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Notification not found')
-    notif.read_at = datetime.utcnow()
+    notif.read_at = datetime.now(timezone.utc)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

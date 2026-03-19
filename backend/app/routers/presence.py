@@ -1,13 +1,17 @@
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..dependencies import get_event_store, get_user_store
+from ..dependencies import get_event_store, get_user_store, get_current_user
 from ..schemas import OnlineUser, PresenceEvent, PresenceOverview, UserInfo
 from ..services.events import EventStore
 from ..services.presence import build_presence_overview
 from ..services.users import UserStore
+from ..models import UserAccount, Assessment
+from ..db import get_db
 
 router = APIRouter()
 
@@ -58,3 +62,84 @@ async def list_all_users(
         reverse=True,
     )
     return {'users': combined}
+
+
+@router.get('/admin/users-profiles')
+async def list_users_with_profiles(
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, List]:
+    """Get all users with their latest assessment data. If current user is an instructor, only returns their assigned students."""
+    # Build query
+    query = select(UserAccount).where(UserAccount.role == 'user')
+
+    # If current user is an instructor (username like admin1, admin2, etc), filter to only their students
+    if current_user.role == 'admin' and current_user.username in ['admin1', 'admin2', 'admin3', 'admin4']:
+        query = query.where(UserAccount.instructor_id == current_user.id)
+
+    query = query.order_by(UserAccount.created_at.desc())
+
+    result = await db.execute(query)
+    users = result.scalars().all()
+
+    users_data = []
+    for user in users:
+        # Get latest assessment
+        assessment_result = await db.scalar(
+            select(Assessment)
+            .where(Assessment.user_id == user.id)
+            .order_by(Assessment.created_at.desc())
+            .limit(1)
+        )
+
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'fullName': user.full_name,
+            'role': user.role,
+            'reviewType': user.review_type,
+            'targetExamDate': user.target_exam_date,
+            'instructorId': user.instructor_id,
+            'createdAt': user.created_at.isoformat(),
+            'assessment': None
+        }
+
+        if assessment_result:
+            user_data['assessment'] = {
+                'id': assessment_result.id,
+                'responses': assessment_result.responses,
+                'learningPreferences': assessment_result.learning_preferences,
+                'recommendations': assessment_result.recommendations,
+                'createdAt': assessment_result.created_at.isoformat(),
+                'updatedAt': assessment_result.updated_at.isoformat(),
+            }
+
+        users_data.append(user_data)
+
+    return {'users': users_data}
+
+
+@router.get('/instructors')
+async def list_instructors(
+    db: AsyncSession = Depends(get_db),
+) -> Dict[str, List]:
+    """Get all available instructors (users with instructor_id that matches their id, or designated instructors)"""
+    # Get users named admin1, admin2, admin3, admin4
+    result = await db.execute(
+        select(UserAccount)
+        .where(UserAccount.username.in_(['admin1', 'admin2', 'admin3', 'admin4']))
+        .order_by(UserAccount.username)
+    )
+    instructors = result.scalars().all()
+
+    instructors_data = [
+        {
+            'id': instructor.id,
+            'username': instructor.username,
+            'fullName': instructor.full_name or instructor.username,
+        }
+        for instructor in instructors
+    ]
+
+    return {'instructors': instructors_data}

@@ -25,7 +25,7 @@ export function GalleryModal({ items, startIndex = 0, onClose }: { items: Galler
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-4" onClick={onClose}>
-      <div className="w-full max-w-5xl rounded-3xl border border-white/10 bg-[#0b111a]/90 shadow-[0_18px_40px_rgba(4,10,20,0.55)] backdrop-blur-xl" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-5xl rounded-3xl border border-white/10 bg-[#0f3d2f]/90 shadow-[0_18px_40px_rgba(15,61,47,0.55)] backdrop-blur-xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4">
           <div className="text-white/80 text-sm">
             {index + 1} / {total} {current.filename ? `— ${current.filename}` : ''}

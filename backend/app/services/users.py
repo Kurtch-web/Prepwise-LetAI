@@ -66,7 +66,11 @@ class UserStore:
         session.add_all(
             [
                 UserAccount(username=admin_username, password_hash=hash_password(admin_password), role='admin'),
-                UserAccount(username=member_username, password_hash=hash_password(member_password), role='user')
+                UserAccount(username=member_username, password_hash=hash_password(member_password), role='user'),
+                UserAccount(username='admin1', full_name='Instructor 1', password_hash=hash_password('Instructor1@123'), role='admin'),
+                UserAccount(username='admin2', full_name='Instructor 2', password_hash=hash_password('Instructor2@123'), role='admin'),
+                UserAccount(username='admin3', full_name='Instructor 3', password_hash=hash_password('Instructor3@123'), role='admin'),
+                UserAccount(username='admin4', full_name='Instructor 4', password_hash=hash_password('Instructor4@123'), role='admin'),
             ]
         )
         await session.commit()

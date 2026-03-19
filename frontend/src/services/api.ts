@@ -50,55 +50,161 @@ export interface FlashcardItem {
   totalQuestions?: number;
 }
 
+export interface LearningPreference {
+  video: number;
+  flashcards: number;
+  practice_tests: number;
+  study_guides: number;
+  discussions: number;
+}
+
+export interface AssessmentRecommendation {
+  primary_method: string;
+  secondary_methods: string[];
+  suggested_duration: string;
+  weak_areas: string[];
+  strengths: string[];
+  priority_guides: string[];
+}
+
+export interface AssessmentItem {
+  id: string;
+  responses: Record<string, unknown>;
+  learning_preferences: LearningPreference;
+  recommendations: AssessmentRecommendation;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  email: string | null;
+  fullName: string | null;
+  role: UserRole;
+  reviewType: string | null;
+  targetExamDate: string | null;
+  createdAt: string;
+  assessment: AssessmentItem | null;
+}
+
 import { API_BASE } from '../config/backends';
+import { authService } from './authService';
+
+const REQUEST_TIMEOUT = 10000; // 10 seconds timeout for slow connections
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {})
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+  try {
+    const headers = new Headers({
+      'Content-Type': 'application/json'
+    });
+
+    // Add existing headers from options if any
+    if (options.headers instanceof Headers) {
+      for (const [key, value] of options.headers) {
+        headers.set(key, value);
+      }
+    } else if (typeof options.headers === 'object' && options.headers !== null) {
+      for (const [key, value] of Object.entries(options.headers)) {
+        headers.set(key, String(value));
+      }
     }
-  });
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
-      (errorBody as { message?: string }).message ??
-      response.statusText;
-    throw new Error(errorMessage);
+    // Add auth token if available
+    const token = authService.getToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const response = await fetch(`${API_BASE}${path}`, {
+      credentials: 'include',
+      ...options,
+      signal: controller.signal,
+      headers
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
+        (errorBody as { message?: string }).message ??
+        response.statusText;
+      throw new Error(errorMessage);
+    }
+
+    if (response.status === 204) {
+      return {} as T;
+    }
+
+    return (await response.json()) as T;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return (await response.json()) as T;
 }
 
 async function requestForm<T>(path: string, form: FormData, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    method: options.method ?? 'POST',
-    credentials: 'include',
-    body: form,
-    headers: {
-      ...(options.headers ?? {})
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT + 10000); // Longer timeout for file uploads
+
+  try {
+    const headers = new Headers();
+
+    // Add existing headers from options if any
+    if (options.headers instanceof Headers) {
+      for (const [key, value] of options.headers) {
+        headers.set(key, value);
+      }
+    } else if (typeof options.headers === 'object' && options.headers !== null) {
+      for (const [key, value] of Object.entries(options.headers)) {
+        headers.set(key, String(value));
+      }
     }
-  });
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
-      (errorBody as { message?: string }).message ??
-      response.statusText;
-    throw new Error(errorMessage);
+    // Add auth token if available
+    const token = authService.getToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const response = await fetch(`${API_BASE}${path}`, {
+      method: options.method ?? 'POST',
+      credentials: 'include',
+      body: form,
+      signal: controller.signal,
+      headers
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
+        (errorBody as { message?: string }).message ??
+        response.statusText;
+      throw new Error(errorMessage);
+    }
+
+    return (await response.json()) as T;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return (await response.json()) as T;
 }
 
 export const api = {
+  // System API
+  healthCheck: async () => {
+    try {
+      const response = await fetch(`${API_BASE}/health`);
+      if (!response.ok) {
+        throw new Error(`Health check failed: ${response.status}`);
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('Backend health check failed:', err);
+      throw err;
+    }
+  },
+
   // Flashcards API
   uploadFlashcard: (category: string, file: File) => {
     const form = new FormData();
@@ -170,6 +276,69 @@ export const api = {
   markNotificationRead: (id: string) =>
     request<void>(`/notifications/${id}/read`, {
       method: 'POST'
+    }),
+
+  // Assessments API
+  fetchAssessmentTemplates: () =>
+    request<{ templates: any[] }>('/assessments/templates', {
+      method: 'GET'
+    }),
+  createAssessment: (templateId: string, responses: Record<string, unknown>) =>
+    request<any>('/assessments', {
+      method: 'POST',
+      body: JSON.stringify({
+        template_id: templateId,
+        responses
+      })
+    }),
+
+  // Admin API
+  fetchUsersWithProfiles: () =>
+    request<{ users: UserProfile[] }>('/admin/users-profiles', {
+      method: 'GET'
+    }),
+  fetchAssessmentInsights: (templateId?: string) =>
+    request<{
+      questions: Array<{
+        id: string;
+        responses: Record<string, number>;
+        majority: string;
+        totalResponses: number;
+      }>;
+      totalResponses: number;
+    }>(`/admin/assessment-insights${templateId ? `?template_id=${templateId}` : ''}`, {
+      method: 'GET'
+    }),
+  fetchAssessmentTemplatesSummary: () =>
+    request<{
+      templates: Array<{
+        id: string;
+        name: string;
+        description?: string;
+        questions: Array<{ title: string; description?: string; choices: string[] }>;
+        totalResponses: number;
+        created_at: string;
+        updated_at: string;
+      }>;
+    }>('/admin/assessment-templates-summary', {
+      method: 'GET'
+    }),
+  createAssessmentTemplate: (name: string, description: string | null, questions: any[]) =>
+    request<any>('/admin/assessment-templates', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        description,
+        questions
+      })
+    }),
+  fetchAdminAssessmentTemplates: () =>
+    request<{ templates: any[] }>('/admin/assessment-templates', {
+      method: 'GET'
+    }),
+  deleteAssessmentTemplate: (templateId: string) =>
+    request<{ message: string }>(`/admin/assessment-templates/${templateId}`, {
+      method: 'DELETE'
     })
 };
 

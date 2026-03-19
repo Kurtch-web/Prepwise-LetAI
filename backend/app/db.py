@@ -70,6 +70,78 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def init_models() -> None:
     from . import models  # noqa: F401
+    from sqlalchemy import text
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        # Handle schema updates for existing databases
+        if DB_URL.startswith('postgresql+asyncpg://'):
+            # Check if is_archived column exists in quizzes table
+            result = await conn.execute(text("""
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name='quizzes' AND column_name='is_archived'
+            """))
+            if result.scalar() is None:
+                try:
+                    await conn.execute(text("""
+                        ALTER TABLE quizzes
+                        ADD COLUMN is_archived BOOLEAN NOT NULL DEFAULT false
+                    """))
+                    await conn.execute(text("""
+                        CREATE INDEX IF NOT EXISTS ix_quizzes_is_archived ON quizzes(is_archived)
+                    """))
+                    print("✓ Added is_archived column to quizzes table")
+                except Exception as e:
+                    print(f"Note: Could not add is_archived column: {e}")
+
+            # Check if expires_at column exists in quizzes table
+            result = await conn.execute(text("""
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name='quizzes' AND column_name='expires_at'
+            """))
+            if result.scalar() is None:
+                try:
+                    await conn.execute(text("""
+                        ALTER TABLE quizzes
+                        ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE
+                    """))
+                    await conn.execute(text("""
+                        CREATE INDEX IF NOT EXISTS ix_quizzes_expires_at ON quizzes(expires_at)
+                    """))
+                    print("✓ Added expires_at column to quizzes table")
+                except Exception as e:
+                    print(f"Note: Could not add expires_at column: {e}")
+        else:
+            # SQLite
+            try:
+                await conn.execute(text("""
+                    ALTER TABLE quizzes
+                    ADD COLUMN is_archived BOOLEAN NOT NULL DEFAULT 0
+                """))
+                print("✓ Added is_archived column to quizzes table")
+            except Exception as e:
+                # Column might already exist - this is expected
+                if "duplicate column name" not in str(e) and "already exists" not in str(e):
+                    print(f"Note: {e}")
+
+            try:
+                await conn.execute(text("""
+                    ALTER TABLE quizzes
+                    ADD COLUMN expires_at DATETIME
+                """))
+                print("✓ Added expires_at column to quizzes table")
+            except Exception as e:
+                # Column might already exist - this is expected
+                if "duplicate column name" not in str(e) and "already exists" not in str(e):
+                    print(f"Note: {e}")
+
+            try:
+                await conn.execute(text("""
+                    ALTER TABLE questions
+                    ADD COLUMN batch_name VARCHAR(128)
+                """))
+                print("✓ Added batch_name column to questions table")
+            except Exception as e:
+                if "duplicate column name" not in str(e) and "already exists" not in str(e):
+                    print(f"Note: {e}")

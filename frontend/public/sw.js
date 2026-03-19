@@ -1,12 +1,17 @@
-const CACHE_NAME = 'prepwise-offline-v1';
-const FLASHCARD_CACHE = 'prepwise-flashcards-v1';
-const API_CACHE = 'prepwise-api-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `prepwise-offline-${CACHE_VERSION}`;
+const FLASHCARD_CACHE = `prepwise-flashcards-${CACHE_VERSION}`;
+const API_CACHE = `prepwise-api-${CACHE_VERSION}`;
+const ASSET_CACHE = `prepwise-assets-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json'
 ];
+
+const MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB max cache
+const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 self.addEventListener('install', event => {
   console.log('[SW] Installing service worker...');
@@ -25,14 +30,20 @@ self.addEventListener('activate', event => {
   console.log('[SW] Activating service worker...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
+      console.log('[SW] Found caches:', cacheNames);
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName !== FLASHCARD_CACHE && cacheName !== API_CACHE) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
+          console.log('[SW] Deleting cache:', cacheName);
+          return caches.delete(cacheName);
         })
       );
+    }).then(() => {
+      console.log('[SW] All caches cleared');
+      return self.clients.matchAll();
+    }).then(clients => {
+      clients.forEach(client => {
+        client.postMessage({ type: 'CACHE_CLEARED' });
+      });
     })
   );
   self.clients.claimClients();
@@ -44,6 +55,11 @@ self.addEventListener('fetch', event => {
 
   if (request.method !== 'GET') {
     return;
+  }
+
+  // External URLs (PDFs, etc.) - cache-first for slow connections
+  if (!url.origin.includes(self.location.origin)) {
+    return event.respondWith(handleExternalRequest(request));
   }
 
   if (url.pathname.startsWith('/api/flashcards')) {
@@ -58,19 +74,35 @@ self.addEventListener('fetch', event => {
 });
 
 async function handleFlashcardRequest(request) {
+  const cache = await caches.open(FLASHCARD_CACHE);
+
   try {
-    const response = await fetch(request);
-    
+    const response = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout')), 5000)
+      )
+    ]);
+
     if (response.ok) {
-      const cache = await caches.open(FLASHCARD_CACHE);
       cache.put(request, response.clone());
+      return response;
     }
-    
-    return response;
+
+    // If response not ok, try cache
+    const cached = await cache.match(request);
+    return cached || new Response(JSON.stringify({
+      error: 'Offline and no cached data available',
+      offline: true
+    }), {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error) {
     console.log('[SW] Flashcard fetch failed, checking cache:', error);
-    
-    const cached = await caches.match(request);
+
+    const cached = await cache.match(request);
     if (cached) {
       const response = cached.clone();
       const clonedResponse = new Response(response.body, {
@@ -82,10 +114,10 @@ async function handleFlashcardRequest(request) {
       clonedResponse.headers.set('X-Offline-Cached', new Date().toISOString());
       return clonedResponse;
     }
-    
-    return new Response(JSON.stringify({ 
+
+    return new Response(JSON.stringify({
       error: 'Offline and no cached data available',
-      offline: true 
+      offline: true
     }), {
       status: 503,
       statusText: 'Service Unavailable',
@@ -95,19 +127,28 @@ async function handleFlashcardRequest(request) {
 }
 
 async function handleApiRequest(request) {
+  const cache = await caches.open(API_CACHE);
+
   try {
-    const response = await fetch(request);
-    
+    const response = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout')), 8000)
+      )
+    ]);
+
     if (response.ok && response.status !== 204) {
-      const cache = await caches.open(API_CACHE);
       cache.put(request, response.clone());
+      return response;
     }
-    
-    return response;
+
+    // If response not ok, try cache
+    const cached = await cache.match(request);
+    return cached || response;
   } catch (error) {
     console.log('[SW] API fetch failed, checking cache:', error);
-    
-    const cached = await caches.match(request);
+
+    const cached = await cache.match(request);
     if (cached) {
       const response = cached.clone();
       const clonedResponse = new Response(response.body, {
@@ -119,10 +160,10 @@ async function handleApiRequest(request) {
       clonedResponse.headers.set('X-Offline-Cached', new Date().toISOString());
       return clonedResponse;
     }
-    
-    return new Response(JSON.stringify({ 
+
+    return new Response(JSON.stringify({
       error: 'Offline and no cached data available',
-      offline: true 
+      offline: true
     }), {
       status: 503,
       statusText: 'Service Unavailable',
@@ -138,16 +179,58 @@ async function handleStaticRequest(request) {
   }
 
   try {
-    const response = await fetch(request);
-    
+    const response = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout')), 5000)
+      )
+    ]);
+
     if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
+      const cache = await caches.open(ASSET_CACHE);
       cache.put(request, response.clone());
     }
-    
+
     return response;
   } catch (error) {
     console.log('[SW] Static request failed:', error);
+    return new Response('Offline - resource not available', {
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: { 'Content-Type': 'text/plain' }
+    });
+  }
+}
+
+async function handleExternalRequest(request) {
+  const cache = await caches.open(ASSET_CACHE);
+  const cached = await cache.match(request);
+
+  // Cache-first strategy for external resources like PDFs
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const response = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Network timeout')), 10000)
+      )
+    ]);
+
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+
+    return response;
+  } catch (error) {
+    console.log('[SW] External request failed, checking cache:', error);
+
+    if (cached) {
+      return cached;
+    }
+
     return new Response('Offline - resource not available', {
       status: 503,
       statusText: 'Service Unavailable',

@@ -1,299 +1,541 @@
-import { useEffect, useState } from 'react';
-import { api, FlashcardItem } from '../services/api';
-import { FlashcardView } from './FlashcardView';
-import { useIsOnline } from '../hooks/useOnlineStatus';
-import { getFlashcardsWithOfflineSupport } from '../services/apiOffline';
+import { useState, useEffect } from 'react';
+import { useTheme } from '../providers/ThemeProvider';
+import { fetchPracticeTestSessions, PracticeTestSession } from '../services/progressService';
+import { authService } from '../services/authService';
 
-const cardShellClasses =
-  'rounded-3xl border border-white/10 bg-[#0b111a]/80 p-7 shadow-[0_18px_40px_rgba(4,10,20,0.45)] backdrop-blur-xl';
-const accentButtonClasses =
-  'rounded-2xl border border-white/20 px-5 py-3 font-semibold text-white transition hover:border-indigo-400 hover:bg-indigo-500/20';
-const quietButtonClasses =
-  'rounded-2xl border border-white/10 px-5 py-3 font-semibold text-white/80 transition hover:border-rose-400 hover:bg-rose-500/20';
+interface PracticeQuiz {
+  id: string;
+  sessionId?: string; // Session ID to use for fetching results
+  title: string;
+  description?: string;
+  category: string;
+  total_questions: number;
+  total_attempts?: number;
+  average_score?: number;
+  creator?: { id: number; username: string };
+  quizType?: 'quiz' | 'practice-quiz'; // Track which type of quiz this is
+}
+
+interface Question {
+  id: string;
+  question_text: string;
+  choices: string[];
+  order: number;
+  correct_answer?: string;
+}
+
+const darkCardShell =
+  'rounded-3xl border border-emerald-500/20 bg-[#064e3b]/80 p-7 shadow-[0_18px_40px_rgba(6,78,59,0.45)] backdrop-blur-xl';
+const lightCardShell =
+  'rounded-3xl border border-emerald-200 bg-white/95 p-7 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-xl';
+const darkAccentButton =
+  'rounded-xl border border-emerald-400 px-4 py-2 font-semibold text-white transition bg-emerald-600/80 hover:bg-emerald-600 hover:border-emerald-300';
+const lightAccentButton =
+  'rounded-xl border border-emerald-600 px-4 py-2 font-semibold text-white transition bg-emerald-600 hover:bg-emerald-700 hover:border-emerald-700';
 
 interface FlashcardsTabProps {
   isAdmin: boolean;
 }
 
 export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
-  const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { theme } = useTheme();
+  const isLightMode = theme === 'light';
+  const cardShellClasses = isLightMode ? lightCardShell : darkCardShell;
+  const accentButtonClasses = isLightMode ? lightAccentButton : darkAccentButton;
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedQuizType, setSelectedQuizType] = useState<string | null>(null);
+  const [quizzes, setQuizzes] = useState<PracticeQuiz[]>([]);
+  const [allSessions, setAllSessions] = useState<Record<string, PracticeTestSession>>({});
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState('General Education');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [adminMode, setAdminMode] = useState<'upload' | 'view'>('view');
-  const [selectedFlashcard, setSelectedFlashcard] = useState<string | null>(null);
-  const [isOffline, setIsOffline] = useState(false);
-  const [fromCache, setFromCache] = useState(false);
-  const isOnline = useIsOnline();
+  const [selectedQuiz, setSelectedQuiz] = useState<PracticeQuiz | null>(null);
+  const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [timerCount, setTimerCount] = useState(5);
 
-  const categories = ['General Education', 'Professional Education', 'Custom name'];
+  // Load all practice test sessions on mount
+  useEffect(() => {
+    const loadSessions = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchPracticeTestSessions();
+        setAllSessions(data);
+      } catch (err) {
+        console.error('Error loading sessions:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load sessions');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const loadFlashcards = async () => {
+    loadSessions();
+  }, []);
+
+  // Auto-flip timer for flashcards
+  useEffect(() => {
+    if (!selectedQuiz || quizQuestions.length === 0 || isFlipped) return;
+
+    if (timerCount > 0) {
+      const timer = setTimeout(() => {
+        setTimerCount(timerCount - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (timerCount === 0) {
+      // Auto-flip when timer reaches 0
+      setIsFlipped(true);
+      setTimerCount(5); // Reset timer
+    }
+  }, [timerCount, selectedQuiz, quizQuestions.length, isFlipped]);
+
+  // Reset timer when moving to next question
+  useEffect(() => {
+    if (selectedQuiz && quizQuestions.length > 0) {
+      setTimerCount(5);
+      setIsFlipped(false);
+    }
+  }, [currentQuestionIndex]);
+
+  const quizTypeInfo: Record<string, { emoji: string; label: string }> = {
+    'diagnostic-test': { emoji: '🔍', label: 'Diagnostic Test' },
+    'drills': { emoji: '⚙️', label: 'Drills' },
+    'short-quiz': { emoji: '⏱️', label: 'Short Quiz' },
+    'preboard': { emoji: '🏆', label: 'Pre-Board' }
+  };
+
+  const handleQuizTypeSelect = (quizType: string) => {
+    setSelectedQuizType(quizType);
+    // Filter sessions by the selected quiz type
+    const filteredSessions = Object.values(allSessions).filter(session => session.testType === quizType);
+
+    // Transform to PracticeQuiz format
+    const transformedQuizzes: PracticeQuiz[] = filteredSessions.map(session => ({
+      id: session.originalQuizId,
+      sessionId: session.sessions[0]?.sessionId, // Store the session ID for fetching results
+      title: session.quizTitle,
+      category: 'General',
+      total_questions: session.sessions[0]?.total || 0,
+      total_attempts: session.attempts,
+      average_score: session.bestScore,
+      quizType: session.sessions[0]?.type // Store the quiz type ('quiz' or 'practice-quiz')
+    }));
+
+    setQuizzes(transformedQuizzes);
+    setShowModal(false);
+  };
+
+  const handleSelectQuiz = async (quiz: PracticeQuiz) => {
+    setSelectedQuiz(quiz);
     setLoading(true);
-    setError(null);
     try {
-      const result = await getFlashcardsWithOfflineSupport('', api);
-      setFlashcards(result.flashcards);
-      setIsOffline(result.isOffline);
-      setFromCache(result.fromCache);
+      const headers = new Headers({
+        'Content-Type': 'application/json'
+      });
+
+      const token = authService.getToken();
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+
+      // Use the session ID to fetch quiz results with the correct endpoint
+      const endpoint = quiz.quizType === 'practice-quiz'
+        ? `/api/practice-quizzes/${quiz.sessionId}/results`
+        : `/api/quizzes/results/${quiz.sessionId}`;
+
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        credentials: 'include',
+        headers
+      });
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({}));
+        const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
+          (errorBody as { message?: string }).message ??
+          response.statusText;
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      // Map the response questions to the Question format expected by the component
+      const formattedQuestions: Question[] = (data.questions || data.answers || []).map((q: any, idx: number) => ({
+        id: q.question_id,
+        question_text: q.question_text,
+        choices: q.choices || [],
+        order: idx + 1,
+        correct_answer: q.correct_answer
+      }));
+
+      setQuizQuestions(formattedQuestions);
+      setCurrentQuestionIndex(0);
+      setIsFlipped(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load flashcards');
+      setError(err instanceof Error ? err.message : 'Failed to load quiz');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadFlashcards();
-  }, []);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.currentTarget.files?.[0];
-    if (file) {
-      if (!file.name.toLowerCase().endsWith('.pdf')) {
-        setError('Only PDF files are allowed');
-        return;
-      }
-      setError(null);
-      setSelectedFile(file);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      setError('Please select a PDF file');
-      return;
-    }
-
-    setUploading(true);
-    setError(null);
+  const playFlipSound = () => {
     try {
-      await api.uploadFlashcard(selectedCategory, selectedFile);
-      setSelectedFile(null);
-      setSelectedCategory('General Education');
-      const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
-      if (fileInput) fileInput.value = '';
-      await loadFlashcards();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload flashcard');
-    } finally {
-      setUploading(false);
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const now = audioContext.currentTime;
+
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+
+      osc.frequency.setValueAtTime(800, now);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } catch (e) {
+      console.warn('Failed to play sound:', e);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this flashcard?')) return;
-
-    try {
-      await api.deleteFlashcard(id);
-      await loadFlashcards();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete flashcard');
-    }
-  };
-
-  // Show flashcard view when one is selected
-  if (selectedFlashcard) {
+  // Show loading state while fetching flashcard questions
+  if (selectedQuiz && loading && quizQuestions.length === 0) {
     return (
-      <FlashcardView
-        flashcardId={selectedFlashcard}
-        onBack={() => setSelectedFlashcard(null)}
-      />
+      <div className="flex flex-col gap-4 mx-4 sm:mx-0">
+        <section className={`${cardShellClasses} space-y-6`}>
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
+                {selectedQuiz.title}
+              </h3>
+              <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
+                Loading flashcard questions...
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedQuiz(null);
+                setQuizQuestions([]);
+              }}
+              className={`${accentButtonClasses} text-xs`}
+            >
+              ← Back
+            </button>
+          </div>
+
+          <div className="flex items-center justify-center min-h-80">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex gap-2">
+                <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              </div>
+              <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                Preparing your flashcards...
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
     );
   }
 
-  return (
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 mx-4 sm:mx-0">
-      {/* Sidebar - Admin Only (Horizontal on mobile, vertical on desktop) */}
-      {isAdmin && (
-        <div className="flex md:flex-col gap-2 md:w-48 md:space-y-2">
+  // Show quiz flashcard view
+  if (selectedQuiz && quizQuestions.length > 0) {
+    const currentQuestion = quizQuestions[currentQuestionIndex];
+    const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
+
+    return (
+      <div className="flex flex-col gap-4 mx-4 sm:mx-0">
+        <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
+                {selectedQuiz.title}
+              </h3>
+              <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
+                {selectedQuizType ? quizTypeInfo[selectedQuizType]?.label : 'Practice Quiz'}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedQuiz(null);
+                setQuizQuestions([]);
+              }}
+              className={`${accentButtonClasses} text-xs`}
+            >
+              ← Back
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-white/60">
+              <span>Q{currentQuestionIndex + 1}/{quizQuestions.length}</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-center items-center min-h-80">
+            <div
+              className="w-full max-w-2xl flip-card-container h-80"
+              onClick={() => {
+                playFlipSound();
+                setIsFlipped(!isFlipped);
+              }}
+            >
+              <div className={`flip-card-inner ${isFlipped ? 'is-flipped' : ''}`}>
+                <div className="flip-card-front">
+                  <div className="w-full text-left">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs font-semibold text-indigo-300">Question {currentQuestionIndex + 1}</p>
+                      <div className={`text-sm font-bold px-3 py-1 rounded-full ${
+                        timerCount <= 1 ? 'bg-red-500/30 text-red-300' : 'bg-indigo-500/30 text-indigo-300'
+                      }`}>
+                        {timerCount}s
+                      </div>
+                    </div>
+                    <p className="text-base sm:text-lg text-white leading-relaxed mb-4">{currentQuestion.question_text}</p>
+                    <div className="space-y-2">
+                      {currentQuestion.choices.map((choice, idx) => (
+                        <div key={idx} className="text-sm text-white/80 bg-white/5 rounded-lg p-2 border border-white/10">
+                          <span className="font-semibold text-emerald-400">{String.fromCharCode(65 + idx)}.</span> {choice}
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-white/50 mt-4">Auto-reveal in {timerCount}s or click to reveal</p>
+                  </div>
+                </div>
+                <div className="flip-card-back">
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-300 mb-4">Answer</p>
+                    <div className="space-y-2">
+                      <span className="text-6xl font-bold text-emerald-400">{currentQuestion.correct_answer}</span>
+                    </div>
+                    <p className="text-xs text-white/50 mt-6">Click to see question</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                if (currentQuestionIndex > 0) {
+                  setCurrentQuestionIndex(currentQuestionIndex - 1);
+                  setIsFlipped(false);
+                }
+              }}
+              disabled={currentQuestionIndex === 0}
+              className={`flex-1 ${accentButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => {
+                setIsFlipped(false);
+                setCurrentQuestionIndex(0);
+              }}
+              className={`flex-1 ${accentButtonClasses}`}
+            >
+              Restart
+            </button>
+            <button
+              onClick={() => {
+                if (currentQuestionIndex < quizQuestions.length - 1) {
+                  setCurrentQuestionIndex(currentQuestionIndex + 1);
+                  setIsFlipped(false);
+                }
+              }}
+              disabled={currentQuestionIndex === quizQuestions.length - 1}
+              className={`flex-1 ${accentButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              Next
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Show quiz list
+  if (selectedQuizType && !selectedQuiz) {
+    return (
+      <section className={`${cardShellClasses} space-y-4 sm:space-y-6 mx-4 sm:mx-0`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              {quizTypeInfo[selectedQuizType]?.emoji} {quizTypeInfo[selectedQuizType]?.label}
+            </h3>
+            <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+              Select a practice quiz to study
+            </p>
+          </div>
           <button
-            onClick={() => setAdminMode('view')}
-            className={`flex-1 md:flex-initial text-left rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base font-semibold transition ${
-              adminMode === 'view'
-                ? 'bg-indigo-500/20 border border-indigo-400/50 text-indigo-300'
-                : 'border border-white/10 text-white/80 hover:bg-white/5'
-            }`}
+            onClick={() => {
+              setSelectedQuizType(null);
+              setShowModal(true);
+            }}
+            className={`${accentButtonClasses} text-xs`}
           >
-            View
-          </button>
-          <button
-            onClick={() => setAdminMode('upload')}
-            className={`flex-1 md:flex-initial text-left rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base font-semibold transition ${
-              adminMode === 'upload'
-                ? 'bg-indigo-500/20 border border-indigo-400/50 text-indigo-300'
-                : 'border border-white/10 text-white/80 hover:bg-white/5'
-            }`}
-          >
-            Upload
+            ← Change Type
           </button>
         </div>
-      )}
 
-      {/* Main Content */}
-      <div className="flex-1">
-        {/* Upload Mode */}
-        {isAdmin && adminMode === 'upload' && (
-          <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
-            <div className="space-y-1">
-              <h3 className="text-lg sm:text-xl font-semibold text-white">Upload Flashcard</h3>
-              <p className="text-xs sm:text-sm text-white/70">Upload a PDF file to parse questions and answers</p>
-            </div>
-
-            <div className="space-y-4 rounded-2xl border border-white/20 bg-white/5 p-5">
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-white/70 mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={e => setSelectedCategory(e.currentTarget.value)}
-                    className="w-full rounded-2xl border border-white/20 bg-[#080c14]/60 px-3 py-2 text-sm text-white focus:border-indigo-400 focus:outline-none"
-                  >
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-white/70 mb-2">Select PDF File</label>
-                  <input
-                    id="pdf-upload"
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileSelect}
-                    className="block w-full text-sm text-white/70 file:rounded-xl file:border file:border-white/20 file:bg-white/10 file:px-3 file:py-2 file:font-semibold file:text-white/90 cursor-pointer"
-                  />
-                  {selectedFile && (
-                    <p className="mt-2 text-xs text-emerald-400">
-                      ✓ {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                    </p>
-                  )}
-                </div>
-
-                <button
-                  onClick={handleUpload}
-                  disabled={!selectedFile || uploading}
-                  className={`${accentButtonClasses} w-full disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {uploading ? 'Uploading...' : 'Upload PDF'}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                {error}
-              </div>
-            )}
-          </section>
+        {error && (
+          <div className={`rounded-2xl border px-4 py-3 text-sm ${
+            isLightMode
+              ? 'border-red-300 bg-red-50 text-red-700'
+              : 'border-red-500/30 bg-red-900/20 text-red-300'
+          }`}>
+            ❌ {error}
+          </div>
         )}
 
-        {/* View Mode */}
-        {(!isAdmin || adminMode === 'view') && (
-          <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
+        {loading ? (
+          <div className={`text-center py-8 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+            <p>Loading quizzes...</p>
+          </div>
+        ) : quizzes.length === 0 ? (
+          <div className={`rounded-2xl border border-dashed p-8 text-center ${
+            isLightMode
+              ? 'border-slate-300 bg-slate-50'
+              : 'border-white/20 bg-white/5'
+          }`}>
+            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+              No practice quizzes available in this category.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {quizzes.map(quiz => (
+              <button
+                key={quiz.id}
+                onClick={() => handleSelectQuiz(quiz)}
+                className={`rounded-2xl border p-4 sm:p-5 transition cursor-pointer text-left ${
+                  isLightMode
+                    ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                    : 'border-emerald-500/20 bg-emerald-900/10 hover:bg-emerald-900/20'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`font-semibold truncate ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      {quiz.title}
+                    </h4>
+                    {quiz.description && (
+                      <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
+                        {quiz.description}
+                      </p>
+                    )}
+                    <p className={`text-xs mt-1 ${isLightMode ? 'text-slate-500' : 'text-white/50'}`}>
+                      ❓ {quiz.total_questions} questions
+                    </p>
+                  </div>
+                  <div className={`text-sm font-semibold px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${
+                    isLightMode
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-emerald-600/40 text-emerald-300'
+                  }`}>
+                    Study
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  // Main view - Quiz type selection
+  return (
+    <div className="space-y-6 mx-4 sm:mx-0">
+      {/* Modal for quiz type selection */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <section className={`${cardShellClasses} space-y-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
             <div className="space-y-1">
-              <h3 className="text-lg sm:text-xl font-semibold text-white">Flashcards</h3>
-              <p className="text-xs sm:text-sm text-white/70">
-                {isAdmin
-                  ? 'Browse and study from uploaded flashcards'
-                  : 'Browse and study from available learning materials'}
+              <h2 className={`text-2xl sm:text-3xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Choose Study Type
+              </h2>
+              <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                Select a quiz category to begin studying
               </p>
             </div>
 
-            {error && (
-              <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-semibold text-white/80">
-                    Available Flashcards ({flashcards.length})
-                  </h4>
-                  {fromCache && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-300">
-                      {isOffline ? '📴 Offline' : '💾 Cached'}
-                    </span>
-                  )}
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Object.entries(quizTypeInfo).map(([key, info]) => (
                 <button
-                  onClick={loadFlashcards}
-                  className={`${accentButtonClasses} text-xs px-3 py-2`}
+                  key={key}
+                  onClick={() => handleQuizTypeSelect(key)}
+                  className={`group rounded-2xl border p-6 transition-all hover:shadow-lg ${
+                    isLightMode
+                      ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                      : 'border-emerald-500/20 bg-emerald-900/10 hover:bg-emerald-900/20'
+                  }`}
                 >
-                  {loading ? 'Loading...' : 'Refresh'}
+                  <div className="space-y-3 text-center">
+                    <div className="text-4xl">{info.emoji}</div>
+                    <h3 className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      {info.label}
+                    </h3>
+                    <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                      Practice and study questions
+                    </p>
+                  </div>
                 </button>
-              </div>
-
-              {loading ? (
-                <p className="text-sm text-white/60">Loading flashcards...</p>
-              ) : flashcards.length === 0 ? (
-                <p className="text-sm text-white/60">No flashcards available yet.</p>
-              ) : (
-                <div className="grid gap-3">
-                  {flashcards.map(fc => {
-                    const uploadDate = new Date(fc.createdAt).toLocaleDateString();
-                    return (
-                      <div
-                        key={fc.id}
-                        className="rounded-xl border border-white/10 bg-white/5 p-3 sm:p-4 hover:bg-white/10 transition cursor-pointer"
-                        onClick={() => setSelectedFlashcard(fc.id)}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <span className="text-xs sm:text-sm font-semibold text-white truncate">{fc.filename}</span>
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 whitespace-nowrap">
-                                {fc.category}
-                              </span>
-                            </div>
-                            <p className="text-xs text-white/60 mb-1">
-                              {fc.uploader} • {uploadDate}
-                            </p>
-                            <p className="text-xs text-white/50">
-                              {fc.totalQuestions} questions
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                            {fc.url && (
-                              <a
-                                href={fc.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={e => e.stopPropagation()}
-                                className={`${accentButtonClasses} text-xs px-2 sm:px-3 py-1 sm:py-2`}
-                              >
-                                DL
-                              </a>
-                            )}
-                            {isAdmin && (
-                              <button
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  handleDelete(fc.id);
-                                }}
-                                className={`${quietButtonClasses} text-xs px-2 sm:px-3 py-1 sm:py-2`}
-                              >
-                                Del
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              ))}
             </div>
+
+            <button
+              onClick={() => setShowModal(false)}
+              className={`w-full rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                isLightMode
+                  ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
+                  : 'border-white/10 text-white/70 hover:bg-white/5'
+              }`}
+            >
+              ✕ Close
+            </button>
           </section>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Main content */}
+      <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
+        <div className="space-y-1">
+          <h2 className={`text-2xl sm:text-3xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+            🎴 Flashcards
+          </h2>
+          <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+            Study practice quiz questions as interactive flashcards
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowModal(true)}
+          className={`w-full rounded-2xl border-2 p-6 transition-all hover:shadow-lg text-center ${
+            isLightMode
+              ? 'border-emerald-300 bg-emerald-50 hover:bg-emerald-100'
+              : 'border-emerald-500/30 bg-emerald-900/20 hover:bg-emerald-900/30'
+          }`}
+        >
+          <div className="text-3xl mb-2">✨</div>
+          <h3 className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+            Start Studying
+          </h3>
+          <p className={`text-sm mt-1 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+            Select a quiz category to begin
+          </p>
+        </button>
+      </section>
     </div>
   );
 }

@@ -5,9 +5,9 @@
 @layer base {
   :root {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: #f4f6f8;
-    background-color: #001233;
-    color-scheme: light dark;
+    color: #f3f4f6;
+    background-color: #0f172a;
+    color-scheme: dark;
     line-height: 1.5;
   }
 
@@ -21,13 +21,13 @@
 
   body {
     @apply flex min-h-screen items-stretch justify-center text-slate-100;
-    background: radial-gradient(circle at top left, #004499, #001233 60%);
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     margin: 0;
   }
 
   html.light body {
     @apply text-slate-900;
-    background: radial-gradient(circle at top left, #d0f5e8, #f5f5f5 60%);
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
   }
 
   #root {
@@ -37,18 +37,18 @@
 
 @media (max-width: 640px) {
   body {
-    background: linear-gradient(160deg, #003366, #001233);
+    background: linear-gradient(160deg, #0f172a, #1e293b);
   }
 
   html.light body {
-    background: linear-gradient(160deg, #c0f0e8, #f5f5f5);
+    background: linear-gradient(160deg, #f9fafb, #f3f4f6);
   }
 }
 
 @layer components {
   /* Scrollbar styling */
   .scrollbar-custom {
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: rgba(71, 85, 105, 0.3) transparent;
     scrollbar-width: thin;
   }
 
@@ -62,33 +62,34 @@
   }
 
   .scrollbar-custom::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(71, 85, 105, 0.3);
     border-radius: 4px;
   }
 
   .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(71, 85, 105, 0.5);
   }
 
+  /* Dark theme (default) */
   .light-mode-header {
-    @apply bg-white/95 border-b border-emerald-200 text-slate-900;
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.05);
+    @apply bg-slate-900/95 border-b border-slate-700 text-white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   }
 
   .light-mode-text-primary {
-    @apply text-slate-900;
+    @apply text-white;
   }
 
   .light-mode-text-secondary {
-    @apply text-slate-600;
+    @apply text-slate-400;
   }
 
   .light-mode-card {
-    @apply bg-white border-emerald-200 text-slate-900;
+    @apply bg-slate-800 border-slate-700 text-white;
   }
 
   .light-mode-input {
-    @apply border-emerald-200 bg-emerald-50/50 text-slate-900;
+    @apply border-slate-700 bg-slate-800 text-white;
   }
 
   .light-mode-input::placeholder {
@@ -96,30 +97,233 @@
   }
 
   .light-mode-button-primary {
-    @apply bg-gradient-to-br from-emerald-500 to-green-400 text-white;
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 text-white;
   }
 
   .light-mode-button-secondary {
-    @apply border-emerald-200 text-slate-900 hover:bg-emerald-50;
+    @apply border-slate-700 text-white hover:bg-slate-700;
   }
 
   .light-mode-nav-item {
-    @apply text-slate-700 hover:text-emerald-600;
+    @apply text-slate-300 hover:text-blue-400;
   }
 
   .light-mode-nav-item-active {
-    @apply bg-gradient-to-br from-emerald-500 to-green-400 text-white;
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 text-white;
   }
 
   .light-mode-sidebar {
-    @apply bg-white border-r border-emerald-200 text-slate-900;
+    @apply bg-slate-800 border-r border-slate-700 text-white;
   }
 
   .light-mode-modal-overlay {
-    @apply bg-slate-900/20;
+    @apply bg-slate-900/40;
   }
 
   .light-mode-modal {
-    @apply bg-white border-emerald-200 text-slate-900;
+    @apply bg-slate-800 border-slate-700 text-white;
+  }
+
+  /* Light theme overrides */
+  html.light .light-mode-header {
+    @apply bg-white/95 border-b border-slate-200 text-slate-900;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  html.light .light-mode-text-primary {
+    @apply text-slate-900;
+  }
+
+  html.light .light-mode-text-secondary {
+    @apply text-slate-600;
+  }
+
+  html.light .light-mode-card {
+    @apply bg-white border-slate-200 text-slate-900;
+  }
+
+  html.light .light-mode-input {
+    @apply border-slate-200 bg-slate-50 text-slate-900;
+  }
+
+  html.light .light-mode-input::placeholder {
+    @apply text-slate-500;
+  }
+
+  html.light .light-mode-button-primary {
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 text-white;
+  }
+
+  html.light .light-mode-button-secondary {
+    @apply border-slate-200 text-slate-900 hover:bg-slate-100;
+  }
+
+  html.light .light-mode-nav-item {
+    @apply text-slate-700 hover:text-blue-600;
+  }
+
+  html.light .light-mode-nav-item-active {
+    @apply bg-gradient-to-br from-blue-500 to-blue-600 text-white;
+  }
+
+  html.light .light-mode-sidebar {
+    @apply bg-white border-r border-slate-200 text-slate-900;
+  }
+
+  html.light .light-mode-modal-overlay {
+    @apply bg-slate-900/10;
+  }
+
+  html.light .light-mode-modal {
+    @apply bg-white border-slate-200 text-slate-900;
+  }
+
+  /* Flashcard flip animations */
+  @keyframes cardFlip {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(180deg); }
+  }
+
+  .flip-card-container {
+    perspective: 1000px;
+    cursor: pointer;
+  }
+
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+
+  .flip-card-inner.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(11, 17, 26, 0.8);
+  }
+
+  .flip-card-back {
+    transform: rotateY(180deg);
+    border-color: rgba(79, 172, 254, 0.3);
+    background: rgba(30, 58, 138, 0.6);
+  }
+
+  /* Quiz results styling */
+  .review-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 16px 0;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .choice-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .choice-letter {
+    min-width: 24px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .choice-text {
+    flex: 1;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .choice-mark {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .choice-item.selected-correct {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+
+  .choice-item.selected-correct .choice-letter,
+  .choice-item.selected-correct .choice-text {
+    color: rgba(16, 185, 129, 0.9);
+  }
+
+  .choice-item.selected-correct .choice-mark {
+    background: rgba(16, 185, 129, 0.3);
+    color: rgba(16, 185, 129, 0.9);
+  }
+
+  .choice-item.selected-incorrect {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  .choice-item.selected-incorrect .choice-letter,
+  .choice-item.selected-incorrect .choice-text {
+    color: rgba(239, 68, 68, 0.9);
+  }
+
+  .choice-item.selected-incorrect .choice-mark {
+    background: rgba(239, 68, 68, 0.3);
+    color: rgba(239, 68, 68, 0.9);
+  }
+
+  .choice-item.correct-only {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  .choice-item.correct-only .choice-letter,
+  .choice-item.correct-only .choice-text {
+    color: rgba(16, 185, 129, 0.7);
+  }
+
+  .choice-item.correct-only .choice-mark {
+    background: rgba(16, 185, 129, 0.3);
+    color: rgba(16, 185, 129, 0.8);
+  }
+
+  .review-answer-summary {
+    display: flex;
+    gap: 24px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .review-answer-summary p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .review-answer-summary strong {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.1rem;
   }
 }
