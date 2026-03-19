@@ -58,7 +58,7 @@ export interface QuestionData {
   choices: string[];
   correct_answer: string;
   category: string;
-  source: 'manual' | 'pdf';
+  source: 'manual' | 'pdf' | 'pdf_import';
   batch_name?: string;
   creator_username: string;
   created_at: string;

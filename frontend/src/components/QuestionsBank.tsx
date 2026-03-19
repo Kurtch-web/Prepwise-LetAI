@@ -428,7 +428,7 @@ export function QuestionsBank() {
                           {question.question_text}
                         </p>
                         <div className="space-y-1 text-sm">
-                          {question.choices.map((choice, idx) => {
+                          {question.choices.map((choice: string, idx: number) => {
                             const letter = String.fromCharCode(65 + idx);
                             const isCorrect = letter === question.correct_answer;
                             // Strip any existing letter prefix if present (A., B., etc.)
@@ -691,7 +691,7 @@ export function QuestionsBank() {
                       Q{idx + 1}. {mcq.question_text}
                     </p>
                     <div className="space-y-1">
-                      {mcq.choices.map((choice, choiceIdx) => {
+                      {mcq.choices.map((choice: string, choiceIdx: number) => {
                         const letter = String.fromCharCode(65 + choiceIdx);
                         const isCorrect = letter === mcq.correct_answer;
                         // Strip any existing letter prefix if present

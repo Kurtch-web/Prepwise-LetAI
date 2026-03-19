@@ -199,7 +199,7 @@ export function AssessmentTemplatesList({ onTemplateDeleted }: AssessmentTemplat
           </span>
         </div>
         <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-          Created {formatRelativeTime(new Date(selectedTemplate.created_at))}
+          Created {formatRelativeTime(selectedTemplate.created_at)}
         </p>
       </div>
 
