@@ -20,6 +20,7 @@ export interface AuthUser {
   username: string;
   role: 'user' | 'admin';
   fullName?: string;
+  email?: string;
   reviewType?: string;
   targetExamDate?: string;
 }

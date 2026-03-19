@@ -385,7 +385,7 @@ export function LearningMaterialsPage() {
                                 ? 'bg-slate-100 text-slate-700'
                                 : 'bg-slate-700 text-slate-300'
                             }`}>
-                              Created {formatRelativeTime(new Date(assessment.created_at))}
+                              Created {formatRelativeTime(assessment.created_at)}
                             </span>
                           </div>
                         </div>

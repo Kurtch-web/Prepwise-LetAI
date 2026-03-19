@@ -13,13 +13,13 @@ export const performanceConfig = {
  * Detects if the user has a slow connection based on Network Information API
  */
 export function isSlowConnection(): boolean {
-  if (!navigator.connection) {
+  if (typeof navigator === 'undefined' || !('connection' in navigator)) {
     return false;
   }
 
-  const connection = navigator.connection as any;
-  const effectiveType = connection.effectiveType;
-  
+  const connection = (navigator as any).connection;
+  const effectiveType = connection?.effectiveType;
+
   // 'slow-2g', '2g', '3g' are considered slow
   return ['slow-2g', '2g', '3g'].includes(effectiveType);
 }
@@ -28,12 +28,12 @@ export function isSlowConnection(): boolean {
  * Gets the effective connection speed in Mbps
  */
 export function getConnectionSpeed(): string {
-  if (!navigator.connection) {
+  if (typeof navigator === 'undefined' || !('connection' in navigator)) {
     return 'unknown';
   }
 
-  const connection = navigator.connection as any;
-  return connection.effectiveType || 'unknown';
+  const connection = (navigator as any).connection;
+  return connection?.effectiveType || 'unknown';
 }
 
 /**
@@ -98,8 +98,9 @@ export function reportWebVitals(): void {
       // Observe Largest Contentful Paint
       const lcpObserver = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        console.log('[WebVitals] LCP:', lastEntry.renderTime || lastEntry.loadTime);
+        const lastEntry = entries[entries.length - 1] as any;
+        const vitals = (lastEntry as { renderTime?: number; loadTime?: number });
+        console.log('[WebVitals] LCP:', vitals.renderTime || vitals.loadTime);
       });
       lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
 
@@ -107,7 +108,8 @@ export function reportWebVitals(): void {
       const fidObserver = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries();
         entries.forEach((entry) => {
-          console.log('[WebVitals] FID:', entry.processingDuration);
+          const eventEntry = entry as any;
+          console.log('[WebVitals] FID:', eventEntry.processingDuration);
         });
       });
       fidObserver.observe({ type: 'first-input', buffered: true });

@@ -44,6 +44,8 @@ export function QuizPage() {
   const [quizAnswers, setQuizAnswers] = useState<QuizAnswers>({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
 
   // Map frontend test type names to backend format
   const mapTestTypeToBackend = (type: 'diagnostic' | 'drills' | 'short' | 'preboard'): string => {
@@ -594,7 +596,7 @@ export function QuizPage() {
                       Your answer: {answer.user_answer || 'No answer'} | Correct: {answer.correct_answer}
                     </p>
                     <p className={`text-xs mt-2 ${isLightMode ? 'text-slate-500' : 'text-slate-500'}`}>
-                      Answered {formatRelativeTime(new Date(answer.answered_at))}
+                      Answered {formatRelativeTime(answer.answered_at)}
                     </p>
                   </div>
                 ))}

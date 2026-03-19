@@ -79,6 +79,7 @@ export function SignUpPage() {
       await signup(
         formData.full_name,
         formData.email_or_id,
+        formData.email_or_id,
         formData.password,
         formData.password_confirm,
         formData.review_type,

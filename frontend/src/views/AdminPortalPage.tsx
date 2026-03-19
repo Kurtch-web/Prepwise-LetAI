@@ -90,7 +90,7 @@ export function AdminPortalPage() {
         materialsTab === 'preboard' ? 'preboard' : 'diagnostic-test'
       );
       const response = await quizService.listMyQuizzes(typeToLoad);
-      setAdminQuizzes(response.quizzes || []);
+      setAdminQuizzes((response as any).quizzes || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load quizzes');
     } finally {
@@ -102,7 +102,7 @@ export function AdminPortalPage() {
     setQuizLoading(true);
     try {
       const response = await quizService.listArchivedQuizzes();
-      setArchivedQuizzes(response.quizzes || []);
+      setArchivedQuizzes((response as any).quizzes || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load archived quizzes');
     } finally {
@@ -248,7 +248,7 @@ export function AdminPortalPage() {
     setLeaderboardLoading(true);
     try {
       const response = await quizService.getQuizLeaderboard(quiz.id);
-      setLeaderboard(response.leaderboard || []);
+      setLeaderboard(((response as any).leaderboard) || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
     } finally {
@@ -728,7 +728,7 @@ export function AdminPortalPage() {
                                       )}
                                     </div>
                                     <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                                      Created {formatRelativeTime(new Date(quiz.created_at))}
+                                      Created {formatRelativeTime(quiz.created_at)}
                                     </p>
                                   </div>
                                   <div className="text-right">
@@ -1084,7 +1084,7 @@ export function AdminPortalPage() {
                                 )}
                               </div>
                               <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                                Archived {formatRelativeTime(new Date(quiz.updated_at))}
+                                Archived {formatRelativeTime(quiz.updated_at)}
                               </p>
                             </div>
                             <div className="text-right">
