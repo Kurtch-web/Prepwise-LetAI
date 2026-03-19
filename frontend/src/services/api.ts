@@ -84,6 +84,7 @@ export interface UserProfile {
   role: UserRole;
   reviewType: string | null;
   targetExamDate: string | null;
+  instructorId?: number | null;
   createdAt: string;
   assessment: AssessmentItem | null;
 }

@@ -119,7 +119,7 @@ export function QuestionsBank() {
         throw new Error(errorData.detail || 'Failed to detect MCQs from PDF');
       }
 
-      const data = await response.json();
+      const data: { mcqs?: DetectedMCQ[]; warnings?: string[] } = await response.json();
 
       if (data.mcqs && data.mcqs.length > 0) {
         // Show detected MCQs for review

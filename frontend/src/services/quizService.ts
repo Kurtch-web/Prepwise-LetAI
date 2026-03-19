@@ -124,6 +124,10 @@ export interface SessionResults {
   answers: AnswerDetail[];
 }
 
+export interface QuizLeaderboardResponse {
+  leaderboard: QuizLeaderboardEntry[];
+}
+
 const quizService = {
   async createQuiz(title: string, description: string | null, questions: Array<{
     question_text: string;
@@ -189,8 +193,8 @@ const quizService = {
     });
   },
 
-  async getQuizLeaderboard(quizId: string) {
-    return request(`/api/quizzes/quiz/${quizId}/leaderboard`, {
+  async getQuizLeaderboard(quizId: string): Promise<QuizLeaderboardResponse> {
+    return request<QuizLeaderboardResponse>(`/api/quizzes/quiz/${quizId}/leaderboard`, {
       method: 'GET'
     });
   },
