@@ -234,47 +234,66 @@ async def submit_answer(
         select(QuizSession).where(QuizSession.id == answer_data.session_id)
     )
     session = session_result.scalars().first()
-    
+
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Session not found")
-    
+
     if session.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
-    
+
     if session.completed_at:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Quiz session already completed")
-    
+
     question_result = await db.execute(
         select(QuizQuestion).where(QuizQuestion.id == answer_data.question_id)
     )
     question = question_result.scalars().first()
-    
+
     if not question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
-    
-    existing_answer_result = await db.execute(
-        select(QuizAnswer).where(
-            (QuizAnswer.session_id == answer_data.session_id) &
-            (QuizAnswer.question_id == answer_data.question_id)
+
+    try:
+        existing_answer_result = await db.execute(
+            select(QuizAnswer).where(
+                (QuizAnswer.session_id == answer_data.session_id) &
+                (QuizAnswer.question_id == answer_data.question_id)
+            )
         )
-    )
-    existing_answer = existing_answer_result.scalars().first()
-    
-    if existing_answer:
-        existing_answer.selected_answer = answer_data.selected_answer
-        existing_answer.is_answered = True
-        existing_answer.answered_at = datetime.now(timezone.utc)
-    else:
-        answer = QuizAnswer(
-            session_id=answer_data.session_id,
-            question_id=answer_data.question_id,
-            selected_answer=answer_data.selected_answer,
-            is_answered=True
-        )
-        db.add(answer)
-    
-    await db.commit()
-    
+        existing_answer = existing_answer_result.scalars().first()
+
+        if existing_answer:
+            existing_answer.selected_answer = answer_data.selected_answer
+            existing_answer.is_answered = True
+            existing_answer.answered_at = datetime.now(timezone.utc)
+        else:
+            answer = QuizAnswer(
+                session_id=answer_data.session_id,
+                question_id=answer_data.question_id,
+                selected_answer=answer_data.selected_answer,
+                is_answered=True
+            )
+            db.add(answer)
+
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        # If unique constraint is violated, try to update the existing answer
+        if "UNIQUE constraint failed" in str(e) or "unique constraint" in str(e).lower():
+            existing_answer_result = await db.execute(
+                select(QuizAnswer).where(
+                    (QuizAnswer.session_id == answer_data.session_id) &
+                    (QuizAnswer.question_id == answer_data.question_id)
+                )
+            )
+            existing_answer = existing_answer_result.scalars().first()
+            if existing_answer:
+                existing_answer.selected_answer = answer_data.selected_answer
+                existing_answer.is_answered = True
+                existing_answer.answered_at = datetime.now(timezone.utc)
+                await db.commit()
+        else:
+            raise
+
     return {"status": "success", "message": "Answer submitted"}
 
 

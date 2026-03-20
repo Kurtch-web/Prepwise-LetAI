@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -211,6 +211,7 @@ class QuizSession(Base):
 
 class QuizAnswer(Base):
     __tablename__ = 'quiz_answers'
+    __table_args__ = (UniqueConstraint('session_id', 'question_id', name='uq_quiz_answer_session_question'),)
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id: Mapped[str] = mapped_column(ForeignKey('quiz_sessions.id', ondelete='CASCADE'), index=True)
@@ -326,6 +327,7 @@ class PracticeQuizSession(Base):
 
 class PracticeQuizAnswer(Base):
     __tablename__ = 'practice_quiz_answers'
+    __table_args__ = (UniqueConstraint('session_id', 'question_id', name='uq_practice_quiz_answer_session_question'),)
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     session_id: Mapped[str] = mapped_column(ForeignKey('practice_quiz_sessions.id', ondelete='CASCADE'), index=True)
