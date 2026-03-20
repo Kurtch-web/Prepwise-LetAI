@@ -62,6 +62,7 @@ export interface QuestionData {
   batch_name?: string;
   creator_username: string;
   created_at: string;
+  choice_explanations?: Record<string, string>;
 }
 
 const questionsService = {

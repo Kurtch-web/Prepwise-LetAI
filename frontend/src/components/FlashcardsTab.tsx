@@ -54,6 +54,10 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [timerCount, setTimerCount] = useState(5);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
 
   // Load all practice test sessions on mount
   useEffect(() => {
@@ -75,7 +79,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
 
   // Auto-flip timer for flashcards
   useEffect(() => {
-    if (!selectedQuiz || quizQuestions.length === 0 || isFlipped) return;
+    if (!selectedQuiz || quizQuestions.length === 0 || isFlipped || isTimerPaused) return;
 
     if (timerCount > 0) {
       const timer = setTimeout(() => {
@@ -87,7 +91,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
       setIsFlipped(true);
       setTimerCount(5); // Reset timer
     }
-  }, [timerCount, selectedQuiz, quizQuestions.length, isFlipped]);
+  }, [timerCount, selectedQuiz, quizQuestions.length, isFlipped, isTimerPaused]);
 
   // Reset timer when moving to next question
   useEffect(() => {
@@ -195,6 +199,55 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
       osc.stop(now + 0.05);
     } catch (e) {
       console.warn('Failed to play sound:', e);
+    }
+  };
+
+  const clearApiCache = async () => {
+    try {
+      await fetch('https://cheiken021-letai.hf.space/clear-cache', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    } catch (err) {
+      console.warn('Failed to clear API cache:', err);
+    }
+  };
+
+  const handleAiExplain = async () => {
+    setShowAiModal(true);
+    setAiLoading(true);
+    setIsTimerPaused(true);
+    setAiExplanation(null);
+
+    try {
+      const currentQuestion = quizQuestions[currentQuestionIndex];
+
+      const payload = {
+        question: currentQuestion.question_text,
+        choices: currentQuestion.choices,
+        correct_answer: currentQuestion.correct_answer
+      };
+
+      const response = await fetch('https://cheiken021-letai.hf.space/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setAiExplanation(data.explanation || data.result || JSON.stringify(data));
+    } catch (err) {
+      setAiExplanation(`Error loading explanation: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -324,6 +377,13 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
             </div>
           </div>
 
+          <button
+            onClick={handleAiExplain}
+            className={`w-full rounded-xl border border-indigo-400 px-4 py-2 font-semibold text-white transition bg-indigo-600/80 hover:bg-indigo-600 hover:border-indigo-300`}
+          >
+            ✨ AI EXPLAIN
+          </button>
+
           <div className="flex gap-2">
             <button
               onClick={() => {
@@ -359,6 +419,71 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
               Next
             </button>
           </div>
+
+          {/* AI Explanation Modal */}
+          {showAiModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <section className={`${cardShellClasses} space-y-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto`}>
+                <div className="flex items-center justify-between">
+                  <h2 className={`text-xl sm:text-2xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                    ✨ AI Explanation
+                  </h2>
+                  <button
+                    onClick={async () => {
+                      setShowAiModal(false);
+                      setIsTimerPaused(false);
+                      setAiExplanation(null);
+                      setAiLoading(false);
+                      await clearApiCache();
+                    }}
+                    className={`text-2xl ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {aiLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="flex gap-2 mb-4">
+                      <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
+                      <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                    <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                      AI is generating explanation...
+                    </p>
+                  </div>
+                ) : (
+                  <div className={`rounded-2xl p-6 ${isLightMode ? 'bg-indigo-50' : 'bg-indigo-900/20'}`}>
+                    <div className={`text-sm leading-relaxed ${isLightMode ? 'text-slate-800' : 'text-white'}`}>
+                      {aiExplanation && (
+                        <div className="whitespace-pre-wrap break-words">
+                          {aiExplanation}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={async () => {
+                    setShowAiModal(false);
+                    setIsTimerPaused(false);
+                    setAiExplanation(null);
+                    setAiLoading(false);
+                    await clearApiCache();
+                  }}
+                  className={`w-full rounded-xl border px-4 py-2 font-semibold transition ${
+                    isLightMode
+                      ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'border-indigo-400 bg-indigo-600/80 text-white hover:bg-indigo-600'
+                  }`}
+                >
+                  Close & Resume Timer
+                </button>
+              </section>
+            </div>
+          )}
         </section>
       </div>
     );
