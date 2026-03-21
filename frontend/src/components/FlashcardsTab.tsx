@@ -49,6 +49,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedQuiz, setSelectedQuiz] = useState<PracticeQuiz | null>(null);
+  const [showFlashcardModal, setShowFlashcardModal] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -173,6 +174,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
       setQuizQuestions(formattedQuestions);
       setCurrentQuestionIndex(0);
       setIsFlipped(false);
+      setShowFlashcardModal(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load quiz');
     } finally {
@@ -251,248 +253,6 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
     }
   };
 
-  // Show loading state while fetching flashcard questions
-  if (selectedQuiz && loading && quizQuestions.length === 0) {
-    return (
-      <div className="flex flex-col gap-4 mx-4 sm:mx-0">
-        <section className={`${cardShellClasses} space-y-6`}>
-          <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
-                {selectedQuiz.title}
-              </h3>
-              <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
-                Loading flashcard questions...
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setSelectedQuiz(null);
-                setQuizQuestions([]);
-              }}
-              className={`${accentButtonClasses} text-xs`}
-            >
-              ← Back
-            </button>
-          </div>
-
-          <div className="flex items-center justify-center min-h-80">
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex gap-2">
-                <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
-                <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-              </div>
-              <div className="text-center space-y-1">
-                <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                  Preparing your flashcards...
-                </p>
-                <p className={`text-xs ${isLightMode ? 'text-slate-500' : 'text-white/50'}`}>
-                  This may take a moment
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  // Show quiz flashcard view
-  if (selectedQuiz && quizQuestions.length > 0) {
-    const currentQuestion = quizQuestions[currentQuestionIndex];
-    const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
-
-    return (
-      <div className="flex flex-col gap-4 mx-4 sm:mx-0">
-        <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
-          <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
-                {selectedQuiz.title}
-              </h3>
-              <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
-                {selectedQuizType ? quizTypeInfo[selectedQuizType]?.label : 'Practice Quiz'}
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setSelectedQuiz(null);
-                setQuizQuestions([]);
-              }}
-              className={`${accentButtonClasses} text-xs`}
-            >
-              ← Back
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs text-white/60">
-              <span>Q{currentQuestionIndex + 1}/{quizQuestions.length}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-center items-center min-h-80">
-            <div
-              className="w-full max-w-2xl flip-card-container h-80"
-              onClick={() => {
-                playFlipSound();
-                setIsFlipped(!isFlipped);
-              }}
-            >
-              <div className={`flip-card-inner ${isFlipped ? 'is-flipped' : ''}`}>
-                <div className="flip-card-front">
-                  <div className="w-full text-left">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-semibold text-indigo-300">Question {currentQuestionIndex + 1}</p>
-                      <div className={`text-sm font-bold px-3 py-1 rounded-full ${
-                        timerCount <= 1 ? 'bg-red-500/30 text-red-300' : 'bg-indigo-500/30 text-indigo-300'
-                      }`}>
-                        {timerCount}s
-                      </div>
-                    </div>
-                    <p className="text-base sm:text-lg text-white leading-relaxed mb-4">{currentQuestion.question_text}</p>
-                    <div className="space-y-2">
-                      {currentQuestion.choices.map((choice, idx) => (
-                        <div key={idx} className="text-sm text-white/80 bg-white/5 rounded-lg p-2 border border-white/10">
-                          <span className="font-semibold text-emerald-400">{String.fromCharCode(65 + idx)}.</span> {choice}
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-white/50 mt-4">Auto-reveal in {timerCount}s or click to reveal</p>
-                  </div>
-                </div>
-                <div className="flip-card-back">
-                  <div>
-                    <p className="text-xs font-semibold text-emerald-300 mb-4">Answer</p>
-                    <div className="space-y-2">
-                      <span className="text-6xl font-bold text-emerald-400">{currentQuestion.correct_answer}</span>
-                    </div>
-                    <p className="text-xs text-white/50 mt-6">Click to see question</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={handleAiExplain}
-            className={`w-full rounded-xl border border-indigo-400 px-4 py-2 font-semibold text-white transition bg-indigo-600/80 hover:bg-indigo-600 hover:border-indigo-300`}
-          >
-            ✨ AI EXPLAIN
-          </button>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                if (currentQuestionIndex > 0) {
-                  setCurrentQuestionIndex(currentQuestionIndex - 1);
-                  setIsFlipped(false);
-                }
-              }}
-              disabled={currentQuestionIndex === 0}
-              className={`flex-1 ${accentButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => {
-                setIsFlipped(false);
-                setCurrentQuestionIndex(0);
-              }}
-              className={`flex-1 ${accentButtonClasses}`}
-            >
-              Restart
-            </button>
-            <button
-              onClick={() => {
-                if (currentQuestionIndex < quizQuestions.length - 1) {
-                  setCurrentQuestionIndex(currentQuestionIndex + 1);
-                  setIsFlipped(false);
-                }
-              }}
-              disabled={currentQuestionIndex === quizQuestions.length - 1}
-              className={`flex-1 ${accentButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              Next
-            </button>
-          </div>
-
-          {/* AI Explanation Modal */}
-          {showAiModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <section className={`${cardShellClasses} space-y-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto`}>
-                <div className="flex items-center justify-between">
-                  <h2 className={`text-xl sm:text-2xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                    ✨ AI Explanation
-                  </h2>
-                  <button
-                    onClick={async () => {
-                      setShowAiModal(false);
-                      setIsTimerPaused(false);
-                      setAiExplanation(null);
-                      setAiLoading(false);
-                      await clearApiCache();
-                    }}
-                    className={`text-2xl ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {aiLoading ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <div className="flex gap-2 mb-4">
-                      <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
-                      <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                    <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                      AI is generating explanation...
-                    </p>
-                  </div>
-                ) : (
-                  <div className={`rounded-2xl p-6 ${isLightMode ? 'bg-indigo-50' : 'bg-indigo-900/20'}`}>
-                    <div className={`text-sm leading-relaxed ${isLightMode ? 'text-slate-800' : 'text-white'}`}>
-                      {aiExplanation && (
-                        <div className="whitespace-pre-wrap break-words">
-                          {aiExplanation}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={async () => {
-                    setShowAiModal(false);
-                    setIsTimerPaused(false);
-                    setAiExplanation(null);
-                    setAiLoading(false);
-                    await clearApiCache();
-                  }}
-                  className={`w-full rounded-xl border px-4 py-2 font-semibold transition ${
-                    isLightMode
-                      ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
-                      : 'border-indigo-400 bg-indigo-600/80 text-white hover:bg-indigo-600'
-                  }`}
-                >
-                  Close & Resume Timer
-                </button>
-              </section>
-            </div>
-          )}
-        </section>
-      </div>
-    );
-  }
 
   // Show quiz list
   if (selectedQuizType && !selectedQuiz) {
@@ -767,6 +527,245 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 </div>
               )}
             </div>
+          </section>
+        </div>
+      )}
+
+      {/* Flashcard Modal */}
+      {showFlashcardModal && selectedQuiz && quizQuestions.length > 0 && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <section className={`${cardShellClasses} space-y-4 sm:space-y-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between sticky top-0 -m-7 mb-4 p-7 bg-inherit rounded-t-3xl">
+              <div className="min-w-0">
+                <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
+                  {selectedQuiz.title}
+                </h3>
+                <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
+                  {selectedQuizType ? quizTypeInfo[selectedQuizType]?.label : 'Practice Quiz'}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowFlashcardModal(false);
+                  setSelectedQuiz(null);
+                  setQuizQuestions([]);
+                  setCurrentQuestionIndex(0);
+                  setIsFlipped(false);
+                }}
+                className={`text-2xl flex-shrink-0 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-white/60">
+                <span>Q{currentQuestionIndex + 1}/{quizQuestions.length}</span>
+                <span>{Math.round(((currentQuestionIndex + 1) / quizQuestions.length) * 100)}%</span>
+              </div>
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-500 to-green-400 transition-all duration-300"
+                  style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Flashcard */}
+            <div className="flex justify-center items-center min-h-80">
+              <style>{`
+                @keyframes cardFlip {
+                  0% { transform: rotateY(0deg); }
+                  100% { transform: rotateY(180deg); }
+                }
+                .flip-card-container {
+                  perspective: 1000px;
+                  cursor: pointer;
+                }
+                .flip-card-inner {
+                  position: relative;
+                  width: 100%;
+                  height: 100%;
+                  transition: transform 0.6s;
+                  transform-style: preserve-3d;
+                }
+                .flip-card-inner.is-flipped {
+                  transform: rotateY(180deg);
+                }
+                .flip-card-front,
+                .flip-card-back {
+                  position: absolute;
+                  width: 100%;
+                  height: 100%;
+                  backface-visibility: hidden;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  padding: 2rem;
+                  text-align: center;
+                  border-radius: 1.5rem;
+                  border: 1px solid rgba(255,255,255,0.2);
+                  background: rgba(11,17,26,0.8);
+                }
+                .flip-card-back {
+                  transform: rotateY(180deg);
+                  border-color: rgba(79,172,254,0.3);
+                  background: rgba(30,58,138,0.6);
+                }
+              `}</style>
+              <div
+                className="w-full max-w-2xl flip-card-container h-80"
+                onClick={() => {
+                  playFlipSound();
+                  setIsFlipped(!isFlipped);
+                }}
+              >
+                <div className={`flip-card-inner ${isFlipped ? 'is-flipped' : ''}`}>
+                  <div className="flip-card-front">
+                    <div className="w-full text-left">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-semibold text-indigo-300">Question {currentQuestionIndex + 1}</p>
+                        <div className={`text-sm font-bold px-3 py-1 rounded-full ${
+                          timerCount <= 1 ? 'bg-red-500/30 text-red-300' : 'bg-indigo-500/30 text-indigo-300'
+                        }`}>
+                          {timerCount}s
+                        </div>
+                      </div>
+                      <p className="text-base sm:text-lg text-white leading-relaxed mb-4">{quizQuestions[currentQuestionIndex].question_text}</p>
+                      <div className="space-y-2">
+                        {quizQuestions[currentQuestionIndex].choices.map((choice, idx) => (
+                          <div key={idx} className="text-sm text-white/80 bg-white/5 rounded-lg p-2 border border-white/10">
+                            <span className="font-semibold text-emerald-400">{String.fromCharCode(65 + idx)}.</span> {choice}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-white/50 mt-4">Auto-reveal in {timerCount}s or click to reveal</p>
+                    </div>
+                  </div>
+                  <div className="flip-card-back">
+                    <div>
+                      <p className="text-xs font-semibold text-emerald-300 mb-4">Answer</p>
+                      <div className="space-y-2">
+                        <span className="text-6xl font-bold text-emerald-400">{quizQuestions[currentQuestionIndex].correct_answer}</span>
+                      </div>
+                      <p className="text-xs text-white/50 mt-6">Click to see question</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Explain Button */}
+            <button
+              onClick={handleAiExplain}
+              className={`w-full rounded-xl border border-indigo-400 px-4 py-2 font-semibold text-white transition bg-indigo-600/80 hover:bg-indigo-600 hover:border-indigo-300`}
+            >
+              ✨ AI EXPLAIN
+            </button>
+
+            {/* Navigation Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (currentQuestionIndex > 0) {
+                    setCurrentQuestionIndex(currentQuestionIndex - 1);
+                    setIsFlipped(false);
+                  }
+                }}
+                disabled={currentQuestionIndex === 0}
+                className={`flex-1 ${accentButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => {
+                  setIsFlipped(false);
+                  setCurrentQuestionIndex(0);
+                }}
+                className={`flex-1 ${accentButtonClasses}`}
+              >
+                Restart
+              </button>
+              <button
+                onClick={() => {
+                  if (currentQuestionIndex < quizQuestions.length - 1) {
+                    setCurrentQuestionIndex(currentQuestionIndex + 1);
+                    setIsFlipped(false);
+                  }
+                }}
+                disabled={currentQuestionIndex === quizQuestions.length - 1}
+                className={`flex-1 ${accentButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                Next
+              </button>
+            </div>
+
+            {/* AI Explanation Modal */}
+            {showAiModal && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <section className={`${cardShellClasses} space-y-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto`}>
+                  <div className="flex items-center justify-between">
+                    <h2 className={`text-xl sm:text-2xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      ✨ AI Explanation
+                    </h2>
+                    <button
+                      onClick={async () => {
+                        setShowAiModal(false);
+                        setIsTimerPaused(false);
+                        setAiExplanation(null);
+                        setAiLoading(false);
+                        await clearApiCache();
+                      }}
+                      className={`text-2xl ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {aiLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <div className="flex gap-2 mb-4">
+                        <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
+                        <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="h-3 w-3 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                      </div>
+                      <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                        AI is generating explanation...
+                      </p>
+                    </div>
+                  ) : (
+                    <div className={`rounded-2xl p-6 ${isLightMode ? 'bg-indigo-50' : 'bg-indigo-900/20'}`}>
+                      <div className={`text-sm leading-relaxed ${isLightMode ? 'text-slate-800' : 'text-white'}`}>
+                        {aiExplanation && (
+                          <div className="whitespace-pre-wrap break-words">
+                            {aiExplanation}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={async () => {
+                      setShowAiModal(false);
+                      setIsTimerPaused(false);
+                      setAiExplanation(null);
+                      setAiLoading(false);
+                      await clearApiCache();
+                    }}
+                    className={`w-full rounded-xl border px-4 py-2 font-semibold transition ${
+                      isLightMode
+                        ? 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
+                        : 'border-indigo-400 bg-indigo-600/80 text-white hover:bg-indigo-600'
+                    }`}
+                  >
+                    Close & Resume Timer
+                  </button>
+                </section>
+              </div>
+            )}
           </section>
         </div>
       )}
