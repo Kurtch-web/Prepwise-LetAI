@@ -417,8 +417,18 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
 
   if (loading) {
     return (
-      <section className={`${cardShellClasses} space-y-4`}>
-        <p className="text-white/60">Loading flashcard questions...</p>
+      <section className={`${cardShellClasses} space-y-6`}>
+        <div className="flex flex-col items-center justify-center min-h-96 gap-6">
+          <div className="flex gap-2">
+            <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-white font-semibold">Loading flashcard questions...</p>
+            <p className="text-white/50 text-sm">This may take a moment</p>
+          </div>
+        </div>
       </section>
     );
   }

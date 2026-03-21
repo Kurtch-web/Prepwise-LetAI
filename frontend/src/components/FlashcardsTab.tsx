@@ -43,7 +43,6 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const cardShellClasses = isLightMode ? lightCardShell : darkCardShell;
   const accentButtonClasses = isLightMode ? lightAccentButton : darkAccentButton;
 
-  const [showModal, setShowModal] = useState(false);
   const [selectedQuizType, setSelectedQuizType] = useState<string | null>(null);
   const [quizzes, setQuizzes] = useState<PracticeQuiz[]>([]);
   const [allSessions, setAllSessions] = useState<Record<string, PracticeTestSession>>({});
@@ -283,9 +282,14 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 <div className="h-3 w-3 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
               </div>
-              <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                Preparing your flashcards...
-              </p>
+              <div className="text-center space-y-1">
+                <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  Preparing your flashcards...
+                </p>
+                <p className={`text-xs ${isLightMode ? 'text-slate-500' : 'text-white/50'}`}>
+                  This may take a moment
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -505,7 +509,6 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
           <button
             onClick={() => {
               setSelectedQuizType(null);
-              setShowModal(true);
             }}
             className={`${accentButtonClasses} text-xs`}
           >
@@ -579,24 +582,43 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
     );
   }
 
-  // Main view - Quiz type selection
+  // Get available quiz types based on sessions
+  const availableQuizTypes = Object.keys(quizTypeInfo).filter(key =>
+    Object.values(allSessions).some(session => session.testType === key)
+  );
+
+  // Main view - Show available quiz types directly
   return (
     <div className="space-y-6 mx-4 sm:mx-0">
-      {/* Modal for quiz type selection */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <section className={`${cardShellClasses} space-y-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
-            <div className="space-y-1">
-              <h2 className={`text-2xl sm:text-3xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                Choose Study Type
-              </h2>
-              <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                Select a quiz category to begin studying
-              </p>
-            </div>
+      <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
+        <div className="space-y-1">
+          <h2 className={`text-2xl sm:text-3xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+            🎴 Flashcards
+          </h2>
+          <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+            Study practice quiz questions as interactive flashcards
+          </p>
+        </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Object.entries(quizTypeInfo).map(([key, info]) => (
+        {loading ? (
+          <div className={`text-center py-8 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+            <p>Loading study types...</p>
+          </div>
+        ) : availableQuizTypes.length === 0 ? (
+          <div className={`rounded-2xl border border-dashed p-8 text-center ${
+            isLightMode
+              ? 'border-slate-300 bg-slate-50'
+              : 'border-white/20 bg-white/5'
+          }`}>
+            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+              No study materials available yet. Check back soon!
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {availableQuizTypes.map(key => {
+              const info = quizTypeInfo[key];
+              return (
                 <button
                   key={key}
                   onClick={() => handleQuizTypeSelect(key)}
@@ -616,50 +638,10 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                     </p>
                   </div>
                 </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setShowModal(false)}
-              className={`w-full rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                isLightMode
-                  ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
-                  : 'border-white/10 text-white/70 hover:bg-white/5'
-              }`}
-            >
-              ✕ Close
-            </button>
-          </section>
-        </div>
-      )}
-
-      {/* Main content */}
-      <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
-        <div className="space-y-1">
-          <h2 className={`text-2xl sm:text-3xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            🎴 Flashcards
-          </h2>
-          <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-            Study practice quiz questions as interactive flashcards
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowModal(true)}
-          className={`w-full rounded-2xl border-2 p-6 transition-all hover:shadow-lg text-center ${
-            isLightMode
-              ? 'border-emerald-300 bg-emerald-50 hover:bg-emerald-100'
-              : 'border-emerald-500/30 bg-emerald-900/20 hover:bg-emerald-900/30'
-          }`}
-        >
-          <div className="text-3xl mb-2">✨</div>
-          <h3 className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            Start Studying
-          </h3>
-          <p className={`text-sm mt-1 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-            Select a quiz category to begin
-          </p>
-        </button>
+              );
+            })}
+          </div>
+        )}
       </section>
     </div>
   );
