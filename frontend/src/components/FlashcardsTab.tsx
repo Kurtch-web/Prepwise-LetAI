@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { fetchPracticeTestSessions, PracticeTestSession } from '../services/progressService';
 import { authService } from '../services/authService';
+import { API_BASE, isApiConfigured } from '../config/backends';
 
 interface PracticeQuiz {
   id: string;
@@ -133,6 +134,18 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const handleSelectQuiz = async (quiz: PracticeQuiz) => {
     setSelectedQuiz(quiz);
     setLoading(true);
+    setError(null);
+
+    // Check if API is properly configured
+    if (!isApiConfigured()) {
+      const errorMsg = 'Backend API is not configured. Please ensure VITE_API_BASE environment variable is set.';
+      console.error('[FlashcardsTab]', errorMsg);
+      setError(errorMsg);
+      setShowFlashcardModal(false);
+      setLoading(false);
+      return;
+    }
+
     try {
       const headers = new Headers({
         'Content-Type': 'application/json'
@@ -148,20 +161,28 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
         ? `/api/practice-quizzes/${quiz.sessionId}/results`
         : `/api/quizzes/results/${quiz.sessionId}`;
 
-      const response = await fetch(endpoint, {
+      const fullUrl = `${API_BASE}${endpoint}`;
+      console.log('[FlashcardsTab] Fetching quiz from:', fullUrl);
+      const response = await fetch(fullUrl, {
         method: 'GET',
         credentials: 'include',
         headers
       });
+
+      console.log('[FlashcardsTab] Response status:', response.status);
+
       if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
         const errorMessage = (errorBody as { detail?: string; message?: string }).detail ??
           (errorBody as { message?: string }).message ??
           response.statusText;
-        throw new Error(errorMessage);
+        throw new Error(`API Error (${response.status}): ${errorMessage}`);
       }
 
       const data = await response.json();
+      console.log('[FlashcardsTab] API Response:', data);
+      console.log('[FlashcardsTab] Response keys:', Object.keys(data));
+
       // Map the response questions to the Question format expected by the component
       const formattedQuestions: Question[] = (data.questions || data.answers || []).map((q: any, idx: number) => ({
         id: q.question_id,
@@ -171,12 +192,22 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
         correct_answer: q.correct_answer
       }));
 
+      console.log('[FlashcardsTab] Formatted questions:', formattedQuestions);
+      console.log('[FlashcardsTab] Questions length:', formattedQuestions.length);
+
+      if (formattedQuestions.length === 0) {
+        throw new Error('API returned no questions. Check the response structure.');
+      }
+
       setQuizQuestions(formattedQuestions);
       setCurrentQuestionIndex(0);
       setIsFlipped(false);
       setShowFlashcardModal(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load quiz');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load quiz';
+      console.error('[FlashcardsTab] Error loading quiz:', errorMsg);
+      setError(errorMsg);
+      setShowFlashcardModal(false);
     } finally {
       setLoading(false);
     }

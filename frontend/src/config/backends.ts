@@ -10,6 +10,20 @@
 
 export const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '');
 
+// Helper to check if API is properly configured
+export const isApiConfigured = (): boolean => {
+  return API_BASE.length > 0;
+};
+
+// Log configuration status for debugging
+if (!isApiConfigured() && typeof window !== 'undefined') {
+  console.warn(
+    '[API Config] VITE_API_BASE is not set. ' +
+    'For production (Vercel), please set VITE_API_BASE environment variable. ' +
+    'API calls will fail without this configuration.'
+  );
+}
+
 export const BACKENDS = {
   main: API_BASE
 } as const;
