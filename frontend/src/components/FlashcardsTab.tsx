@@ -125,7 +125,6 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
     }));
 
     setQuizzes(transformedQuizzes);
-    setShowModal(false);
   };
 
   const handleSelectQuiz = async (quiz: PracticeQuiz) => {
