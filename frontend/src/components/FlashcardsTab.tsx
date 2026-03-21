@@ -57,6 +57,8 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Load all practice test sessions on mount
   useEffect(() => {
@@ -590,13 +592,25 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   return (
     <div className="space-y-6 mx-4 sm:mx-0">
       <section className={`${cardShellClasses} space-y-4 sm:space-y-6`}>
-        <div className="space-y-1">
-          <h2 className={`text-2xl sm:text-3xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            🎴 Flashcards
-          </h2>
-          <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-            Study practice quiz questions as interactive flashcards
-          </p>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h2 className={`text-2xl sm:text-3xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              🎴 Flashcards
+            </h2>
+            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+              Study practice quiz questions as interactive flashcards
+            </p>
+          </div>
+          <button
+            onClick={() => setShowSearchModal(true)}
+            className={`flex-shrink-0 rounded-xl border px-4 py-2 font-semibold text-sm transition ${
+              isLightMode
+                ? 'border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700'
+                : 'border-emerald-400 bg-emerald-600/80 text-white hover:bg-emerald-600'
+            }`}
+          >
+            🔍 Search
+          </button>
         </div>
 
         {loading ? (
@@ -642,6 +656,120 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
           </div>
         )}
       </section>
+
+      {/* Search Modal */}
+      {showSearchModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <section className={`${cardShellClasses} space-y-4 w-full max-w-2xl max-h-[80vh] overflow-y-auto`}>
+            <div className="flex items-center justify-between sticky top-0 -m-7 mb-4 p-7 bg-inherit rounded-t-3xl">
+              <h2 className={`text-xl sm:text-2xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                🔍 Search Flashcards
+              </h2>
+              <button
+                onClick={() => {
+                  setShowSearchModal(false);
+                  setSearchQuery('');
+                }}
+                className={`text-2xl ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Search by quiz title or type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full px-4 py-3 rounded-xl border transition ${
+                  isLightMode
+                    ? 'border-slate-300 bg-white text-slate-900 placeholder-slate-500 focus:border-emerald-500 focus:outline-none'
+                    : 'border-white/20 bg-white/5 text-white placeholder-white/50 focus:border-emerald-400 focus:outline-none'
+                }`}
+              />
+
+              {loading ? (
+                <div className={`text-center py-8 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  <p>Loading available flashcards...</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-[calc(80vh-200px)] overflow-y-auto">
+                  {Object.values(allSessions).length === 0 ? (
+                    <div className={`rounded-2xl border border-dashed p-8 text-center ${
+                      isLightMode
+                        ? 'border-slate-300 bg-slate-50'
+                        : 'border-white/20 bg-white/5'
+                    }`}>
+                      <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                        No flashcards available yet. Complete a quiz to start studying!
+                      </p>
+                    </div>
+                  ) : (
+                    Object.values(allSessions)
+                      .filter(session => {
+                        const query = searchQuery.toLowerCase();
+                        return (
+                          session.quizTitle.toLowerCase().includes(query) ||
+                          session.testType.toLowerCase().includes(query)
+                        );
+                      })
+                      .map(session => {
+                        const typeInfo = quizTypeInfo[session.testType] || { emoji: '❓', label: session.testType };
+                        return (
+                          <button
+                            key={session.id}
+                            onClick={() => {
+                              const quiz: PracticeQuiz = {
+                                id: session.originalQuizId,
+                                sessionId: session.sessions[0]?.sessionId,
+                                title: session.quizTitle,
+                                category: 'General',
+                                total_questions: session.sessions[0]?.total || 0,
+                                total_attempts: session.attempts,
+                                average_score: session.bestScore,
+                                quizType: session.sessions[0]?.type
+                              };
+                              handleSelectQuiz(quiz);
+                              setShowSearchModal(false);
+                              setSearchQuery('');
+                            }}
+                            className={`w-full rounded-2xl border p-4 text-left transition cursor-pointer ${
+                              isLightMode
+                                ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                                : 'border-emerald-500/20 bg-emerald-900/10 hover:bg-emerald-900/20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xl">{typeInfo.emoji}</span>
+                                  <h4 className={`font-semibold truncate ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                                    {session.quizTitle}
+                                  </h4>
+                                </div>
+                                <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                                  {typeInfo.label} • {session.sessions[0]?.total || 0} questions • Best: {Math.round(session.bestScore)}%
+                                </p>
+                              </div>
+                              <div className={`text-sm font-semibold px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${
+                                isLightMode
+                                  ? 'bg-emerald-100 text-emerald-700'
+                                  : 'bg-emerald-600/40 text-emerald-300'
+                              }`}>
+                                Study →
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
