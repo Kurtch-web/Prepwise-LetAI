@@ -24,8 +24,14 @@ FRONTEND_ORIGINS = [origin.strip() for origin in _frontend_origin_str.split(',')
 # For backwards compatibility, keep FRONTEND_ORIGIN as the first origin
 FRONTEND_ORIGIN = FRONTEND_ORIGINS[0] if FRONTEND_ORIGINS else 'http://localhost:5173'
 
-DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '10'))
-DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', '20'))
+# For Vercel serverless and databases in Session mode, use minimal pool size
+# Neon and other managed DBs limit connections in Session mode
+IS_VERCEL = os.getenv('VERCEL') == '1'
+DEFAULT_POOL_SIZE = 1 if IS_VERCEL else 10
+DEFAULT_MAX_OVERFLOW = 0 if IS_VERCEL else 20
+
+DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', str(DEFAULT_POOL_SIZE)))
+DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', str(DEFAULT_MAX_OVERFLOW)))
 DATABASE_URL = os.getenv('DATABASE_URL')
 DB_CONNECT_TIMEOUT = int(os.getenv('DB_CONNECT_TIMEOUT', '10'))
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import AsyncGenerator, Optional, Tuple
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
+from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -12,6 +13,7 @@ from .config import (
     DB_CONNECT_TIMEOUT,
     DB_MAX_OVERFLOW,
     DB_POOL_SIZE,
+    IS_VERCEL,
     ssl_context,
 )
 
@@ -50,15 +52,24 @@ if DB_URL.startswith('postgresql+asyncpg://'):
     if IS_EXTERNAL_DB:
         connect_args['ssl'] = ssl_context
 
-engine = create_async_engine(
-    DB_URL,
-    echo=False,
-    connect_args=connect_args,
-    pool_size=DB_POOL_SIZE,
-    max_overflow=DB_MAX_OVERFLOW,
-    pool_pre_ping=True,
-    pool_recycle=300,
-)
+# For Vercel serverless, use NullPool to avoid connection pool issues
+# NullPool creates a new connection for each request and closes it immediately
+engine_kwargs = {
+    'echo': False,
+    'connect_args': connect_args,
+    'pool_pre_ping': True,
+}
+
+if IS_VERCEL and DB_URL.startswith('postgresql+asyncpg://'):
+    # Use NullPool for serverless environments to avoid connection pool exhaustion
+    engine_kwargs['poolclass'] = NullPool
+else:
+    # Use regular pool for local/traditional deployments
+    engine_kwargs['pool_size'] = DB_POOL_SIZE
+    engine_kwargs['max_overflow'] = DB_MAX_OVERFLOW
+    engine_kwargs['pool_recycle'] = 300
+
+engine = create_async_engine(DB_URL, **engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
