@@ -168,7 +168,7 @@ async def list_posts(
     """List posts filtered by visibility based on instructor assignment.
 
     Visibility rules:
-    - If post author is an instructor (admin1-4), only their assigned students can see it
+    - If post author is an instructor, only their assigned students can see it
     - If post author is a regular user, all admins can see it, plus their instructor
     """
     # Get current user to check their role and instructor assignment

@@ -63,32 +63,32 @@ async def seed_users():
                     'email': 'member@cvsu.edu.ph'
                 },
                 {
-                    'username': 'admin1',
-                    'password': 'Instructor1@123',
-                    'full_name': 'Instructor 1',
+                    'username': 'crystal',
+                    'password': 'crystal@123',
+                    'full_name': 'Crystal Genson',
                     'role': 'admin',
-                    'email': 'instructor1@cvsu.edu.ph'
+                    'email': 'crystal@cvsu.edu.ph'
                 },
                 {
-                    'username': 'admin2',
-                    'password': 'Instructor2@123',
-                    'full_name': 'Instructor 2',
+                    'username': 'matthew',
+                    'password': 'matthew@123',
+                    'full_name': 'Matthew Oliveros',
                     'role': 'admin',
-                    'email': 'instructor2@cvsu.edu.ph'
+                    'email': 'matthew@cvsu.edu.ph'
                 },
                 {
-                    'username': 'admin3',
-                    'password': 'Instructor3@123',
-                    'full_name': 'Instructor 3',
+                    'username': 'ami',
+                    'password': 'ami@123',
+                    'full_name': 'Ami Shane Caimbon',
                     'role': 'admin',
-                    'email': 'instructor3@cvsu.edu.ph'
+                    'email': 'ami@cvsu.edu.ph'
                 },
                 {
-                    'username': 'admin4',
-                    'password': 'Instructor4@123',
-                    'full_name': 'Instructor 4',
+                    'username': 'medine',
+                    'password': 'medine@123',
+                    'full_name': 'Medine Zuazula',
                     'role': 'admin',
-                    'email': 'instructor4@cvsu.edu.ph'
+                    'email': 'medine@cvsu.edu.ph'
                 },
             ]
             

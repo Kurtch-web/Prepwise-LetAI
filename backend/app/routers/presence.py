@@ -73,8 +73,8 @@ async def list_users_with_profiles(
     # Build query
     query = select(UserAccount).where(UserAccount.role == 'user')
 
-    # If current user is an instructor (username like admin1, admin2, etc), filter to only their students
-    if current_user.role == 'admin' and current_user.username in ['admin1', 'admin2', 'admin3', 'admin4']:
+    # If current user is an instructor, filter to only their students
+    if current_user.role == 'admin' and current_user.username in ['crystal', 'matthew', 'ami', 'medine']:
         query = query.where(UserAccount.instructor_id == current_user.id)
 
     query = query.order_by(UserAccount.created_at.desc())
@@ -125,10 +125,10 @@ async def list_instructors(
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, List]:
     """Get all available instructors (users with instructor_id that matches their id, or designated instructors)"""
-    # Get users named admin1, admin2, admin3, admin4
+    # Get designated instructors
     result = await db.execute(
         select(UserAccount)
-        .where(UserAccount.username.in_(['admin1', 'admin2', 'admin3', 'admin4']))
+        .where(UserAccount.username.in_(['crystal', 'matthew', 'ami', 'medine']))
         .order_by(UserAccount.username)
     )
     instructors = result.scalars().all()

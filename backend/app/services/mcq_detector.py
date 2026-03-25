@@ -397,8 +397,8 @@ class MCQDetector:
                 continue
 
             # VALIDATION: Check if question_text looks suspiciously long (likely mixed questions)
-            # A typical question should be < 300 characters
-            if len(question_text) > 300:
+            # A typical question should be < 500 characters (increased from 300 to allow longer questions)
+            if len(question_text) > 500:
                 skipped_blocks.append({
                     'block_num': block_idx,
                     'reason': f'Question too long ({len(question_text)} chars) - likely mixed questions'
@@ -407,10 +407,12 @@ class MCQDetector:
 
             # VALIDATION: Check if question text contains suspicious patterns
             # (multiple choice letters in succession indicating mixed content)
-            if len(re.findall(r'[A-D]\.\s+', question_text)) > 1:
+            # Only reject if there are 2 or more A/B/C/D patterns - this is more lenient
+            choice_patterns = len(re.findall(r'[A-D]\.\s+', question_text))
+            if choice_patterns > 2:
                 skipped_blocks.append({
                     'block_num': block_idx,
-                    'reason': 'Question text contains multiple choice-like patterns - likely mixed'
+                    'reason': f'Question text contains too many choice-like patterns ({choice_patterns}) - likely mixed'
                 })
                 continue
 
@@ -434,7 +436,7 @@ class MCQDetector:
 
             mcqs.append(mcq)
 
-        return mcqs
+        return mcqs, skipped_blocks
 
     @classmethod
     def detect_mcqs_from_pdf(
@@ -448,22 +450,31 @@ class MCQDetector:
         """
         errors = []
         mcqs = []
-        
+
         try:
             # Extract text from PDF
             text = cls.extract_text_from_pdf(pdf_path)
-            
+
             if not text.strip():
                 errors.append("PDF is empty or text extraction failed")
                 return [], errors
-            
+
             # Detect MCQs
-            mcqs = cls.detect_mcqs_from_text(text, category)
-            
+            mcqs, skipped = cls.detect_mcqs_from_text(text, category)
+
             if not mcqs:
                 errors.append("No MCQs detected in PDF. Check the format of questions and options.")
-            
+
+            # Add info about skipped blocks if any
+            if skipped:
+                skipped_summary = f"Skipped {len(skipped)} blocks during detection"
+                if len(skipped) <= 10:
+                    # Show details for small number of skipped blocks
+                    reasons = "; ".join([f"Block {s.get('block_num', '?')}: {s.get('reason', 'unknown')}" for s in skipped])
+                    skipped_summary += f" - {reasons}"
+                errors.append(skipped_summary)
+
         except Exception as e:
             errors.append(f"Error processing PDF: {str(e)}")
-        
+
         return mcqs, errors
