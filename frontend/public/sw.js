@@ -62,6 +62,20 @@ self.addEventListener('fetch', event => {
     return event.respondWith(handleExternalRequest(request));
   }
 
+  // Don't cache posts endpoint - it changes frequently
+  if (url.pathname.startsWith('/api/posts')) {
+    return event.respondWith(fetch(request).catch(() => {
+      return new Response(JSON.stringify({
+        error: 'Offline and no cached data available',
+        offline: true
+      }), {
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }));
+  }
+
   if (url.pathname.startsWith('/api/flashcards')) {
     return event.respondWith(handleFlashcardRequest(request));
   }
