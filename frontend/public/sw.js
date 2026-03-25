@@ -62,14 +62,14 @@ self.addEventListener('fetch', event => {
     return event.respondWith(handleExternalRequest(request));
   }
 
-  // Don't cache posts endpoint - always fetch fresh from server
-  if (url.pathname.startsWith('/api/posts')) {
+  // Don't cache posts and videos endpoints - always fetch fresh from server
+  if (url.pathname.startsWith('/api/posts') || url.pathname.startsWith('/api/videos')) {
     return event.respondWith(
       fetch(request, { cache: 'no-store', headers: { 'Cache-Control': 'no-store' } })
         .catch(error => {
-          console.log('[SW] Posts request failed, no offline cache available:', error);
+          console.log('[SW] Request failed, no offline cache available:', error);
           return new Response(JSON.stringify({
-            error: 'Failed to fetch posts',
+            error: 'Failed to fetch data',
             offline: true
           }), {
             status: 503,
@@ -103,7 +103,11 @@ async function handleFlashcardRequest(request) {
     ]);
 
     if (response.ok) {
-      cache.put(request, response.clone());
+      // Only cache JSON responses to avoid caching HTML error pages
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        cache.put(request, response.clone());
+      }
       return response;
     }
 
@@ -156,7 +160,11 @@ async function handleApiRequest(request) {
     ]);
 
     if (response.ok && response.status !== 204) {
-      cache.put(request, response.clone());
+      // Only cache JSON responses to avoid caching HTML error pages
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        cache.put(request, response.clone());
+      }
       return response;
     }
 

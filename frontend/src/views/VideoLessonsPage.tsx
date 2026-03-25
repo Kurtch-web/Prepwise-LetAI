@@ -33,7 +33,7 @@ export default function VideoLessonsPage() {
       const url = selectedCategory
         ? `/api/videos?category=${encodeURIComponent(selectedCategory)}`
         : '/api/videos';
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch videos');
       const data = await response.json();
       setVideos(data);
@@ -47,7 +47,7 @@ export default function VideoLessonsPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/videos/categories/list');
+      const response = await fetch('/api/videos/categories/list', { cache: 'no-store' });
       if (!response.ok) {
         throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
       }
@@ -65,7 +65,7 @@ export default function VideoLessonsPage() {
     }
 
     try {
-      const response = await fetch(`/api/videos/${video.id}/download`);
+      const response = await fetch(`/api/videos/${video.id}/download`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to get download link');
       const data = await response.json();
 
