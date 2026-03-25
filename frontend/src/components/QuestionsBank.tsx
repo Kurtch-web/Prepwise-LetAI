@@ -57,6 +57,8 @@ export function QuestionsBank() {
     setError(null);
     try {
       const response = await questionsService.listQuestions();
+      console.log('[QuestionsBank] Questions loaded:', response.questions.length);
+      console.log('[QuestionsBank] Full response:', response);
       setQuestions(response.questions);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load questions');
