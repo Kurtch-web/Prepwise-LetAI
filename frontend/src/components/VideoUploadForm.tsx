@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
+import { API_BASE } from '../config/backends';
 
 interface VideoUploadFormProps {
   onSuccess?: () => void;
@@ -100,7 +101,7 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
       formData.append('file', file);
       formData.append('is_downloadable', String(isDownloadable));
 
-      const response = await fetch('/api/videos', {
+      const response = await fetch(`${API_BASE}/api/videos`, {
         method: 'POST',
         body: formData,
       });
@@ -162,7 +163,7 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
         is_downloadable: linkIsDownloadable
       };
 
-      const response = await fetch('/api/videos/link', {
+      const response = await fetch(`${API_BASE}/api/videos/link`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

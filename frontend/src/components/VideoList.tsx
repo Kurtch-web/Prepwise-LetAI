@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
+import { API_BASE } from '../config/backends';
 import { VideoPlayerModal } from './VideoPlayerModal';
 
 interface Video {
@@ -38,8 +39,8 @@ export default function VideoList({ onEditVideo }: VideoListProps) {
     setIsLoading(true);
     try {
       const url = selectedCategory
-        ? `/api/videos?category=${encodeURIComponent(selectedCategory)}`
-        : '/api/videos';
+        ? `${API_BASE}/api/videos?category=${encodeURIComponent(selectedCategory)}`
+        : `${API_BASE}/api/videos`;
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch videos');
       const data = await response.json();
@@ -54,7 +55,7 @@ export default function VideoList({ onEditVideo }: VideoListProps) {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/videos/categories/list', { cache: 'no-store' });
+      const response = await fetch(`${API_BASE}/api/videos/categories/list`, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
       }
@@ -78,7 +79,7 @@ export default function VideoList({ onEditVideo }: VideoListProps) {
 
     setDeletingId(videoId);
     try {
-      const response = await fetch(`/api/videos/${videoId}`, {
+      const response = await fetch(`${API_BASE}/api/videos/${videoId}`, {
         method: 'DELETE',
       });
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
+import { API_BASE } from '../config/backends';
 
 interface Video {
   id: string;
@@ -31,8 +32,8 @@ export default function VideoLessonsPage() {
     setIsLoading(true);
     try {
       const url = selectedCategory
-        ? `/api/videos?category=${encodeURIComponent(selectedCategory)}`
-        : '/api/videos';
+        ? `${API_BASE}/api/videos?category=${encodeURIComponent(selectedCategory)}`
+        : `${API_BASE}/api/videos`;
       const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to fetch videos');
       const data = await response.json();
@@ -47,7 +48,7 @@ export default function VideoLessonsPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/videos/categories/list', { cache: 'no-store' });
+      const response = await fetch(`${API_BASE}/api/videos/categories/list`, { cache: 'no-store' });
       if (!response.ok) {
         throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
       }
@@ -65,7 +66,7 @@ export default function VideoLessonsPage() {
     }
 
     try {
-      const response = await fetch(`/api/videos/${video.id}/download`, { cache: 'no-store' });
+      const response = await fetch(`${API_BASE}/api/videos/${video.id}/download`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Failed to get download link');
       const data = await response.json();
 
