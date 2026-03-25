@@ -613,7 +613,14 @@ export function AdminPortalPage() {
                 <div className="flex flex-col gap-6">
                   {!showVideoUploadForm ? (
                     <>
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => setVideoListKey((prev) => prev + 1)}
+                          className="inline-flex items-center gap-2 rounded-lg bg-slate-600 px-6 py-2 font-semibold text-white transition hover:bg-slate-700"
+                        >
+                          <span>🔄</span>
+                          <span>Refresh Videos</span>
+                        </button>
                         <button
                           onClick={() => setShowVideoUploadForm(true)}
                           className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-2 font-semibold text-white transition hover:bg-blue-600"

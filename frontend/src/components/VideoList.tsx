@@ -29,11 +29,18 @@ export default function VideoList({ onEditVideo }: VideoListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchVideos();
     fetchCategories();
   }, [selectedCategory]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchVideos();
+    setIsRefreshing(false);
+  };
 
   const fetchVideos = async () => {
     setIsLoading(true);
@@ -125,9 +132,27 @@ export default function VideoList({ onEditVideo }: VideoListProps) {
         : 'bg-slate-900/40 border-emerald-500/20 shadow-[0_18px_40px_rgba(6,78,59,0.45)]'
     }`}>
       <div className="mb-6">
-        <h3 className={`text-2xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-          📹 Video Lessons
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+            📹 Video Lessons
+          </h3>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+              isRefreshing
+                ? isLightMode
+                  ? 'bg-slate-200 text-slate-500 cursor-not-allowed opacity-60'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-60'
+                : isLightMode
+                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-600/50'
+            }`}
+            aria-label="Refresh videos"
+          >
+            {isRefreshing ? '⏳ Refreshing...' : '🔄 Refresh'}
+          </button>
+        </div>
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setSelectedCategory(null)}
@@ -223,7 +248,8 @@ export default function VideoList({ onEditVideo }: VideoListProps) {
 
               <div className="flex gap-2 mt-4">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    await fetchVideos();
                     setSelectedVideo(video);
                     setIsPlayerOpen(true);
                   }}
