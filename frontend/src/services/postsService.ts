@@ -137,16 +137,18 @@ export const postsService = {
     });
   },
 
-  // Fetch all posts
+  // Fetch all posts (no caching - always fresh)
   fetchPosts: (skip: number = 0, limit: number = 20) =>
-    request<{ posts: Post[] }>(`/posts?skip=${skip}&limit=${limit}`, {
-      method: 'GET'
+    request<{ posts: Post[] }>(`/posts?skip=${skip}&limit=${limit}&_t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store'
     }),
 
-  // Fetch a single post
+  // Fetch a single post (no caching - always fresh)
   fetchPost: (postId: string) =>
-    request<Post>(`/posts/${postId}`, {
-      method: 'GET'
+    request<Post>(`/posts/${postId}?_t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store'
     }),
 
   // Like a post
@@ -170,10 +172,11 @@ export const postsService = {
     });
   },
 
-  // Fetch comments for a post
+  // Fetch comments for a post (no caching - always fresh)
   fetchComments: (postId: string, skip: number = 0, limit: number = 50) =>
-    request<{ comments: PostComment[] }>(`/posts/${postId}/comments?skip=${skip}&limit=${limit}`, {
-      method: 'GET'
+    request<{ comments: PostComment[] }>(`/posts/${postId}/comments?skip=${skip}&limit=${limit}&_t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store'
     }),
 
   // Delete a comment

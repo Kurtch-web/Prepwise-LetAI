@@ -25,6 +25,7 @@ export function PostFeed() {
     setLoading(true);
     setError(null);
     try {
+      // Add timestamp cache buster to ensure fresh data
       const result = await postsService.fetchPosts(0, 50);
       setPosts(result.posts);
     } catch (err) {

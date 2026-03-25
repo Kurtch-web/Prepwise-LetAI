@@ -62,18 +62,22 @@ self.addEventListener('fetch', event => {
     return event.respondWith(handleExternalRequest(request));
   }
 
-  // Don't cache posts endpoint - it changes frequently
+  // Don't cache posts endpoint - always fetch fresh from server
   if (url.pathname.startsWith('/api/posts')) {
-    return event.respondWith(fetch(request).catch(() => {
-      return new Response(JSON.stringify({
-        error: 'Offline and no cached data available',
-        offline: true
-      }), {
-        status: 503,
-        statusText: 'Service Unavailable',
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }));
+    return event.respondWith(
+      fetch(request, { cache: 'no-store', headers: { 'Cache-Control': 'no-store' } })
+        .catch(error => {
+          console.log('[SW] Posts request failed, no offline cache available:', error);
+          return new Response(JSON.stringify({
+            error: 'Failed to fetch posts',
+            offline: true
+          }), {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        })
+    );
   }
 
   if (url.pathname.startsWith('/api/flashcards')) {
