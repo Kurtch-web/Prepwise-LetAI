@@ -85,11 +85,10 @@ async def _upload_video_file(video_id: str, file: UploadFile, category: str) -> 
 async def init_video_upload(
     request: VideoUploadInitRequest,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user)
 ):
     """Initialize a video upload and get a signed upload URL for direct browser upload."""
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can upload videos')
 
     storage = get_supabase_storage()
@@ -118,15 +117,14 @@ async def init_video_upload(
 async def complete_video_upload(
     request: VideoUploadCompleteRequest,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user)
 ):
     """Complete a video upload by saving metadata to database.
 
     This endpoint is called after the video file has been uploaded directly to Supabase storage.
     It saves the video metadata to the database.
     """
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can create videos')
 
     # Extract video ID from storage path (format: videos/{video_id}/category/date/filename)
@@ -137,7 +135,7 @@ async def complete_video_upload(
 
     video = Video(
         id=video_id,
-        uploader_id=user_id,
+        uploader_id=current_user.id,
         title=request.title.strip(),
         description=request.description.strip() if request.description else None,
         category=request.category.strip(),
@@ -158,7 +156,7 @@ async def complete_video_upload(
         'file_url': video.file_url,
         'is_downloadable': video.is_downloadable,
         'created_at': video.created_at,
-        'uploader': {'id': user.id, 'username': user.username}
+        'uploader': {'id': current_user.id, 'username': current_user.username}
     }
 
 
@@ -170,11 +168,10 @@ async def create_video(
     file: UploadFile = File(...),
     is_downloadable: bool = Form(default=True),
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user)
 ):
     """Create a new video lesson."""
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can create videos')
 
     if not file.filename:
@@ -188,7 +185,7 @@ async def create_video(
 
     video = Video(
         id=video_id,
-        uploader_id=user_id,
+        uploader_id=current_user.id,
         title=title.strip(),
         description=description.strip() if description else None,
         category=category.strip(),
@@ -209,7 +206,7 @@ async def create_video(
         'file_url': video.file_url,
         'is_downloadable': video.is_downloadable,
         'created_at': video.created_at,
-        'uploader': {'id': user.id, 'username': user.username}
+        'uploader': {'id': current_user.id, 'username': current_user.username}
     }
 
 
@@ -217,11 +214,10 @@ async def create_video(
 async def create_video_from_link(
     request: VideoLinkRequest,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user)
 ):
     """Create a new video lesson from a YouTube link."""
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can create videos')
 
     if not request.file_url.strip():
@@ -235,7 +231,7 @@ async def create_video_from_link(
 
     video = Video(
         id=video_id,
-        uploader_id=user_id,
+        uploader_id=current_user.id,
         title=request.title.strip(),
         description=request.description.strip() if request.description else None,
         category=request.category.strip(),
@@ -256,7 +252,7 @@ async def create_video_from_link(
         'file_url': video.file_url,
         'is_downloadable': video.is_downloadable,
         'created_at': video.created_at,
-        'uploader': {'id': user.id, 'username': user.username}
+        'uploader': {'id': current_user.id, 'username': current_user.username}
     }
 
 
@@ -352,11 +348,10 @@ async def update_video(
     category: Optional[str] = Form(None),
     is_downloadable: Optional[bool] = Form(None),
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user)
 ):
     """Update video metadata."""
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can update videos')
 
     video = await db.scalar(select(Video).where(Video.id == video_id))
@@ -395,11 +390,10 @@ async def update_video(
 async def delete_video(
     video_id: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user)
 ):
     """Delete a video."""
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can delete videos')
 
     video = await db.scalar(select(Video).where(Video.id == video_id))
