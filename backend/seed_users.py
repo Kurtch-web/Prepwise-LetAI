@@ -77,8 +77,8 @@ async def seed_users():
                     'email': 'matthew@cvsu.edu.ph'
                 },
                 {
-                    'username': 'ami',
-                    'password': 'ami@123',
+                    'username': 'shane',
+                    'password': 'shane@123',
                     'full_name': 'Ami Shane Caimbon',
                     'role': 'admin',
                     'email': 'ami@cvsu.edu.ph'

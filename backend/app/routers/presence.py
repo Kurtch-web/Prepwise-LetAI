@@ -74,7 +74,7 @@ async def list_users_with_profiles(
     query = select(UserAccount).where(UserAccount.role == 'user')
 
     # If current user is an instructor, filter to only their students
-    if current_user.role == 'admin' and current_user.username in ['crystal', 'matthew', 'ami', 'medine']:
+    if current_user.role == 'admin' and current_user.username in ['crystal', 'matthew', 'ami', 'medine', 'shane']:
         query = query.where(UserAccount.instructor_id == current_user.id)
 
     query = query.order_by(UserAccount.created_at.desc())
@@ -128,7 +128,7 @@ async def list_instructors(
     # Get designated instructors
     result = await db.execute(
         select(UserAccount)
-        .where(UserAccount.username.in_(['crystal', 'matthew', 'ami', 'medine']))
+        .where(UserAccount.username.in_(['crystal', 'matthew', 'ami', 'medine', 'shane']))
         .order_by(UserAccount.username)
     )
     instructors = result.scalars().all()
