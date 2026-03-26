@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from ..db import get_db
 from ..models import Comment, Like, Post, PostAttachment, UserAccount
 from ..services.storage import get_supabase_storage, build_attachment_path, _sanitize_filename
+from ..dependencies import get_current_user
 
 router = APIRouter()
 
@@ -111,11 +112,10 @@ async def create_post(
     content: str = Form(...),
     files: List[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict:
     """Create a new post (admin only) with optional attachments"""
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if current_user.role != 'admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='Only admins can create posts',
@@ -129,7 +129,7 @@ async def create_post(
 
     post = Post(
         id=str(uuid.uuid4()),
-        author_id=user_id,
+        author_id=current_user.id,
         content=content.strip(),
     )
     db.add(post)
@@ -163,7 +163,7 @@ async def list_posts(
     skip: int = 0,
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),  # TODO: Get from auth token
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, List]:
     """List posts filtered by visibility based on instructor assignment.
 
@@ -171,10 +171,7 @@ async def list_posts(
     - If post author is an instructor, only their assigned students can see it
     - If post author is a regular user, all admins can see it, plus their instructor
     """
-    # Get current user to check their role and instructor assignment
-    current_user = await db.scalar(
-        select(UserAccount).where(UserAccount.id == user_id)
-    )
+    # User is already authenticated via dependency injection
 
     # Build visibility query
     # Start with all posts with their authors loaded
@@ -223,7 +220,7 @@ async def list_posts(
 
     posts_response = []
     for post in posts:
-        user_liked = any(like.user_id == user_id for like in post.likes)
+        user_liked = any(like.user_id == current_user.id for like in post.likes)
         posts_response.append({
             'id': post.id,
             'author_id': post.author_id,
@@ -252,7 +249,7 @@ async def list_posts(
 async def get_post(
     post_id: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict:
     """Get a single post with all details. Enforces visibility rules based on instructor assignment."""
     post = await db.scalar(
@@ -273,12 +270,8 @@ async def get_post(
         )
 
     # Check visibility
-    current_user = await db.scalar(
-        select(UserAccount).where(UserAccount.id == user_id)
-    )
-
     # Admins can see all posts
-    if not current_user or current_user.role != 'admin':
+    if current_user.role != 'admin':
         # Students can only see posts from their instructor or other students with same instructor
         post_author = post.author
 
@@ -299,7 +292,7 @@ async def get_post(
                 detail='You do not have permission to view this post',
             )
 
-    user_liked = any(like.user_id == user_id for like in post.likes)
+    user_liked = any(like.user_id == current_user.id for like in post.likes)
 
     return {
         'id': post.id,
@@ -337,7 +330,7 @@ async def get_post(
 async def like_post(
     post_id: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
     """Like a post"""
     post = await db.scalar(select(Post).where(Post.id == post_id))
@@ -349,7 +342,7 @@ async def like_post(
 
     existing_like = await db.scalar(
         select(Like).where(
-            and_(Like.post_id == post_id, Like.user_id == user_id)
+            and_(Like.post_id == post_id, Like.user_id == current_user.id)
         )
     )
     if existing_like:
@@ -360,7 +353,7 @@ async def like_post(
 
     like = Like(
         id=str(uuid.uuid4()),
-        user_id=user_id,
+        user_id=current_user.id,
         post_id=post_id,
     )
     db.add(like)
@@ -373,12 +366,12 @@ async def like_post(
 async def unlike_post(
     post_id: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
     """Unlike a post"""
     like = await db.scalar(
         select(Like).where(
-            and_(Like.post_id == post_id, Like.user_id == user_id)
+            and_(Like.post_id == post_id, Like.user_id == current_user.id)
         )
     )
     if not like:
@@ -398,7 +391,7 @@ async def create_comment(
     post_id: str,
     content: str = Form(...),
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict:
     """Add a comment to a post"""
     post = await db.scalar(select(Post).where(Post.id == post_id))
@@ -414,16 +407,9 @@ async def create_comment(
             detail='Comment cannot be empty',
         )
 
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='User not found',
-        )
-
     comment = Comment(
         id=str(uuid.uuid4()),
-        user_id=user_id,
+        user_id=current_user.id,
         post_id=post_id,
         content=content.strip(),
     )
@@ -435,7 +421,7 @@ async def create_comment(
         'id': comment.id,
         'user_id': comment.user_id,
         'content': comment.content,
-        'username': user.username,
+        'username': current_user.username,
         'created_at': comment.created_at.isoformat(),
     }
 
@@ -484,7 +470,7 @@ async def delete_comment(
     post_id: str,
     comment_id: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
     """Delete a comment (user or admin only)"""
     comment = await db.scalar(
@@ -498,8 +484,7 @@ async def delete_comment(
             detail='Comment not found',
         )
 
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if comment.user_id != user_id and (not user or user.role != 'admin'):
+    if comment.user_id != current_user.id and current_user.role != 'admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You can only delete your own comments',
@@ -515,7 +500,7 @@ async def delete_comment(
 async def delete_post(
     post_id: str,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(lambda: 1),
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
     """Delete a post (admin only)"""
     post = await db.scalar(
@@ -529,8 +514,7 @@ async def delete_post(
             detail='Post not found',
         )
 
-    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
-    if not user or user.role != 'admin':
+    if current_user.role != 'admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='Only admins can delete posts',

@@ -8,7 +8,7 @@ Usage:
 
 import asyncio
 import os
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import NullPool
 
@@ -94,16 +94,13 @@ async def seed_users():
             
             created_count = 0
             for user_data in users_to_create:
-                # Check if user already exists
-                result = await session.execute(
-                    select(UserAccount).where(UserAccount.username == user_data['username'])
+                # Delete existing user if it exists
+                await session.execute(
+                    delete(UserAccount).where(UserAccount.username == user_data['username'])
                 )
-                existing_user = result.scalars().first()
-                
-                if existing_user:
-                    print(f"✓ User '{user_data['username']}' already exists")
-                    continue
-                
+                await session.flush()
+                print(f"🔄 Deleting existing user '{user_data['username']}'")
+
                 # Create user
                 user = UserAccount(
                     username=user_data['username'],
@@ -112,7 +109,7 @@ async def seed_users():
                     full_name=user_data['full_name'],
                     email=user_data['email']
                 )
-                
+
                 session.add(user)
                 created_count += 1
                 print(f"+ Created user '{user_data['username']}' ({user_data['full_name']})")
