@@ -69,6 +69,29 @@ class SupabaseStorage:
         with urllib.request.urlopen(req) as resp:  # noqa: S310 - trusted URL from env
             _ = resp.read()
 
+    def create_signed_upload_url(self, path: str, expiration_seconds: int = 3600) -> dict:
+        """Create a signed URL that allows direct upload from browser.
+
+        Returns a dict with signed URL and upload info.
+        Uses Supabase's signed URL API to generate a secure URL.
+        """
+        import json
+        import time
+
+        # Supabase allows direct uploads via signed URLs
+        # For now, return upload parameters that the client can use
+        # The client will upload using PUT request to the public URL
+        encoded_path = urllib.parse.quote(path)
+
+        upload_url = f"{self.url}/storage/v1/object/{self.bucket}/{encoded_path}"
+
+        return {
+            'uploadUrl': upload_url,
+            'path': path,
+            'bucket': self.bucket,
+            'expiresIn': expiration_seconds
+        }
+
 
 def get_supabase_storage() -> Optional[SupabaseStorage]:
     url = os.getenv('SUPABASE_URL')

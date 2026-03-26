@@ -25,6 +25,26 @@ class VideoLinkRequest(BaseModel):
     is_downloadable: bool = False
 
 
+class VideoUploadInitRequest(BaseModel):
+    """Request to initialize a video upload and get upload URL."""
+    title: str
+    description: Optional[str] = None
+    category: str
+    filename: str
+    content_type: str = 'video/mp4'
+    is_downloadable: bool = True
+
+
+class VideoUploadCompleteRequest(BaseModel):
+    """Request to complete a video upload and save metadata."""
+    title: str
+    description: Optional[str] = None
+    category: str
+    storage_path: str
+    file_url: str
+    is_downloadable: bool = True
+
+
 def _sanitize_filename(filename: str) -> str:
     """Remove special characters from filename."""
     import re
@@ -61,6 +81,87 @@ async def _upload_video_file(video_id: str, file: UploadFile, category: str) -> 
     return storage_path, file_url
 
 
+@router.post('/upload/init', status_code=status.HTTP_200_OK)
+async def init_video_upload(
+    request: VideoUploadInitRequest,
+    db: AsyncSession = Depends(get_db),
+    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+):
+    """Initialize a video upload and get a signed upload URL for direct browser upload."""
+    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
+    if not user or user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can upload videos')
+
+    storage = get_supabase_storage()
+    if not storage:
+        raise HTTPException(status_code=500, detail='Storage service not configured')
+
+    # Generate storage path
+    video_id = str(uuid4())
+    safe_filename = _sanitize_filename(request.filename or 'video')
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    storage_path = f"videos/{video_id}/{request.category}/{date_str}/{safe_filename}"
+
+    # Get signed upload URL
+    upload_info = storage.create_signed_upload_url(storage_path)
+
+    return {
+        'uploadUrl': upload_info['uploadUrl'],
+        'storagePath': storage_path,
+        'videoId': video_id,
+        'bucket': upload_info['bucket'],
+        'message': 'Upload your video file to the provided URL, then call /upload/complete'
+    }
+
+
+@router.post('/upload/complete', status_code=status.HTTP_201_CREATED)
+async def complete_video_upload(
+    request: VideoUploadCompleteRequest,
+    db: AsyncSession = Depends(get_db),
+    user_id: int = Depends(lambda: 1)  # TODO: Get from auth token
+):
+    """Complete a video upload by saving metadata to database.
+
+    This endpoint is called after the video file has been uploaded directly to Supabase storage.
+    It saves the video metadata to the database.
+    """
+    user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
+    if not user or user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can create videos')
+
+    # Extract video ID from storage path (format: videos/{video_id}/category/date/filename)
+    try:
+        video_id = request.storage_path.split('/')[1]  # Get video_id from storage path
+    except (IndexError, AttributeError):
+        video_id = str(uuid4())  # Fallback to new UUID if parsing fails
+
+    video = Video(
+        id=video_id,
+        uploader_id=user_id,
+        title=request.title.strip(),
+        description=request.description.strip() if request.description else None,
+        category=request.category.strip(),
+        storage_path=request.storage_path,
+        file_url=request.file_url,
+        is_downloadable=request.is_downloadable
+    )
+
+    db.add(video)
+    await db.commit()
+    await db.refresh(video)
+
+    return {
+        'id': video.id,
+        'title': video.title,
+        'description': video.description,
+        'category': video.category,
+        'file_url': video.file_url,
+        'is_downloadable': video.is_downloadable,
+        'created_at': video.created_at,
+        'uploader': {'id': user.id, 'username': user.username}
+    }
+
+
 @router.post('', status_code=status.HTTP_201_CREATED)
 async def create_video(
     title: str = Form(...),
@@ -75,16 +176,16 @@ async def create_video(
     user = await db.scalar(select(UserAccount).where(UserAccount.id == user_id))
     if not user or user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can create videos')
-    
+
     if not file.filename:
         raise HTTPException(status_code=400, detail='File is required')
-    
+
     if _get_file_type(file.filename) != 'video':
         raise HTTPException(status_code=400, detail='Only video files are allowed')
-    
+
     video_id = str(uuid4())
     storage_path, file_url = await _upload_video_file(video_id, file, category)
-    
+
     video = Video(
         id=video_id,
         uploader_id=user_id,
@@ -95,11 +196,11 @@ async def create_video(
         file_url=file_url,
         is_downloadable=is_downloadable
     )
-    
+
     db.add(video)
     await db.commit()
     await db.refresh(video)
-    
+
     return {
         'id': video.id,
         'title': video.title,
