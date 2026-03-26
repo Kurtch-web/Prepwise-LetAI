@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { API_BASE } from '../config/backends';
+import { api } from '../services/api';
 
 interface VideoUploadFormProps {
   onSuccess?: () => void;
@@ -100,27 +101,15 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
     try {
       // Step 1: Initialize upload with backend to get signed URL
-      const initResponse = await fetch(`${API_BASE}/api/videos/upload/init`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim() || null,
-          category: category.trim(),
-          filename: file.name,
-          content_type: file.type || 'video/mp4',
-          is_downloadable: isDownloadable
-        })
+      const initData = await api.initVideoUpload({
+        title: title.trim(),
+        description: description.trim() || null,
+        category: category.trim(),
+        filename: file.name,
+        content_type: file.type || 'video/mp4',
+        is_downloadable: isDownloadable
       });
 
-      if (!initResponse.ok) {
-        const errorData = await initResponse.json();
-        throw new Error(errorData.detail || 'Failed to initialize video upload');
-      }
-
-      const initData = await initResponse.json();
       const { uploadUrl, storagePath, bucket } = initData;
 
       // Step 2: Upload file directly to Supabase
@@ -142,25 +131,14 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
       const fileUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
 
       // Step 3: Save metadata to database by calling complete endpoint
-      const completeResponse = await fetch(`${API_BASE}/api/videos/upload/complete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim() || null,
-          category: category.trim(),
-          storage_path: storagePath,
-          file_url: fileUrl,
-          is_downloadable: isDownloadable
-        })
+      await api.completeVideoUpload({
+        title: title.trim(),
+        description: description.trim() || null,
+        category: category.trim(),
+        storage_path: storagePath,
+        file_url: fileUrl,
+        is_downloadable: isDownloadable
       });
-
-      if (!completeResponse.ok) {
-        const errorData = await completeResponse.json();
-        throw new Error(errorData.detail || 'Failed to save video metadata');
-      }
 
       setTitle('');
       setDescription('');
@@ -205,27 +183,14 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
     try {
       const embedUrl = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
-      
-      const payload = {
+
+      await api.addVideoLink({
         title: linkTitle,
         description: linkDescription,
         category: linkCategory,
         file_url: embedUrl,
         is_downloadable: linkIsDownloadable
-      };
-
-      const response = await fetch(`${API_BASE}/api/videos/link`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to add video link');
-      }
 
       setLinkTitle('');
       setLinkDescription('');

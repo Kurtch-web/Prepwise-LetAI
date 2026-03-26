@@ -206,6 +206,69 @@ export const api = {
     }
   },
 
+  // Videos API
+  initVideoUpload: (data: {
+    title: string;
+    description?: string | null;
+    category: string;
+    filename: string;
+    content_type?: string;
+    is_downloadable?: boolean;
+  }) =>
+    request<{
+      uploadUrl: string;
+      storagePath: string;
+      videoId: string;
+      bucket: string;
+      message: string;
+    }>('/api/videos/upload/init', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  completeVideoUpload: (data: {
+    title: string;
+    description?: string | null;
+    category: string;
+    storage_path: string;
+    file_url: string;
+    is_downloadable?: boolean;
+  }) =>
+    request<{
+      id: string;
+      title: string;
+      description?: string | null;
+      category: string;
+      file_url: string;
+      is_downloadable: boolean;
+      created_at: string;
+      uploader: { id: string; username: string };
+    }>('/api/videos/upload/complete', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
+  addVideoLink: (data: {
+    title: string;
+    description?: string | null;
+    category: string;
+    file_url: string;
+    is_downloadable?: boolean;
+  }) =>
+    request<{
+      id: string;
+      title: string;
+      description?: string | null;
+      category: string;
+      file_url: string;
+      is_downloadable: boolean;
+      created_at: string;
+      uploader: { id: string; username: string };
+    }>('/api/videos/link', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+
   // Flashcards API
   uploadFlashcard: (category: string, file: File) => {
     const form = new FormData();
