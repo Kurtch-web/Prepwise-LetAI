@@ -112,18 +112,18 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
       const { uploadUrl, storagePath, bucket } = initData;
 
-      // Step 2: Upload file directly to Supabase
+      // Step 2: Upload file directly to Supabase using FormData
+      const formData = new FormData();
+      formData.append('file', file);
+
       const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': file.type || 'video/mp4',
-          'x-upsert': 'true'
-        },
-        body: file
+        body: formData
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload video to storage service');
+        const errorText = await uploadResponse.text();
+        throw new Error(`Failed to upload video to storage service: ${uploadResponse.status} ${errorText}`);
       }
 
       // Construct the public URL for the uploaded file
