@@ -48,12 +48,17 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       const videoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
-      if (videoTypes.includes(selectedFile.type)) {
-        setFile(selectedFile);
-        setError('');
-      } else {
+      const maxSizeBytes = 50 * 1024 * 1024; // 50 MB
+
+      if (!videoTypes.includes(selectedFile.type)) {
         setError('Please select a valid video file (MP4, WebM, MOV, AVI, MKV)');
         setFile(null);
+      } else if (selectedFile.size > maxSizeBytes) {
+        setError('Video file size must not exceed 50 MB');
+        setFile(null);
+      } else {
+        setFile(selectedFile);
+        setError('');
       }
     }
   };

@@ -204,10 +204,12 @@ export function AdminPortalPage() {
       setQuizDescription('');
       setTimeLimitMinutes(null);
       setQuestions([{ question_text: '', choices: ['', '', '', ''], correct_answer: 'A' }]);
-      setShowQuizForm(false);
 
       // Refresh quiz list with correct test type
       await loadAdminQuizzes(materialsTab);
+
+      // Close form after quiz is created and list is refreshed
+      setShowQuizForm(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create quiz');
     } finally {

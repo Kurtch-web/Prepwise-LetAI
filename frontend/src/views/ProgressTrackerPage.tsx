@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../providers/AuthProvider';
 import { useTheme } from '../providers/ThemeProvider';
 import { fetchAllQuizResults, QuizResult, fetchAnalytics, AnalyticsData, fetchQuizResultDetails } from '../services/progressService';
-import { PracticesTab } from '../components/PracticesTab';
 
-type Tab = 'users' | 'progress' | 'practices' | 'analytics';
+type Tab = 'users' | 'progress' | 'analytics';
 
 export function ProgressTrackerPage() {
   const { user } = useAuth();
@@ -65,20 +64,6 @@ export function ProgressTrackerPage() {
               📈 Progress
             </button>
             <button
-              onClick={() => setActiveTab('practices')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
-                activeTab === 'practices'
-                  ? isLightMode
-                    ? 'bg-emerald-500 text-white shadow-lg'
-                    : 'bg-emerald-600 text-white shadow-lg'
-                  : isLightMode
-                  ? 'text-slate-600 hover:bg-slate-100'
-                  : 'text-slate-400 hover:bg-slate-700/40'
-              }`}
-            >
-              📚 Practices
-            </button>
-            <button
               onClick={() => setActiveTab('analytics')}
               className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
                 activeTab === 'analytics'
@@ -103,7 +88,6 @@ export function ProgressTrackerPage() {
         }`}>
           {activeTab === 'users' && <UsersTab isLightMode={isLightMode} />}
           {activeTab === 'progress' && <ProgressTab isLightMode={isLightMode} />}
-          {activeTab === 'practices' && <PracticesTab isLightMode={isLightMode} />}
           {activeTab === 'analytics' && <AnalyticsTab isLightMode={isLightMode} />}
         </div>
       </div>
