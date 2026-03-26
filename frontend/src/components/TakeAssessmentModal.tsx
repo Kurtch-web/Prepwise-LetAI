@@ -48,37 +48,14 @@ export function TakeAssessmentModal({ assessment, onClose, onSuccess }: TakeAsse
       return;
     }
 
-    setLoading(true);
-    try {
-      console.log('Submitting assessment with template_id:', assessment.id);
-      console.log('Submitting assessment with responses:', responses);
-      const result = await api.createAssessment(assessment.id, responses);
-      console.log('Assessment submitted successfully:', result);
-      setSubmitted(true);
-      setTimeout(() => {
-        onSuccess?.();
-        onClose();
-      }, 2000);
-    } catch (err) {
-      let errorMessage = 'Failed to submit assessment';
+    // Close immediately without waiting for backend
+    onSuccess?.();
+    onClose();
 
-      if (err instanceof Error) {
-        if (err.message.includes('404')) {
-          errorMessage = 'Assessment template not found. Please refresh and try again.';
-        } else if (err.message.includes('401') || err.message.includes('403')) {
-          errorMessage = 'You are not authorized to submit this assessment.';
-        } else if (err.message.includes('network') || err.message.includes('fetch')) {
-          errorMessage = 'Network error. Please check your connection and try again.';
-        } else {
-          errorMessage = err.message;
-        }
-      }
-
-      console.error('Assessment submission error:', errorMessage);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    // Submit assessment in the background (don't wait for response)
+    api.createAssessment(assessment.id, responses).catch(err => {
+      console.error('Failed to submit assessment:', err);
+    });
   };
 
   if (submitted) {

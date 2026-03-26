@@ -101,17 +101,13 @@ export default function PracticeQuizTaker({ quizId, onBack, onComplete }: Practi
   const submitQuiz = async () => {
     if (!sessionId || isSubmitting) return;
 
-    setIsSubmitting(true);
-    try {
-      await practiceQuizzesService.submitQuiz(sessionId);
-      const resultsData = await practiceQuizzesService.getResults(sessionId);
-      setResults(resultsData);
-      setShowResults(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit quiz');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Close the test tab immediately without waiting for backend
+    onBack();
+
+    // Submit quiz in the background (don't wait for response)
+    practiceQuizzesService.submitQuiz(sessionId).catch(err => {
+      console.error('Failed to submit quiz:', err);
+    });
   };
 
   if (isLoading) {
