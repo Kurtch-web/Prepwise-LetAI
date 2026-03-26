@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
-import { API_BASE } from '../config/backends';
 import { api } from '../services/api';
 
 interface VideoUploadFormProps {
@@ -100,45 +99,16 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     setIsLoading(true);
 
     try {
-      // Step 1: Initialize upload with backend to get signed URL
-      const initData = await api.initVideoUpload({
-        title: title.trim(),
-        description: description.trim() || null,
-        category: category.trim(),
-        filename: file.name,
-        content_type: file.type || 'video/mp4',
-        is_downloadable: isDownloadable
-      });
-
-      const { uploadUrl, storagePath, bucket } = initData;
-
-      // Step 2: Upload file directly to Supabase using FormData
+      // Create FormData with video details and file
       const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('description', description.trim() || '');
+      formData.append('category', category.trim());
       formData.append('file', file);
+      formData.append('is_downloadable', String(isDownloadable));
 
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        throw new Error(`Failed to upload video to storage service: ${uploadResponse.status} ${errorText}`);
-      }
-
-      // Construct the public URL for the uploaded file
-      const baseUrl = uploadUrl.split('/storage/v1/object/')[0];
-      const fileUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
-
-      // Step 3: Save metadata to database by calling complete endpoint
-      await api.completeVideoUpload({
-        title: title.trim(),
-        description: description.trim() || null,
-        category: category.trim(),
-        storage_path: storagePath,
-        file_url: fileUrl,
-        is_downloadable: isDownloadable
-      });
+      // Upload to backend (backend handles Supabase upload)
+      await api.uploadVideo(formData);
 
       setTitle('');
       setDescription('');

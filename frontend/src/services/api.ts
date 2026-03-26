@@ -207,34 +207,8 @@ export const api = {
   },
 
   // Videos API
-  initVideoUpload: (data: {
-    title: string;
-    description?: string | null;
-    category: string;
-    filename: string;
-    content_type?: string;
-    is_downloadable?: boolean;
-  }) =>
-    request<{
-      uploadUrl: string;
-      storagePath: string;
-      videoId: string;
-      bucket: string;
-      message: string;
-    }>('/api/videos/upload/init', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }),
-
-  completeVideoUpload: (data: {
-    title: string;
-    description?: string | null;
-    category: string;
-    storage_path: string;
-    file_url: string;
-    is_downloadable?: boolean;
-  }) =>
-    request<{
+  uploadVideo: (form: FormData) =>
+    requestForm<{
       id: string;
       title: string;
       description?: string | null;
@@ -243,9 +217,8 @@ export const api = {
       is_downloadable: boolean;
       created_at: string;
       uploader: { id: string; username: string };
-    }>('/api/videos/upload/complete', {
-      method: 'POST',
-      body: JSON.stringify(data)
+    }>('/api/videos/upload', form, {
+      method: 'POST'
     }),
 
   addVideoLink: (data: {
