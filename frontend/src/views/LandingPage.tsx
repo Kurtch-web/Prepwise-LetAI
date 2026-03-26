@@ -7,6 +7,7 @@ export function LandingPage() {
   const { theme, toggleTheme } = useTheme();
   const isLightMode = theme === 'light';
   const [scrollY, setScrollY] = useState(0);
+  const [showContactSupport, setShowContactSupport] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -420,7 +421,7 @@ export function LandingPage() {
               <ul className={`space-y-2 text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                 <li><a href="#" className="hover:text-blue-500 transition">Privacy</a></li>
                 <li><a href="#" className="hover:text-blue-500 transition">Terms</a></li>
-                <li><a href="#" className="hover:text-blue-500 transition">Support</a></li>
+                <li><button onClick={() => setShowContactSupport(true)} className="hover:text-blue-500 transition cursor-pointer">Support</button></li>
               </ul>
             </div>
           </div>
@@ -433,6 +434,65 @@ export function LandingPage() {
         </div>
       </footer>
 
+      {/* Contact Support Modal */}
+      {showContactSupport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className={`rounded-2xl p-8 max-w-md w-full border ${
+            isLightMode
+              ? 'bg-white border-slate-200'
+              : 'bg-slate-900 border-slate-700'
+          }`}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Contact Support
+              </h3>
+              <button
+                onClick={() => setShowContactSupport(false)}
+                className={`text-2xl transition ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-slate-100' : 'bg-slate-800'}`}>
+                <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Phone
+                </p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  0987654231
+                </p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-slate-100' : 'bg-slate-800'}`}>
+                <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Hotline
+                </p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  456 5732
+                </p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-slate-100' : 'bg-slate-800'}`}>
+                <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Email
+                </p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  admin.cvsu.edu.ph
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowContactSupport(false)}
+              className="w-full mt-6 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/40 transition-all"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Animation styles */}
       <style>{`
         @keyframes blob {
@@ -440,15 +500,15 @@ export function LandingPage() {
           33% { transform: translate(30px, -50px) scale(1.1); }
           66% { transform: translate(-20px, 20px) scale(0.9); }
         }
-        
+
         .animate-blob {
           animation: blob 7s infinite;
         }
-        
+
         .animation-delay-2000 {
           animation-delay: 2s;
         }
-        
+
         .animation-delay-4000 {
           animation-delay: 4s;
         }
