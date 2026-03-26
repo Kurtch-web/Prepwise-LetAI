@@ -99,21 +99,67 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('description', description);
-      formData.append('category', category);
-      formData.append('file', file);
-      formData.append('is_downloadable', String(isDownloadable));
-
-      const response = await fetch(`${API_BASE}/api/videos`, {
+      // Step 1: Initialize upload with backend to get signed URL
+      const initResponse = await fetch(`${API_BASE}/api/videos/upload/init`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim() || null,
+          category: category.trim(),
+          filename: file.name,
+          content_type: file.type || 'video/mp4',
+          is_downloadable: isDownloadable
+        })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to upload video');
+      if (!initResponse.ok) {
+        const errorData = await initResponse.json();
+        throw new Error(errorData.detail || 'Failed to initialize video upload');
+      }
+
+      const initData = await initResponse.json();
+      const { uploadUrl, storagePath, bucket } = initData;
+
+      // Step 2: Upload file directly to Supabase
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type || 'video/mp4',
+          'x-upsert': 'true'
+        },
+        body: file
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload video to storage service');
+      }
+
+      // Construct the public URL for the uploaded file
+      const baseUrl = uploadUrl.split('/storage/v1/object/')[0];
+      const fileUrl = `${baseUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+
+      // Step 3: Save metadata to database by calling complete endpoint
+      const completeResponse = await fetch(`${API_BASE}/api/videos/upload/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim() || null,
+          category: category.trim(),
+          storage_path: storagePath,
+          file_url: fileUrl,
+          is_downloadable: isDownloadable
+        })
+      });
+
+      if (!completeResponse.ok) {
+        const errorData = await completeResponse.json();
+        throw new Error(errorData.detail || 'Failed to save video metadata');
       }
 
       setTitle('');
