@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { api } from '../services/api';
+import { supabaseStorageService } from '../services/supabaseStorageService';
 
 interface VideoUploadFormProps {
   onSuccess?: () => void;
@@ -48,7 +49,7 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       const videoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
-      const maxSizeBytes = 50 * 1024 * 1024; // 50 MB
+      const maxSizeBytes = 25 * 1024 * 1024; // 25 MB (safe limit for Vercel)
 
       if (!videoTypes.includes(selectedFile.type)) {
         setError('Please select a valid video file (MP4, WebM, MOV, AVI, MKV)');
@@ -99,16 +100,24 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     setIsLoading(true);
 
     try {
-      // Create FormData with video details and file
-      const formData = new FormData();
-      formData.append('title', title.trim());
-      formData.append('description', description.trim() || '');
-      formData.append('category', category.trim());
-      formData.append('file', file);
-      formData.append('is_downloadable', String(isDownloadable));
+      // Step 1: Upload file directly to Supabase (bypasses Vercel!)
+      const videoId = crypto.randomUUID();
+      const storagePath = supabaseStorageService.getVideoPath(videoId, category.trim(), file.name);
 
-      // Upload to backend (backend handles Supabase upload)
-      await api.uploadVideo(formData);
+      const fileUrl = await supabaseStorageService.uploadFile(file, storagePath, (progress) => {
+        const percent = Math.round((progress.loaded / progress.total) * 100);
+        console.log(`Upload progress: ${percent}%`);
+      });
+
+      // Step 2: Save metadata to backend
+      await api.saveVideoMetadata({
+        title: title.trim(),
+        description: description.trim() || null,
+        category: category.trim(),
+        storage_path: storagePath,
+        file_url: fileUrl,
+        is_downloadable: isDownloadable
+      });
 
       setTitle('');
       setDescription('');
@@ -153,11 +162,13 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
     try {
       const embedUrl = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
+      const videoId = crypto.randomUUID();
 
-      await api.addVideoLink({
+      await api.saveVideoMetadata({
         title: linkTitle,
-        description: linkDescription,
+        description: linkDescription || null,
         category: linkCategory,
+        storage_path: 'youtube-link',
         file_url: embedUrl,
         is_downloadable: linkIsDownloadable
       });

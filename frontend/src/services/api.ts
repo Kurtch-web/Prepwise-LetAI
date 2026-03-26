@@ -207,8 +207,15 @@ export const api = {
   },
 
   // Videos API
-  uploadVideo: (form: FormData) =>
-    requestForm<{
+  saveVideoMetadata: (data: {
+    title: string;
+    description?: string | null;
+    category: string;
+    storage_path: string;
+    file_url: string;
+    is_downloadable: boolean;
+  }) =>
+    request<{
       id: string;
       title: string;
       description?: string | null;
@@ -217,8 +224,9 @@ export const api = {
       is_downloadable: boolean;
       created_at: string;
       uploader: { id: string; username: string };
-    }>('/api/videos/upload', form, {
-      method: 'POST'
+    }>('/api/videos/metadata', {
+      method: 'POST',
+      body: JSON.stringify(data)
     }),
 
   addVideoLink: (data: {
