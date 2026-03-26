@@ -81,67 +81,44 @@ async def _upload_video_file(video_id: str, file: UploadFile, category: str) -> 
     return storage_path, file_url
 
 
-@router.post('/upload/init', status_code=status.HTTP_200_OK)
-async def init_video_upload(
-    request: VideoUploadInitRequest,
+@router.post('/upload', status_code=status.HTTP_201_CREATED)
+async def upload_video(
+    title: str = Form(...),
+    description: Optional[str] = Form(None),
+    category: str = Form(...),
+    file: UploadFile = File(...),
+    is_downloadable: bool = Form(default=True),
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user)
 ):
-    """Initialize a video upload and get a signed upload URL for direct browser upload."""
+    """Upload a video file directly. Backend handles Supabase upload."""
     if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can upload videos')
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail='File is required')
+
+    if _get_file_type(file.filename) != 'video':
+        raise HTTPException(status_code=400, detail='Only video files are allowed')
 
     storage = get_supabase_storage()
     if not storage:
         raise HTTPException(status_code=500, detail='Storage service not configured')
 
-    # Generate storage path
+    # Upload to Supabase
     video_id = str(uuid4())
-    safe_filename = _sanitize_filename(request.filename or 'video')
-    date_str = datetime.now().strftime('%Y-%m-%d')
-    storage_path = f"videos/{video_id}/{request.category}/{date_str}/{safe_filename}"
+    storage_path, file_url = await _upload_video_file(video_id, file, category)
 
-    # Get signed upload URL
-    upload_info = storage.create_signed_upload_url(storage_path)
-
-    return {
-        'uploadUrl': upload_info['uploadUrl'],
-        'storagePath': storage_path,
-        'videoId': video_id,
-        'bucket': upload_info['bucket'],
-        'message': 'Upload your video file to the provided URL, then call /upload/complete'
-    }
-
-
-@router.post('/upload/complete', status_code=status.HTTP_201_CREATED)
-async def complete_video_upload(
-    request: VideoUploadCompleteRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: UserAccount = Depends(get_current_user)
-):
-    """Complete a video upload by saving metadata to database.
-
-    This endpoint is called after the video file has been uploaded directly to Supabase storage.
-    It saves the video metadata to the database.
-    """
-    if not current_user or current_user.role != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can create videos')
-
-    # Extract video ID from storage path (format: videos/{video_id}/category/date/filename)
-    try:
-        video_id = request.storage_path.split('/')[1]  # Get video_id from storage path
-    except (IndexError, AttributeError):
-        video_id = str(uuid4())  # Fallback to new UUID if parsing fails
-
+    # Save metadata to database
     video = Video(
         id=video_id,
         uploader_id=current_user.id,
-        title=request.title.strip(),
-        description=request.description.strip() if request.description else None,
-        category=request.category.strip(),
-        storage_path=request.storage_path,
-        file_url=request.file_url,
-        is_downloadable=request.is_downloadable
+        title=title.strip(),
+        description=description.strip() if description else None,
+        category=category.strip(),
+        storage_path=storage_path,
+        file_url=file_url,
+        is_downloadable=is_downloadable
     )
 
     db.add(video)
