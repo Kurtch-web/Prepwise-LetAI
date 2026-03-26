@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { API_BASE } from '../config/backends';
 import { VideoPlayerModal } from './VideoPlayerModal';
+import { authService } from '../services/authService';
 
 interface Video {
   id: string;
@@ -86,8 +87,20 @@ export default function VideoList({ onEditVideo }: VideoListProps) {
 
     setDeletingId(videoId);
     try {
+      const headers = new Headers({
+        'Content-Type': 'application/json'
+      });
+
+      // Add auth token if available
+      const token = authService.getToken();
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+
       const response = await fetch(`${API_BASE}/api/videos/${videoId}`, {
         method: 'DELETE',
+        credentials: 'include',
+        headers
       });
 
       if (!response.ok) {
