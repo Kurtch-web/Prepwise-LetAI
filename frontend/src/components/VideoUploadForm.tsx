@@ -1,36 +1,24 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { api } from '../services/api';
-import { supabaseStorageService } from '../services/supabaseStorageService';
 
 interface VideoUploadFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-type TabType = 'upload' | 'link';
-
 export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadFormProps) {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
-  const [activeTab, setActiveTab] = useState<TabType>('upload');
-  
-  // Upload tab state
+
+  // YouTube link form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('General Education');
-  const [file, setFile] = useState<File | null>(null);
-  const [isDownloadable, setIsDownloadable] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  
-  // Link tab state
-  const [linkTitle, setLinkTitle] = useState('');
-  const [linkDescription, setLinkDescription] = useState('');
-  const [linkCategory, setLinkCategory] = useState('General Education');
   const [youtubeLink, setYoutubeLink] = useState('');
-  const [linkIsDownloadable, setLinkIsDownloadable] = useState(false);
-  const [linkError, setLinkError] = useState('');
+  const [isDownloadable, setIsDownloadable] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const categoryOptions = [
     'General Education',
@@ -45,24 +33,6 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     'Health'
   ];
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      const videoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
-      const maxSizeBytes = 25 * 1024 * 1024; // 25 MB (safe limit for Vercel)
-
-      if (!videoTypes.includes(selectedFile.type)) {
-        setError('Please select a valid video file (MP4, WebM, MOV, AVI, MKV)');
-        setFile(null);
-      } else if (selectedFile.size > maxSizeBytes) {
-        setError('Video file size must not exceed 50 MB');
-        setFile(null);
-      } else {
-        setFile(selectedFile);
-        setError('');
-      }
-    }
-  };
 
   const extractYoutubeId = (url: string): string | null => {
     const patterns = [
@@ -78,7 +48,7 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     return null;
   };
 
-  const handleUploadSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -92,69 +62,14 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
       return;
     }
 
-    if (!file) {
-      setError('Please select a video file');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Step 1: Upload file directly to Supabase (bypasses Vercel!)
-      const videoId = crypto.randomUUID();
-      const storagePath = supabaseStorageService.getVideoPath(videoId, category.trim(), file.name);
-
-      const fileUrl = await supabaseStorageService.uploadFile(file, storagePath, (progress) => {
-        const percent = Math.round((progress.loaded / progress.total) * 100);
-        console.log(`Upload progress: ${percent}%`);
-      });
-
-      // Step 2: Save metadata to backend
-      await api.saveVideoMetadata({
-        title: title.trim(),
-        description: description.trim() || null,
-        category: category.trim(),
-        storage_path: storagePath,
-        file_url: fileUrl,
-        is_downloadable: isDownloadable
-      });
-
-      setTitle('');
-      setDescription('');
-      setCategory('General Education');
-      setFile(null);
-      setIsDownloadable(true);
-
-      onSuccess?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload video');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLinkSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLinkError('');
-
-    if (!linkTitle.trim()) {
-      setLinkError('Title is required');
-      return;
-    }
-
-    if (!linkCategory.trim()) {
-      setLinkError('Category is required');
-      return;
-    }
-
     if (!youtubeLink.trim()) {
-      setLinkError('YouTube link is required');
+      setError('YouTube link is required');
       return;
     }
 
     const youtubeId = extractYoutubeId(youtubeLink);
     if (!youtubeId) {
-      setLinkError('Please enter a valid YouTube link (e.g., https://www.youtube.com/watch?v=...)');
+      setError('Please enter a valid YouTube link (e.g., https://www.youtube.com/watch?v=...)');
       return;
     }
 
@@ -162,26 +77,25 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
     try {
       const embedUrl = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
-      const videoId = crypto.randomUUID();
 
       await api.saveVideoMetadata({
-        title: linkTitle,
-        description: linkDescription || null,
-        category: linkCategory,
+        title: title.trim(),
+        description: description.trim() || null,
+        category: category.trim(),
         storage_path: 'youtube-link',
         file_url: embedUrl,
-        is_downloadable: linkIsDownloadable
+        is_downloadable: isDownloadable
       });
 
-      setLinkTitle('');
-      setLinkDescription('');
-      setLinkCategory('General Education');
+      setTitle('');
+      setDescription('');
+      setCategory('General Education');
       setYoutubeLink('');
-      setLinkIsDownloadable(false);
+      setIsDownloadable(false);
 
       onSuccess?.();
     } catch (err) {
-      setLinkError(err instanceof Error ? err.message : 'Failed to add video link');
+      setError(err instanceof Error ? err.message : 'Failed to add video');
     } finally {
       setIsLoading(false);
     }
@@ -191,222 +105,100 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     <div className={`video-upload-form-container ${isLightMode ? 'light-mode' : 'dark-mode'}`}>
       <h3 className="form-title">Add Video Lesson</h3>
 
-      {/* Tab Navigation */}
-      <div className="tab-navigation">
-        <button
-          type="button"
-          className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
-          onClick={() => setActiveTab('upload')}
-          disabled={isLoading}
-        >
-          📤 Upload File
-        </button>
-        <button
-          type="button"
-          className={`tab-btn ${activeTab === 'link' ? 'active' : ''}`}
-          onClick={() => setActiveTab('link')}
-          disabled={isLoading}
-        >
-          🔗 YouTube Link
-        </button>
-      </div>
+      <form onSubmit={handleSubmit} className="video-upload-form">
+        <div className="form-group">
+          <label htmlFor="title">Video Title *</label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Enter video title"
+            disabled={isLoading}
+            className="form-input"
+          />
+        </div>
 
-      {/* Upload Tab */}
-      {activeTab === 'upload' && (
-        <form onSubmit={handleUploadSubmit} className="video-upload-form">
-          <div className="form-group">
-            <label htmlFor="title">Video Title *</label>
+        <div className="form-group">
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter video description"
+            disabled={isLoading}
+            rows={3}
+            className="form-textarea"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="category">Category *</label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            disabled={isLoading}
+            className="form-select"
+          >
+            <option value="">Select a category</option>
+            {categoryOptions.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="youtube-link">YouTube Link *</label>
+          <input
+            id="youtube-link"
+            type="url"
+            value={youtubeLink}
+            onChange={(e) => setYoutubeLink(e.target.value)}
+            placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=...)"
+            disabled={isLoading}
+            className="form-input"
+          />
+          <p className="link-hint">
+            ℹ️ Non-cookie YouTube links will be used (youtube-nocookie.com)
+          </p>
+        </div>
+
+        <div className="form-group checkbox-group">
+          <label htmlFor="downloadable">
             <input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter video title"
+              id="downloadable"
+              type="checkbox"
+              checked={isDownloadable}
+              onChange={(e) => setIsDownloadable(e.target.checked)}
               disabled={isLoading}
-              className="form-input"
             />
-          </div>
+            Allow users to download this video
+          </label>
+        </div>
 
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Enter video description"
-              disabled={isLoading}
-              rows={3}
-              className="form-textarea"
-            />
-          </div>
+        {error && <div className="error-message">{error}</div>}
 
-          <div className="form-group">
-            <label htmlFor="category">Category *</label>
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              disabled={isLoading}
-              className="form-select"
-            >
-              <option value="">Select a category</option>
-              {categoryOptions.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="file">Video File *</label>
-            <input
-              id="file"
-              type="file"
-              accept="video/*"
-              onChange={handleFileSelect}
-              disabled={isLoading}
-              className="form-input file-input"
-            />
-            {file && (
-              <p className="file-selected">
-                📹 {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)
-              </p>
-            )}
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label htmlFor="downloadable">
-              <input
-                id="downloadable"
-                type="checkbox"
-                checked={isDownloadable}
-                onChange={(e) => setIsDownloadable(e.target.checked)}
-                disabled={isLoading}
-              />
-              Allow users to download this video
-            </label>
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-
-          <div className="form-actions">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-primary"
-            >
-              {isLoading ? 'Uploading...' : 'Upload Video'}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={isLoading}
-              className="btn btn-secondary"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Link Tab */}
-      {activeTab === 'link' && (
-        <form onSubmit={handleLinkSubmit} className="video-upload-form">
-          <div className="form-group">
-            <label htmlFor="link-title">Video Title *</label>
-            <input
-              id="link-title"
-              type="text"
-              value={linkTitle}
-              onChange={(e) => setLinkTitle(e.target.value)}
-              placeholder="Enter video title"
-              disabled={isLoading}
-              className="form-input"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="link-description">Description</label>
-            <textarea
-              id="link-description"
-              value={linkDescription}
-              onChange={(e) => setLinkDescription(e.target.value)}
-              placeholder="Enter video description"
-              disabled={isLoading}
-              rows={3}
-              className="form-textarea"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="link-category">Category *</label>
-            <select
-              id="link-category"
-              value={linkCategory}
-              onChange={(e) => setLinkCategory(e.target.value)}
-              disabled={isLoading}
-              className="form-select"
-            >
-              <option value="">Select a category</option>
-              {categoryOptions.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="youtube-link">YouTube Link *</label>
-            <input
-              id="youtube-link"
-              type="url"
-              value={youtubeLink}
-              onChange={(e) => setYoutubeLink(e.target.value)}
-              placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=...)"
-              disabled={isLoading}
-              className="form-input"
-            />
-            <p className="link-hint">
-              ℹ️ Non-cookie YouTube links will be used (youtube-nocookie.com)
-            </p>
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label htmlFor="link-downloadable">
-              <input
-                id="link-downloadable"
-                type="checkbox"
-                checked={linkIsDownloadable}
-                onChange={(e) => setLinkIsDownloadable(e.target.checked)}
-                disabled={isLoading}
-              />
-              Allow users to download this video
-            </label>
-          </div>
-
-          {linkError && <div className="error-message">{linkError}</div>}
-
-          <div className="form-actions">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-primary"
-            >
-              {isLoading ? 'Adding...' : 'Add Video'}
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={isLoading}
-              className="btn btn-secondary"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
+        <div className="form-actions">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn btn-primary"
+          >
+            {isLoading ? 'Adding...' : 'Add Video'}
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isLoading}
+            className="btn btn-secondary"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
 
       <style>{`
         .video-upload-form-container {
@@ -435,63 +227,6 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .dark-mode .form-title {
           color: white;
-        }
-
-        /* Tab Navigation */
-        .tab-navigation {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 24px;
-          border-bottom: 2px solid;
-          padding-bottom: 0;
-        }
-
-        .light-mode .tab-navigation {
-          border-bottom-color: rgb(226, 232, 240);
-        }
-
-        .dark-mode .tab-navigation {
-          border-bottom-color: rgb(51, 65, 85);
-        }
-
-        .tab-btn {
-          padding: 12px 18px;
-          background: transparent;
-          border: none;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-          border-bottom: 3px solid transparent;
-          margin-bottom: -2px;
-          white-space: nowrap;
-        }
-
-        .light-mode .tab-btn {
-          color: rgb(100, 116, 139);
-        }
-
-        .dark-mode .tab-btn {
-          color: rgb(148, 163, 184);
-        }
-
-        .tab-btn:hover:not(:disabled) {
-          color: rgb(79, 70, 229);
-        }
-
-        .light-mode .tab-btn.active {
-          color: rgb(79, 70, 229);
-          border-bottom-color: rgb(79, 70, 229);
-        }
-
-        .dark-mode .tab-btn.active {
-          color: rgb(147, 197, 253);
-          border-bottom-color: rgb(147, 197, 253);
-        }
-
-        .tab-btn:disabled {
-          cursor: not-allowed;
-          opacity: 0.6;
         }
 
         .video-upload-form {
@@ -602,28 +337,6 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
           background-color: rgb(51, 65, 85);
           color: rgb(100, 116, 139);
           cursor: not-allowed;
-        }
-
-        .file-input {
-          cursor: pointer;
-        }
-
-        .file-selected {
-          margin: 8px 0 0 0;
-          font-size: 13px;
-          padding: 10px;
-          border-radius: 6px;
-          font-weight: 500;
-        }
-
-        .light-mode .file-selected {
-          background-color: rgb(240, 249, 255);
-          color: rgb(7, 89, 133);
-        }
-
-        .dark-mode .file-selected {
-          background-color: rgba(79, 70, 229, 0.1);
-          color: rgb(147, 197, 253);
         }
 
         .link-hint {
