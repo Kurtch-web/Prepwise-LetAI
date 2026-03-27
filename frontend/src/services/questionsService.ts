@@ -110,11 +110,11 @@ const questionsService = {
   },
 
   async downloadQuestions(category?: string) {
-    const url = category 
+    const url = category
       ? `/api/questions/download?category=${encodeURIComponent(category)}`
       : '/api/questions/download';
-    
-    return request<{ 
+
+    return request<{
       data: Array<{
         id: string;
         question: string;
@@ -129,6 +129,12 @@ const questionsService = {
       category_filter: string;
     }>(url, {
       method: 'GET'
+    });
+  },
+
+  async deleteFolderByBatchName(batchName: string) {
+    return request(`/api/questions/folder/${encodeURIComponent(batchName)}`, {
+      method: 'DELETE'
     });
   }
 };

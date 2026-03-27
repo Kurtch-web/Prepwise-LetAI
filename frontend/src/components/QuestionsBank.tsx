@@ -190,6 +190,22 @@ export function QuestionsBank() {
     }
   };
 
+  const handleDeleteFolder = async (folder: string) => {
+    const questionCount = questions.filter(q => (q.batch_name || 'General Batch') === folder).length;
+    if (confirm(`Are you sure you want to delete this folder and all ${questionCount} question(s) in it? This action cannot be undone.`)) {
+      try {
+        setLoading(true);
+        await questionsService.deleteFolderByBatchName(folder);
+        await loadQuestions();
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete folder');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const handleSaveDetectedMCQs = async () => {
     if (selectedMCQs.size === 0) {
       setError('Please select at least one question to save');
@@ -374,24 +390,37 @@ export function QuestionsBank() {
                 <div className={`p-4 border-b ${
                   isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-800/50 border-slate-700'
                 }`}>
-                  <button
-                    onClick={() => toggleFolder(folder)}
-                    className="w-full text-left flex items-center justify-between gap-3 hover:opacity-80 transition"
-                  >
-                    <h3 className={`text-xl font-bold flex items-center gap-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                      <span className={`text-lg transition-transform ${
-                        isFolderExpanded ? 'rotate-90' : ''
-                      }`}>
-                        ▶
-                      </span>
-                      📁 {folder}
-                      <span className={`text-sm font-normal px-2 py-0.5 rounded-full ${
-                        isLightMode ? 'bg-slate-200 text-slate-600' : 'bg-slate-700 text-slate-400'
-                      }`}>
-                        {folderQuestions.length}
-                      </span>
-                    </h3>
-                  </button>
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      onClick={() => toggleFolder(folder)}
+                      className="flex-1 text-left flex items-center justify-between gap-3 hover:opacity-80 transition"
+                    >
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                        <span className={`text-lg transition-transform ${
+                          isFolderExpanded ? 'rotate-90' : ''
+                        }`}>
+                          ▶
+                        </span>
+                        📁 {folder}
+                        <span className={`text-sm font-normal px-2 py-0.5 rounded-full ${
+                          isLightMode ? 'bg-slate-200 text-slate-600' : 'bg-slate-700 text-slate-400'
+                        }`}>
+                          {folderQuestions.length}
+                        </span>
+                      </h3>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteFolder(folder)}
+                      disabled={loading}
+                      className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                        isLightMode
+                          ? 'bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                          : 'bg-red-900/30 text-red-300 hover:bg-red-900/50 disabled:opacity-50 disabled:cursor-not-allowed'
+                      }`}
+                    >
+                      🗑️ Delete Folder
+                    </button>
+                  </div>
                 </div>
                 {isFolderExpanded && (
                   <div className="p-6 space-y-3">
