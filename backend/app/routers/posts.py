@@ -196,7 +196,7 @@ async def list_posts(
                 # Posts from their assigned instructor
                 and_(
                     Post.author_id == current_user.instructor_id,
-                    current_user.instructor_id.is_not(None)
+                    Post.author_id.isnot(None)
                 ),
                 # Posts from other students with same instructor
                 Post.author_id.in_(
