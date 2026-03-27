@@ -102,20 +102,45 @@ async def delete_question(
     """Delete a question (admin only)."""
     if current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete questions")
-    
+
     result = await db.execute(select(Question).where(Question.id == question_id))
     question = result.scalars().first()
-    
+
     if not question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
-    
+
     if question.creator_id != current_user.id and current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
-    
+
     await db.delete(question)
     await db.commit()
-    
+
     return {"status": "success", "message": "Question deleted"}
+
+
+@router.delete("/folder/{batch_name}")
+async def delete_folder(
+    batch_name: str,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete all questions in a folder/batch (admin only)."""
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete folders")
+
+    result = await db.execute(select(Question).where(Question.batch_name == batch_name))
+    questions = result.scalars().all()
+
+    if not questions:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Folder not found")
+
+    deleted_count = len(questions)
+    for question in questions:
+        await db.delete(question)
+
+    await db.commit()
+
+    return {"status": "success", "message": f"Deleted {deleted_count} questions from folder", "deleted_count": deleted_count}
 
 
 @router.get("/download")
