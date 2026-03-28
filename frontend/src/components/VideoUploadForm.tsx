@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { api } from '../services/api';
+import { r2Service } from '../services/r2Service';
 
 interface VideoUploadFormProps {
   onSuccess?: () => void;
@@ -66,34 +67,6 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     }
   };
 
-  const uploadFileToR2 = async (file: File, uploadUrl: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = (event.loaded / event.total) * 100;
-          setUploadProgress(Math.round(percentComplete));
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
-        } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('Upload failed'));
-      });
-
-      xhr.open('PUT', uploadUrl);
-      xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
-      xhr.send(file);
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,9 +125,15 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
           return;
         }
 
-        // Get presigned URL from backend
+        // Check if R2 credentials are configured
+        if (!r2Service.areR2CredentialsConfigured()) {
+          setError('R2 storage is not configured. Please check your environment variables.');
+          return;
+        }
+
+        // Get presigned URL from R2 service
         setUploadProgress(10);
-        const presignedData = await api.getPresignedUploadUrl(
+        const presignedData = await r2Service.getPresignedUploadUrl(
           selectedFile.name,
           selectedFile.type || 'video/mp4'
         );
@@ -162,7 +141,10 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
         setUploadProgress(20);
 
         // Upload file to R2 using presigned URL
-        await uploadFileToR2(selectedFile, presignedData.uploadUrl);
+        await r2Service.uploadFileToR2(selectedFile, presignedData.uploadUrl, (progress) => {
+          const percentComplete = (progress.loaded / progress.total) * 100;
+          setUploadProgress(Math.round(percentComplete * 0.6 + 20)); // 20-80% for upload
+        });
 
         setUploadProgress(90);
 
