@@ -131,20 +131,20 @@ class R2Storage:
     def s3_client(self):
         """Lazy load boto3 S3 client."""
         if self._s3_client is None:
-        import boto3
-        from botocore.config import Config
-        self._s3_client = boto3.client(
-            's3',
-            endpoint_url=self.endpoint,
-            aws_access_key_id=self.access_key,
-            aws_secret_access_key=self.secret_key,
-            region_name='auto',
-            config=Config(
-                signature_version='s3v4',
-                s3={'addressing_style': 'path'}
+            import boto3
+            from botocore.config import Config
+            self._s3_client = boto3.client(
+                's3',
+                endpoint_url=self.endpoint,
+                aws_access_key_id=self.access_key,
+                aws_secret_access_key=self.secret_key,
+                region_name='auto',
+                config=Config(
+                    signature_version='s3v4',
+                    s3={'addressing_style': 'path'}
+                )
             )
-        )
-    return self._s3_client
+        return self._s3_client
 
     def public_url_for_path(self, path: str) -> str:
         """Get the public URL for a file in R2."""
