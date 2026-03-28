@@ -4,6 +4,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -412,6 +413,47 @@ async def get_video(video_id: str, db: AsyncSession = Depends(get_db)):
         'updated_at': video.updated_at,
         'uploader': {'id': uploader.id, 'username': uploader.username} if uploader else None
     }
+
+
+@router.get('/{video_id}/stream')
+async def stream_video(video_id: str, db: AsyncSession = Depends(get_db)):
+    """Stream a video from R2 through the backend (bypasses CORS issues)."""
+    import asyncio
+    import aiohttp
+
+    video = await db.scalar(select(Video).where(Video.id == video_id))
+
+    if not video:
+        raise HTTPException(status_code=404, detail='Video not found')
+
+    # YouTube videos don't need streaming
+    if 'youtube' in video.file_url:
+        raise HTTPException(status_code=400, detail='Use direct YouTube URL for embedding')
+
+    file_url = video.file_url
+
+    async def iterate_file():
+        """Stream file from R2 in chunks."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(file_url) as resp:
+                    if resp.status != 200:
+                        raise HTTPException(status_code=resp.status, detail='Failed to fetch video from storage')
+
+                    # Stream in 1MB chunks
+                    async for chunk in resp.content.iter_chunked(1024 * 1024):
+                        yield chunk
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f'Error streaming video: {str(e)}')
+
+    return StreamingResponse(
+        iterate_file(),
+        media_type='video/mp4',
+        headers={
+            'Accept-Ranges': 'bytes',
+            'Cache-Control': 'public, max-age=3600',
+        }
+    )
 
 
 @router.put('/{video_id}')
