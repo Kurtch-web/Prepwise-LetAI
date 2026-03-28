@@ -1,4 +1,5 @@
 import { useTheme } from '../providers/ThemeProvider';
+import { API_BASE } from '../config/backends';
 
 interface VideoPlayerModalProps {
   isOpen: boolean;
@@ -83,7 +84,7 @@ export function VideoPlayerModal({ isOpen, video, onClose }: VideoPlayerModalPro
                 controls
                 autoPlay
               >
-                <source src={video.file_url} />
+                <source src={`${API_BASE}/api/videos/${video.id}/stream`} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             )}

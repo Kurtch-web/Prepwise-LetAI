@@ -162,7 +162,7 @@ export default function VideoLessonsPage() {
                 />
               ) : (
                 <video
-                  src={selectedVideo.file_url}
+                  src={`${API_BASE}/api/videos/${selectedVideo.id}/stream`}
                   controls
                   className="player-element"
                 />
