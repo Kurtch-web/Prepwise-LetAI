@@ -4,12 +4,20 @@ import re
 import urllib.parse
 import urllib.request
 from typing import Optional
+from datetime import datetime, timedelta
 
 # This module provides minimal Supabase Storage interactions via HTTP without extra deps.
 # It expects the following env vars (already loaded by config.load_dotenv()):
 # - SUPABASE_URL
 # - SUPABASE_BUCKET
 # - SUPABASE_SERVICE_ROLE_KEY
+#
+# For R2 (Cloudflare) Storage:
+# - R2_ACCESS_KEY_ID
+# - R2_SECRET_ACCESS_KEY
+# - R2_ACCOUNT_ID
+# - R2_BUCKET_NAME
+# - R2_PUBLIC_URL
 
 
 _filename_sanitize_re = re.compile(r"[^A-Za-z0-9._-]+")
@@ -105,3 +113,100 @@ def get_supabase_storage() -> Optional[SupabaseStorage]:
 def build_attachment_path(post_id: str, attachment_id: str, original_filename: str) -> str:
     safe_name = _sanitize_filename(original_filename or 'file')
     return f"community/{post_id}/{attachment_id}/{safe_name}"
+
+
+class R2Storage:
+    """Cloudflare R2 storage integration using AWS S3 compatible API."""
+
+    def __init__(self, access_key: str, secret_key: str, account_id: str, bucket: str, public_url: str):
+        self.access_key = access_key
+        self.secret_key = secret_key
+        self.account_id = account_id
+        self.bucket = bucket
+        self.public_url = public_url.rstrip('/')
+        self.endpoint = f"https://{account_id}.r2.cloudflarestorage.com"
+        self._s3_client = None
+
+    @property
+    def s3_client(self):
+        """Lazy load boto3 S3 client."""
+        if self._s3_client is None:
+            import boto3
+            self._s3_client = boto3.client(
+                's3',
+                endpoint_url=self.endpoint,
+                aws_access_key_id=self.access_key,
+                aws_secret_access_key=self.secret_key,
+                region_name='auto'
+            )
+        return self._s3_client
+
+    def public_url_for_path(self, path: str) -> str:
+        """Get the public URL for a file in R2."""
+        return f"{self.public_url}/{path}"
+
+    def create_presigned_upload_url(self, path: str, expiration_seconds: int = 3600) -> dict:
+        """Generate a presigned URL for direct browser upload to R2.
+
+        Returns:
+            dict with 'uploadUrl' and 'publicUrl' for the uploaded file
+        """
+        presigned_url = self.s3_client.generate_presigned_url(
+            'put_object',
+            Params={
+                'Bucket': self.bucket,
+                'Key': path,
+                'ContentType': 'video/mp4'
+            },
+            ExpiresIn=expiration_seconds
+        )
+
+        public_url = self.public_url_for_path(path)
+
+        return {
+            'uploadUrl': presigned_url,
+            'publicUrl': public_url,
+            'path': path,
+            'bucket': self.bucket,
+            'expiresIn': expiration_seconds
+        }
+
+    def upload(self, path: str, content: bytes, content_type: str = 'video/mp4', upsert: bool = True) -> None:
+        """Upload file to R2."""
+        self.s3_client.put_object(
+            Bucket=self.bucket,
+            Key=path,
+            Body=content,
+            ContentType=content_type
+        )
+
+    def delete(self, path: str) -> None:
+        """Delete file from R2."""
+        self.s3_client.delete_object(
+            Bucket=self.bucket,
+            Key=path
+        )
+
+    def public_url(self, path: str) -> str:
+        """Get public URL for a file."""
+        return self.public_url_for_path(path)
+
+
+def get_r2_storage() -> Optional[R2Storage]:
+    """Get R2 storage instance if configured."""
+    access_key = os.getenv('R2_ACCESS_KEY_ID')
+    secret_key = os.getenv('R2_SECRET_ACCESS_KEY')
+    account_id = os.getenv('R2_ACCOUNT_ID')
+    bucket = os.getenv('R2_BUCKET_NAME')
+    public_url = os.getenv('R2_PUBLIC_URL')
+
+    if not all([access_key, secret_key, account_id, bucket, public_url]):
+        return None
+
+    return R2Storage(
+        access_key=access_key,
+        secret_key=secret_key,
+        account_id=account_id,
+        bucket=bucket,
+        public_url=public_url
+    )

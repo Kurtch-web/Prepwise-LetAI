@@ -11,7 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from ..db import get_db
 from ..models import Video, UserAccount, VideoWatch
-from ..services.storage import get_supabase_storage
+from ..services.storage import get_supabase_storage, get_r2_storage
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix='/api/videos', tags=['videos'])
@@ -45,6 +45,12 @@ class VideoUploadCompleteRequest(BaseModel):
     is_downloadable: bool = True
 
 
+class GetPresignedUrlRequest(BaseModel):
+    """Request to get a presigned URL for direct R2 upload."""
+    filename: str
+    content_type: str = 'video/mp4'
+
+
 def _sanitize_filename(filename: str) -> str:
     """Remove special characters from filename."""
     import re
@@ -57,6 +63,47 @@ def _get_file_type(filename: str) -> str:
     if filename_lower.endswith(('.mp4', '.webm', '.mov', '.avi', '.mkv')):
         return 'video'
     return 'unknown'
+
+
+@router.post('/presigned-url', status_code=status.HTTP_200_OK)
+async def get_presigned_upload_url(
+    request: GetPresignedUrlRequest,
+    current_user: UserAccount = Depends(get_current_user)
+):
+    """Get a presigned URL for direct R2 upload from the browser.
+
+    This endpoint returns a presigned URL that allows the frontend to upload
+    large video files directly to Cloudflare R2 without going through the backend.
+
+    Returns:
+        dict with 'uploadUrl' (for PUT request) and 'publicUrl' (for video playback)
+    """
+    if not current_user or current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can upload videos')
+
+    r2_storage = get_r2_storage()
+    if not r2_storage:
+        raise HTTPException(status_code=500, detail='R2 storage not configured')
+
+    if _get_file_type(request.filename) != 'video':
+        raise HTTPException(status_code=400, detail='Only video files are allowed')
+
+    # Generate storage path: videos/{category}/{timestamp}/{filename}
+    from uuid import uuid4
+    video_id = str(uuid4())
+    safe_filename = _sanitize_filename(request.filename)
+    date_str = datetime.now().strftime('%Y-%m-%d')
+    storage_path = f"videos/{video_id}/{date_str}/{safe_filename}"
+
+    # Get presigned URL from R2
+    presigned_info = r2_storage.create_presigned_upload_url(storage_path, expiration_seconds=3600)
+
+    return {
+        'uploadUrl': presigned_info['uploadUrl'],
+        'publicUrl': presigned_info['publicUrl'],
+        'storagePath': storage_path,
+        'expiresIn': presigned_info['expiresIn']
+    }
 
 
 async def _upload_video_file(video_id: str, file: UploadFile, category: str) -> tuple[str, str]:
