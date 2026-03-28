@@ -508,7 +508,7 @@ async def delete_video(
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user)
 ):
-    """Delete a video."""
+    """Delete a video from database and storage (R2 or Supabase)."""
     if not current_user or current_user.role != 'admin':
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admins can delete videos')
 
@@ -516,12 +516,23 @@ async def delete_video(
     if not video:
         raise HTTPException(status_code=404, detail='Video not found')
 
-    storage = get_supabase_storage()
-    if storage:
-        try:
-            storage.delete(video.storage_path)
-        except Exception:
-            pass  # Silently fail if storage deletion fails
+    # Skip deletion for YouTube links (they're not stored in our storage)
+    if video.storage_path != 'youtube-link':
+        # Try to delete from R2 first (videos uploaded via presigned URL)
+        r2_storage = get_r2_storage()
+        if r2_storage:
+            try:
+                r2_storage.delete(video.storage_path)
+            except Exception:
+                pass  # Silently fail if R2 deletion fails
+
+        # Also try Supabase in case it's stored there
+        supabase_storage = get_supabase_storage()
+        if supabase_storage:
+            try:
+                supabase_storage.delete(video.storage_path)
+            except Exception:
+                pass  # Silently fail if Supabase deletion fails
 
     await db.delete(video)
     await db.commit()
