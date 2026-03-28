@@ -124,7 +124,7 @@ class R2Storage:
         self.account_id = account_id
         self.bucket = bucket
         self.public_url = public_url.rstrip('/')
-        self.endpoint = f"https://{account_id}.r2.amazonaws.com"
+        self.endpoint = f"https://{account_id}.r2.cloudflarestorage.com"
         self._s3_client = None
 
     @property
