@@ -11,14 +11,17 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
 
-  // YouTube link form state
+  // Form state
+  const [uploadType, setUploadType] = useState<'youtube' | 'file'>('youtube');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('General Education');
   const [youtubeLink, setYoutubeLink] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDownloadable, setIsDownloadable] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const categoryOptions = [
     'General Education',
@@ -32,7 +35,6 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     'Technology',
     'Health'
   ];
-
 
   const extractYoutubeId = (url: string): string | null => {
     const patterns = [
@@ -48,9 +50,55 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
     return null;
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('video/')) {
+        setError('Please select a valid video file');
+        return;
+      }
+      if (file.size > 500 * 1024 * 1024) { // 500MB limit
+        setError('File size must be less than 500MB');
+        return;
+      }
+      setSelectedFile(file);
+      setError('');
+    }
+  };
+
+  const uploadFileToR2 = async (file: File, uploadUrl: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          setUploadProgress(Math.round(percentComplete));
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Upload failed'));
+      });
+
+      xhr.open('PUT', uploadUrl);
+      xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
+      xhr.send(file);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setUploadProgress(0);
 
     if (!title.trim()) {
       setError('Title is required');
@@ -62,48 +110,121 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
       return;
     }
 
-    if (!youtubeLink.trim()) {
-      setError('YouTube link is required');
-      return;
-    }
-
-    const youtubeId = extractYoutubeId(youtubeLink);
-    if (!youtubeId) {
-      setError('Please enter a valid YouTube link (e.g., https://www.youtube.com/watch?v=...)');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      const embedUrl = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
+      if (uploadType === 'youtube') {
+        // YouTube upload flow
+        if (!youtubeLink.trim()) {
+          setError('YouTube link is required');
+          return;
+        }
 
-      await api.saveVideoMetadata({
-        title: title.trim(),
-        description: description.trim() || null,
-        category: category.trim(),
-        storage_path: 'youtube-link',
-        file_url: embedUrl,
-        is_downloadable: isDownloadable
-      });
+        const youtubeId = extractYoutubeId(youtubeLink);
+        if (!youtubeId) {
+          setError('Please enter a valid YouTube link (e.g., https://www.youtube.com/watch?v=...)');
+          return;
+        }
 
-      setTitle('');
-      setDescription('');
-      setCategory('General Education');
-      setYoutubeLink('');
-      setIsDownloadable(false);
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
 
-      onSuccess?.();
+        await api.saveVideoMetadata({
+          title: title.trim(),
+          description: description.trim() || null,
+          category: category.trim(),
+          storage_path: 'youtube-link',
+          file_url: embedUrl,
+          is_downloadable: isDownloadable
+        });
+
+        // Reset form
+        setTitle('');
+        setDescription('');
+        setCategory('General Education');
+        setYoutubeLink('');
+        setIsDownloadable(false);
+
+        onSuccess?.();
+      } else {
+        // File upload to R2 flow
+        if (!selectedFile) {
+          setError('Please select a video file');
+          return;
+        }
+
+        // Get presigned URL from backend
+        setUploadProgress(10);
+        const presignedData = await api.getPresignedUploadUrl(
+          selectedFile.name,
+          selectedFile.type || 'video/mp4'
+        );
+
+        setUploadProgress(20);
+
+        // Upload file to R2 using presigned URL
+        await uploadFileToR2(selectedFile, presignedData.uploadUrl);
+
+        setUploadProgress(90);
+
+        // Save video metadata to database
+        await api.saveVideoMetadata({
+          title: title.trim(),
+          description: description.trim() || null,
+          category: category.trim(),
+          storage_path: presignedData.storagePath,
+          file_url: presignedData.publicUrl,
+          is_downloadable: isDownloadable
+        });
+
+        setUploadProgress(100);
+
+        // Reset form
+        setTitle('');
+        setDescription('');
+        setCategory('General Education');
+        setSelectedFile(null);
+        setIsDownloadable(false);
+
+        onSuccess?.();
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add video');
+      setError(err instanceof Error ? err.message : 'Failed to upload video');
     } finally {
       setIsLoading(false);
+      setUploadProgress(0);
     }
   };
 
   return (
     <div className={`video-upload-form-container ${isLightMode ? 'light-mode' : 'dark-mode'}`}>
       <h3 className="form-title">Add Video Lesson</h3>
+
+      {/* Upload Type Toggle */}
+      <div className="upload-type-toggle">
+        <button
+          type="button"
+          onClick={() => {
+            setUploadType('youtube');
+            setSelectedFile(null);
+            setYoutubeLink('');
+            setError('');
+          }}
+          className={`toggle-btn ${uploadType === 'youtube' ? 'active' : ''}`}
+        >
+          🎬 YouTube Link
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setUploadType('file');
+            setYoutubeLink('');
+            setError('');
+          }}
+          className={`toggle-btn ${uploadType === 'file' ? 'active' : ''}`}
+        >
+          📁 Upload File
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="video-upload-form">
         <div className="form-group">
@@ -150,21 +271,54 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
           </select>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="youtube-link">YouTube Link *</label>
-          <input
-            id="youtube-link"
-            type="url"
-            value={youtubeLink}
-            onChange={(e) => setYoutubeLink(e.target.value)}
-            placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=...)"
-            disabled={isLoading}
-            className="form-input"
-          />
-          <p className="link-hint">
-            ℹ️ Non-cookie YouTube links will be used (youtube-nocookie.com)
-          </p>
-        </div>
+        {uploadType === 'youtube' ? (
+          <>
+            <div className="form-group">
+              <label htmlFor="youtube-link">YouTube Link *</label>
+              <input
+                id="youtube-link"
+                type="url"
+                value={youtubeLink}
+                onChange={(e) => setYoutubeLink(e.target.value)}
+                placeholder="Paste YouTube link (e.g., https://www.youtube.com/watch?v=...)"
+                disabled={isLoading}
+                className="form-input"
+              />
+              <p className="link-hint">
+                ℹ️ Non-cookie YouTube links will be used (youtube-nocookie.com)
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="form-group">
+              <label htmlFor="video-file">Video File * (Max 500MB)</label>
+              <input
+                id="video-file"
+                type="file"
+                accept="video/*"
+                onChange={handleFileSelect}
+                disabled={isLoading}
+                className="form-file-input"
+              />
+              {selectedFile && (
+                <p className="link-hint">
+                  ✓ Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                </p>
+              )}
+            </div>
+
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div className="progress-container">
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: `${uploadProgress}%` }}>
+                    <span className="progress-text">{uploadProgress}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
         <div className="form-group checkbox-group">
           <label htmlFor="downloadable">
@@ -187,7 +341,7 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
             disabled={isLoading}
             className="btn btn-primary"
           >
-            {isLoading ? 'Adding...' : 'Add Video'}
+            {isLoading ? `${uploadType === 'file' ? 'Uploading...' : 'Adding...'}` : `${uploadType === 'file' ? 'Upload Video' : 'Add Video'}`}
           </button>
           <button
             type="button"
@@ -229,6 +383,53 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
           color: white;
         }
 
+        .upload-type-toggle {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 24px;
+          border-bottom: 2px solid;
+          padding-bottom: 12px;
+        }
+
+        .light-mode .upload-type-toggle {
+          border-color: rgb(226, 232, 240);
+        }
+
+        .dark-mode .upload-type-toggle {
+          border-color: rgb(51, 65, 85);
+        }
+
+        .toggle-btn {
+          padding: 10px 16px;
+          border: none;
+          background: transparent;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          border-bottom: 3px solid transparent;
+        }
+
+        .light-mode .toggle-btn {
+          color: rgb(100, 116, 139);
+        }
+
+        .dark-mode .toggle-btn {
+          color: rgb(148, 163, 184);
+        }
+
+        .toggle-btn.active {
+          border-bottom-color: rgb(79, 70, 229);
+        }
+
+        .light-mode .toggle-btn.active {
+          color: rgb(79, 70, 229);
+        }
+
+        .dark-mode .toggle-btn.active {
+          color: rgb(129, 140, 248);
+        }
+
         .video-upload-form {
           display: flex;
           flex-direction: column;
@@ -256,7 +457,8 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .form-input,
         .form-textarea,
-        .form-select {
+        .form-select,
+        .form-file-input {
           padding: 11px 14px;
           border-radius: 8px;
           font-size: 14px;
@@ -267,7 +469,8 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .light-mode .form-input,
         .light-mode .form-textarea,
-        .light-mode .form-select {
+        .light-mode .form-select,
+        .light-mode .form-file-input {
           background: white;
           border-color: rgb(226, 232, 240);
           color: rgb(15, 23, 42);
@@ -275,7 +478,8 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .dark-mode .form-input,
         .dark-mode .form-textarea,
-        .dark-mode .form-select {
+        .dark-mode .form-select,
+        .dark-mode .form-file-input {
           background: rgb(30, 41, 59);
           border-color: rgb(51, 65, 85);
           color: rgb(226, 232, 240);
@@ -317,7 +521,8 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .form-input:focus,
         .form-textarea:focus,
-        .form-select:focus {
+        .form-select:focus,
+        .form-file-input:focus {
           outline: none;
           border-color: rgb(79, 70, 229);
           box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
@@ -325,7 +530,8 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .light-mode .form-input:disabled,
         .light-mode .form-textarea:disabled,
-        .light-mode .form-select:disabled {
+        .light-mode .form-select:disabled,
+        .light-mode .form-file-input:disabled {
           background-color: rgb(240, 244, 248);
           color: rgb(148, 163, 184);
           cursor: not-allowed;
@@ -333,7 +539,8 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .dark-mode .form-input:disabled,
         .dark-mode .form-textarea:disabled,
-        .dark-mode .form-select:disabled {
+        .dark-mode .form-select:disabled,
+        .dark-mode .form-file-input:disabled {
           background-color: rgb(51, 65, 85);
           color: rgb(100, 116, 139);
           cursor: not-allowed;
@@ -372,6 +579,40 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
           align-items: center;
           font-weight: 500;
           gap: 8px;
+        }
+
+        .progress-container {
+          padding: 12px 0;
+        }
+
+        .progress-bar {
+          width: 100%;
+          height: 8px;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .light-mode .progress-bar {
+          background: rgb(226, 232, 240);
+        }
+
+        .dark-mode .progress-bar {
+          background: rgb(51, 65, 85);
+        }
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, rgb(79, 70, 229), rgb(129, 140, 248));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: width 0.3s ease;
+        }
+
+        .progress-text {
+          font-size: 10px;
+          font-weight: 700;
+          color: white;
         }
 
         .error-message {

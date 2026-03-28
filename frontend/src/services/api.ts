@@ -250,6 +250,17 @@ export const api = {
       body: JSON.stringify(data)
     }),
 
+  getPresignedUploadUrl: (filename: string, contentType: string = 'video/mp4') =>
+    request<{
+      uploadUrl: string;
+      publicUrl: string;
+      storagePath: string;
+      expiresIn: number;
+    }>('/api/videos/presigned-url', {
+      method: 'POST',
+      body: JSON.stringify({ filename, content_type: contentType })
+    }),
+
   // Flashcards API
   uploadFlashcard: (category: string, file: File) => {
     const form = new FormData();
