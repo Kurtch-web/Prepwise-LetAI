@@ -156,7 +156,6 @@ class R2Storage:
             Params={
                 'Bucket': self.bucket,
                 'Key': path,
-                'ContentType': 'video/mp4'
             },
             ExpiresIn=expiration_seconds
         )
