@@ -125,15 +125,9 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
           return;
         }
 
-        // Check if R2 credentials are configured
-        if (!r2Service.areR2CredentialsConfigured()) {
-          setError('R2 storage is not configured. Please check your environment variables.');
-          return;
-        }
-
-        // Get presigned URL from R2 service
+        // Get presigned URL from backend
         setUploadProgress(10);
-        const presignedData = await r2Service.getPresignedUploadUrl(
+        const presignedData = await api.getPresignedUploadUrl(
           selectedFile.name,
           selectedFile.type || 'video/mp4'
         );
