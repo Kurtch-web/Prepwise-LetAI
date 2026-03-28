@@ -197,7 +197,9 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
   return (
     <div className={`video-upload-form-container ${isLightMode ? 'light-mode' : 'dark-mode'}`}>
-      <h3 className="form-title">Add Video Lesson</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="form-title">Add Video Lesson</h3>
+      </div>
 
       {/* Upload Type Toggle */}
       <div className="upload-type-toggle">
@@ -370,7 +372,7 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
         }
 
         .form-title {
-          margin: 0 0 24px 0;
+          margin: 0;
           font-size: 18px;
           font-weight: 700;
         }
@@ -385,33 +387,34 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
 
         .upload-type-toggle {
           display: flex;
-          gap: 12px;
+          gap: 8px;
           margin-bottom: 24px;
-          border-bottom: 2px solid;
-          padding-bottom: 12px;
+          padding: 4px;
+          border-radius: 8px;
+          width: fit-content;
         }
 
         .light-mode .upload-type-toggle {
-          border-color: rgb(226, 232, 240);
+          background: rgb(226, 232, 240);
         }
 
         .dark-mode .upload-type-toggle {
-          border-color: rgb(51, 65, 85);
+          background: rgb(30, 41, 59);
         }
 
         .toggle-btn {
-          padding: 10px 16px;
+          padding: 10px 18px;
           border: none;
-          background: transparent;
+          border-radius: 6px;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
-          border-bottom: 3px solid transparent;
+          background: transparent;
         }
 
         .light-mode .toggle-btn {
-          color: rgb(100, 116, 139);
+          color: rgb(51, 65, 85);
         }
 
         .dark-mode .toggle-btn {
@@ -419,15 +422,19 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
         }
 
         .toggle-btn.active {
-          border-bottom-color: rgb(79, 70, 229);
+          font-weight: 700;
         }
 
         .light-mode .toggle-btn.active {
+          background: white;
           color: rgb(79, 70, 229);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .dark-mode .toggle-btn.active {
+          background: rgb(51, 65, 85);
           color: rgb(129, 140, 248);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .video-upload-form {
