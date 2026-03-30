@@ -51,13 +51,13 @@ function HeaderBanner() {
 
   return (
     <>
-      <header className={`sticky top-0 z-40 px-6 py-5 backdrop-blur-xl sm:px-8 lg:px-16 transition-colors duration-200 ${
+      <header className={`sticky top-0 z-40 px-4 sm:px-6 py-4 sm:py-5 backdrop-blur-xl sm:px-8 lg:px-16 transition-colors duration-200 ${
         isLightMode
           ? 'bg-white border-b border-slate-200/60 shadow-[0_10px_30px_rgba(0,0,0,0.08)]'
           : 'border-b border-emerald-500/20 bg-[#064e3bcc] shadow-[0_25px_60px_rgba(6,78,59,0.55)]'
       }`}>
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -87,11 +87,28 @@ function HeaderBanner() {
             </button>
 
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className={`text-lg sm:text-2xl font-bold truncate ${isLightMode ? 'text-slate-900' : 'text-white'}`}>💡 LET AI Control Hub</p>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <p className={`text-base sm:text-2xl font-bold truncate ${isLightMode ? 'text-slate-900' : 'text-white'}`}>💡 LET AI Control Hub</p>
               </div>
               <p className={`hidden sm:block text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>Flashcards & Quiz Management</p>
             </div>
+          </div>
+
+          {/* Mobile User Info */}
+          <div className="lg:hidden flex items-center gap-2">
+            {user && (
+              <span className={`text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 rounded-full ${
+                user.role === 'admin'
+                  ? isLightMode
+                    ? 'bg-purple-100 text-purple-700'
+                    : 'bg-purple-500/20 text-purple-300'
+                  : isLightMode
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-emerald-500/20 text-emerald-300'
+              }`}>
+                {user.role === 'admin' ? '👑 Admin' : '👤'}
+              </span>
+            )}
           </div>
 
           <div className={`hidden lg:flex items-center gap-3 flex-shrink-0 text-sm ${
@@ -128,14 +145,14 @@ function HeaderBanner() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className={`flex gap-2 border-t pt-4 ${
+        <div className={`flex gap-1.5 sm:gap-2 border-t pt-3 sm:pt-4 overflow-x-auto ${
           isLightMode ? 'border-slate-200' : 'border-emerald-500/20'
         }`}>
           {navTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => navigate(tab.path)}
-              className={`px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 flex items-center gap-2 ${
+              className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-300 flex items-center gap-1 sm:gap-2 flex-shrink-0 whitespace-nowrap ${
                 currentTab.id === tab.id
                   ? isLightMode
                     ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30'
@@ -145,7 +162,7 @@ function HeaderBanner() {
                   : 'bg-slate-700/40 text-slate-300 hover:bg-slate-700/60'
               }`}
             >
-              <span className="text-lg">{tab.label.split(' ')[0]}</span>
+              <span className="text-sm sm:text-lg">{tab.label.split(' ')[0]}</span>
               <span className="hidden sm:inline">{tab.label.split(' ').slice(1).join(' ')}</span>
             </button>
           ))}
@@ -159,7 +176,67 @@ function HeaderBanner() {
         }`}
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
-        />
+        >
+          {/* Mobile Menu Panel */}
+          <div
+            className={`absolute top-0 left-0 right-0 px-4 py-4 border-b ${
+              isLightMode
+                ? 'bg-gradient-to-br from-white to-slate-50 border-slate-200'
+                : 'bg-gradient-to-br from-slate-800 to-slate-900 border-emerald-500/20'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-3 max-w-xs">
+              {user && (
+                <>
+                  <div className={`px-4 py-3 rounded-xl border ${
+                    isLightMode
+                      ? 'bg-gradient-to-br from-emerald-50 to-blue-50 border-emerald-200'
+                      : 'bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border-emerald-500/30'
+                  }`}>
+                    <p className={`text-xs font-semibold uppercase tracking-wide ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                      Logged in as
+                    </p>
+                    <p className={`text-base font-bold mt-1.5 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      {user.username}
+                    </p>
+                    <span className={`inline-block mt-2.5 text-xs font-bold px-3 py-1 rounded-full ${
+                      user.role === 'admin'
+                        ? isLightMode
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-purple-500/30 text-purple-200'
+                        : isLightMode
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-emerald-500/30 text-emerald-200'
+                    }`}>
+                      {user.role === 'admin' ? '👑 Admin' : '👤 User'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={toggleTheme}
+                    className={`w-full py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+                      isLightMode
+                        ? 'bg-slate-100 text-slate-900 hover:bg-slate-200 active:scale-95'
+                        : 'bg-slate-700/50 text-white hover:bg-slate-700 active:scale-95'
+                    }`}
+                  >
+                    {isLightMode ? '🌙 Dark Mode' : '☀️ Light Mode'}
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className={`w-full py-2.5 px-4 rounded-lg font-semibold text-sm transition-all ${
+                      isLightMode
+                        ? 'bg-red-50 text-red-700 hover:bg-red-100 active:scale-95 border border-red-200'
+                        : 'bg-red-500/20 text-red-300 hover:bg-red-500/30 active:scale-95 border border-red-500/30'
+                    }`}
+                  >
+                    🚪 Logout
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

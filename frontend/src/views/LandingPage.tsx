@@ -124,7 +124,7 @@ export function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-20 sm:py-28 md:py-36 ${
+      <section className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 ${
         isLightMode
           ? 'bg-white'
           : 'bg-gradient-to-br from-slate-900 to-slate-950'
@@ -140,7 +140,7 @@ export function LandingPage() {
         </div>
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="mb-6 inline-block">
+          <div className="mb-4 inline-block">
             <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
               isLightMode
                 ? 'bg-blue-100 text-blue-700'
@@ -150,7 +150,7 @@ export function LandingPage() {
             </span>
           </div>
 
-          <h1 className={`text-5xl sm:text-6xl md:text-7xl font-extrabold mb-6 leading-tight ${
+          <h1 className={`text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 leading-tight ${
             isLightMode ? 'text-slate-900' : 'text-white'
           }`}>
             Quality Teacher Preparation,
@@ -160,13 +160,13 @@ export function LandingPage() {
             </span>
           </h1>
 
-          <p className={`text-xl sm:text-2xl mb-10 max-w-2xl mx-auto ${
+          <p className={`text-xl sm:text-2xl mb-6 max-w-2xl mx-auto ${
             isLightMode ? 'text-slate-600' : 'text-slate-300'
           }`}>
             A comprehensive platform dedicated to helping aspiring teachers succeed in their licensure examination and build confident, effective teaching careers.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <button
               onClick={() => navigate('/dashboard')}
               className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold text-lg hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
@@ -191,12 +191,12 @@ export function LandingPage() {
       </section>
 
       {/* Mission Section */}
-      <section className={`px-4 sm:px-6 lg:px-8 py-20 sm:py-28 ${
+      <section className={`px-4 sm:px-6 lg:px-8 py-12 sm:py-16 ${
         isLightMode ? 'bg-slate-50' : 'bg-slate-900'
       }`}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-6 ${
+          <div className="text-center mb-12">
+            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-4 ${
               isLightMode ? 'text-slate-900' : 'text-white'
             }`}>
               Our Mission
@@ -208,7 +208,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
+          <div className="grid md:grid-cols-2 gap-6">
             {values.map((value, idx) => (
               <div
                 key={idx}
@@ -231,12 +231,12 @@ export function LandingPage() {
       </section>
 
       {/* How We Built It Section */}
-      <section className={`px-4 sm:px-6 lg:px-8 py-20 sm:py-28 ${
+      <section className={`px-4 sm:px-6 lg:px-8 py-12 sm:py-16 ${
         isLightMode ? 'bg-white' : 'bg-slate-950'
       }`}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-6 ${
+          <div className="text-center mb-12">
+            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-4 ${
               isLightMode ? 'text-slate-900' : 'text-white'
             }`}>
               How We Built It
@@ -248,10 +248,10 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6">
             {buildingBlocks.map((block, idx) => (
-              <div key={idx} className="flex gap-6">
-                <div className={`flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center font-bold text-xl ${
+              <div key={idx} className="flex gap-4">
+                <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center font-bold text-lg ${
                   isLightMode
                     ? 'bg-blue-100 text-blue-600'
                     : 'bg-blue-500/20 text-blue-400'
@@ -273,14 +273,14 @@ export function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className={`px-4 sm:px-6 lg:px-8 py-20 sm:py-28 ${
+      <section className={`px-4 sm:px-6 lg:px-8 py-12 sm:py-16 ${
         isLightMode
           ? 'bg-slate-50'
           : 'bg-gradient-to-b from-slate-900 to-slate-950'
       }`}>
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-4 ${
+          <div className="text-center mb-12">
+            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-3 ${
               isLightMode ? 'text-slate-900' : 'text-white'
             }`}>
               Why Choose Us
@@ -292,20 +292,20 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {features.map((feature, idx) => (
               <div
                 key={idx}
-                className={`group rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl cursor-pointer border ${
+                className={`group rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg cursor-pointer border ${
                   isLightMode
                     ? 'bg-white border-slate-200 hover:shadow-lg hover:shadow-slate-300/40'
                     : 'bg-slate-800/50 border-slate-700 hover:shadow-lg hover:shadow-slate-900/40'
                 }`}
               >
-                <div className="text-5xl mb-4">
+                <div className="text-4xl mb-3">
                   {feature.icon}
                 </div>
-                <h3 className={`text-xl font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   {feature.title}
                 </h3>
                 <p className={`leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -318,24 +318,24 @@ export function LandingPage() {
       </section>
 
       {/* Why It Was Built Section */}
-      <section className={`px-4 sm:px-6 lg:px-8 py-20 sm:py-28 ${
+      <section className={`px-4 sm:px-6 lg:px-8 py-12 sm:py-16 ${
         isLightMode ? 'bg-white' : 'bg-slate-900'
       }`}>
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-6 ${
+          <div className="text-center mb-10">
+            <h2 className={`text-4xl sm:text-5xl font-extrabold mb-4 ${
               isLightMode ? 'text-slate-900' : 'text-white'
             }`}>
               Why We Built This
             </h2>
           </div>
 
-          <div className={`rounded-2xl p-8 sm:p-12 border ${
+          <div className={`rounded-2xl p-6 sm:p-8 border ${
             isLightMode
               ? 'bg-slate-50 border-slate-200'
               : 'bg-slate-800/50 border-slate-700'
           }`}>
-            <p className={`text-lg sm:text-xl leading-relaxed mb-6 ${
+            <p className={`text-base sm:text-lg leading-relaxed mb-4 ${
               isLightMode ? 'text-slate-700' : 'text-slate-300'
             }`}>
               Thousands of aspiring teachers struggle with fragmented resources, outdated materials, and lack of structured guidance in preparing for their licensure examination. We recognized that many deserving educators face barriers not because of lack of ability, but because of lack of access to quality preparation.
@@ -357,16 +357,16 @@ export function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-20 sm:py-28 ${
+      <section className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-12 sm:py-16 ${
         isLightMode
           ? 'bg-gradient-to-r from-blue-500 to-blue-600'
           : 'bg-gradient-to-r from-blue-600 to-blue-700'
       }`}>
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-6">
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
             Ready to Begin Your Journey?
           </h2>
-          <p className="text-lg sm:text-xl text-white/90 mb-10">
+          <p className="text-base sm:text-lg text-white/90 mb-6">
             Join a growing community of aspiring educators committed to excellence and professional growth.
           </p>
           <button
@@ -379,15 +379,15 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className={`px-4 sm:px-6 lg:px-8 py-12 border-t ${
+      <footer className={`px-4 sm:px-6 lg:px-8 py-8 border-t ${
         isLightMode
           ? 'bg-slate-50 border-slate-200'
           : 'bg-slate-950 border-slate-800'
       }`}>
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
+          <div className="grid md:grid-cols-4 gap-6 mb-6">
             <div>
-              <div className={`text-xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              <div className={`text-lg font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 🎓 EduHub
               </div>
               <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -395,7 +395,7 @@ export function LandingPage() {
               </p>
             </div>
             <div>
-              <h4 className={`font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              <h4 className={`font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 Platform
               </h4>
               <ul className={`space-y-2 text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -426,7 +426,7 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className={`text-center text-sm py-6 border-t ${
+          <div className={`text-center text-sm py-4 border-t ${
             isLightMode ? 'border-slate-200 text-slate-600' : 'border-slate-800 text-slate-400'
           }`}>
             <p>© 2024 EduHub. Committed to empowering educators. All rights reserved.</p>
@@ -437,13 +437,13 @@ export function LandingPage() {
       {/* Contact Support Modal */}
       {showContactSupport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-          <div className={`rounded-2xl p-8 max-w-md w-full border ${
+          <div className={`rounded-2xl p-6 max-w-md w-full border ${
             isLightMode
               ? 'bg-white border-slate-200'
               : 'bg-slate-900 border-slate-700'
           }`}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 Contact Support
               </h3>
               <button
@@ -454,12 +454,12 @@ export function LandingPage() {
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-slate-100' : 'bg-slate-800'}`}>
-                <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+            <div className="space-y-3">
+              <div className={`p-3 rounded-lg ${isLightMode ? 'bg-slate-100' : 'bg-slate-800'}`}>
+                <p className={`text-xs font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                   Phone
                 </p>
-                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <p className={`text-base font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   0987654231
                 </p>
               </div>
@@ -485,7 +485,7 @@ export function LandingPage() {
 
             <button
               onClick={() => setShowContactSupport(false)}
-              className="w-full mt-6 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/40 transition-all"
+              className="w-full mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/40 transition-all"
             >
               Close
             </button>

@@ -47,6 +47,8 @@ export function AuthPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [hotlineNumber] = useState(() => `1-800-${Math.floor(Math.random() * 900000) + 100000}`);
   const [emailValidation, setEmailValidation] = useState<{ isValid: boolean; message: string } | null>(null);
   const [codeVerificationStep, setCodeVerificationStep] = useState<'input' | 'verify'>('input');
   const [verificationCodeSent, setVerificationCodeSent] = useState(false);
@@ -358,50 +360,50 @@ export function AuthPage() {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center px-4 py-8 transition-colors duration-200 ${
+    <div className={`min-h-screen flex items-center justify-center px-4 py-8 sm:py-12 transition-colors duration-200 ${
       isLightMode
         ? 'bg-gradient-to-br from-green-50 via-blue-50 to-purple-50'
         : 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'
     }`}>
       <div className="w-full max-w-5xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className={`text-6xl font-bold bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-4`}>
+        <div className="text-center mb-8 sm:mb-12">
+          <div className={`text-4xl sm:text-6xl font-bold bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 sm:mb-4`}>
             💡
           </div>
-          <h1 className={`text-4xl font-black mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+          <h1 className={`text-2xl sm:text-4xl font-black mb-2 sm:mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
             LET Review Hub
           </h1>
-          <p className={`text-lg font-medium ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+          <p className={`text-sm sm:text-lg font-medium ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
             Master your GenEd & ProfEd exams today
           </p>
         </div>
 
         {/* Main Container */}
-        <div className="grid grid-cols-2 gap-0 rounded-3xl overflow-hidden backdrop-blur-xl border transition-all duration-300"
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 rounded-2xl sm:rounded-3xl overflow-hidden backdrop-blur-xl border transition-all duration-300"
           style={{
             borderColor: isLightMode ? '#cbd5e1' : '#475569',
             backgroundColor: isLightMode ? 'rgba(255, 255, 255, 0.95)' : 'rgba(30, 41, 59, 0.5)'
           }}>
-          
+
           {/* Left Side - Info Section */}
-          <div className={`p-12 flex flex-col justify-between ${
+          <div className={`p-6 sm:p-12 flex flex-col justify-between ${
             isLightMode
               ? 'bg-gradient-to-br from-emerald-50 to-blue-50'
               : 'bg-gradient-to-br from-emerald-900/20 to-blue-900/20'
           }`}>
             <div>
-              <h2 className={`text-3xl font-black mb-6 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              <h2 className={`text-xl sm:text-3xl font-black mb-4 sm:mb-6 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 {mode === 'signin' ? '🔐 Welcome Back' : '✨ Join Us Today'}
               </h2>
-              <p className={`text-lg leading-relaxed mb-8 ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+              <p className={`text-sm sm:text-lg leading-relaxed mb-6 sm:mb-8 ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
                 {mode === 'signin'
                   ? 'Continue your LET exam preparation journey and achieve your goals with our comprehensive study materials.'
                   : 'Get instant access to updated GenEd & ProfEd materials aligned with the latest PRC standards.'}
               </p>
 
               {/* Features List */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {mode === 'signin' ? (
                   <>
                     <div className="flex items-start gap-3">
@@ -458,9 +460,9 @@ export function AuthPage() {
           </div>
 
           {/* Right Side - Form Section */}
-          <div className="p-12 flex flex-col justify-center">
+          <div className="p-6 sm:p-12 flex flex-col justify-center">
             {/* Mode Slider */}
-            <div className="flex gap-3 mb-8">
+            <div className="flex gap-2 sm:gap-3 mb-6 sm:mb-8">
               <button
                 onClick={() => {
                   setMode('signin');
@@ -471,7 +473,7 @@ export function AuthPage() {
                   setResendCountdown(0);
                   setResendMessage(null);
                 }}
-                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all duration-300 ${
+                className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-all duration-300 ${
                   mode === 'signin'
                     ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40'
                     : isLightMode
@@ -491,7 +493,7 @@ export function AuthPage() {
                   setResendCountdown(0);
                   setResendMessage(null);
                 }}
-                className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all duration-300 ${
+                className={`flex-1 py-2 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-all duration-300 ${
                   mode === 'signup'
                     ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40'
                     : isLightMode
@@ -621,7 +623,7 @@ export function AuthPage() {
 
             {/* Sign Up Form */}
             {mode === 'signup' && (
-              <form onSubmit={verificationCodeSent ? handleVerifySignUpCode : handleSendVerificationCode} className="space-y-4 max-h-[650px] overflow-y-auto pr-2">
+              <form onSubmit={verificationCodeSent ? handleVerifySignUpCode : handleSendVerificationCode} className="space-y-4 max-h-[500px] sm:max-h-[650px] overflow-y-auto pr-2">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={`block text-sm font-semibold mb-1.5 ${
@@ -1151,9 +1153,9 @@ export function AuthPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8">
-          <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-            Need help? <a href="#" className="text-emerald-600 hover:text-emerald-700 font-semibold">Contact support</a>
+        <div className="text-center mt-6 sm:mt-8">
+          <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+            Need help? <button onClick={() => setShowSupportModal(true)} className="text-emerald-600 hover:text-emerald-700 font-semibold bg-none border-none cursor-pointer">Contact support</button>
           </p>
         </div>
       </div>
@@ -1248,6 +1250,45 @@ export function AuthPage() {
             <h3 className="font-bold mb-2">6. Changes to This Policy</h3>
             <p className="text-justify">
               We reserve the right to modify this privacy policy at any time. Your continued use of the service means that you accept and agree to the changes.
+            </p>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Support Contact Modal */}
+      <Modal
+        title="Contact Support"
+        isOpen={showSupportModal}
+        onClose={() => setShowSupportModal(false)}
+      >
+        <div className="space-y-6">
+          <div>
+            <h3 className="font-bold mb-2">Hotline</h3>
+            <p className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              {hotlineNumber}
+            </p>
+            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              Available Monday - Friday, 9AM - 5PM
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">Email</h3>
+            <p className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              support@letreviewhub.edu
+            </p>
+            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              Response time: Within 24 hours
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">Phone</h3>
+            <p className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              +1 (555) 123-4567
+            </p>
+            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              Available 24/7 for urgent matters
             </p>
           </div>
         </div>
