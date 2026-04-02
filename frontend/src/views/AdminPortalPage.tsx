@@ -4,6 +4,7 @@ import { QuestionsBank } from '../components/QuestionsBank';
 import { UserProfileCard } from '../components/UserProfileCard';
 import VideoUploadForm from '../components/VideoUploadForm';
 import VideoList from '../components/VideoList';
+import { VideoEditModal } from '../components/VideoEditModal';
 import { LeaderboardModal } from '../components/LeaderboardModal';
 import { AssessmentSurvey } from '../components/AssessmentSurvey';
 import { AssessmentTemplatesList } from '../components/AssessmentTemplatesList';
@@ -12,6 +13,7 @@ import { api, type UserProfile } from '../services/api';
 import quizService from '../services/quizService';
 import { useTheme } from '../providers/ThemeProvider';
 import { formatRelativeTime } from '../utils/dateFormatter';
+import { API_BASE } from '../config/backends';
 
 const darkCardShell =
   'rounded-3xl border border-emerald-500/20 bg-[#064e3b]/80 p-7 shadow-[0_18px_40px_rgba(6,78,59,0.45)] backdrop-blur-xl';
@@ -32,6 +34,8 @@ export function AdminPortalPage() {
   const [error, setError] = useState<string | null>(null);
   const [showVideoUploadForm, setShowVideoUploadForm] = useState(false);
   const [videoListKey, setVideoListKey] = useState(0);
+  const [editingVideo, setEditingVideo] = useState<any>(null);
+  const [videoCategories, setVideoCategories] = useState<string[]>([]);
 
   // Quiz creation state
   const [showQuizForm, setShowQuizForm] = useState(false);
@@ -79,6 +83,29 @@ export function AdminPortalPage() {
     const interval = setInterval(fetchUsers, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const fetchVideoCategories = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/videos/categories/list`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      const data = await response.json();
+      setVideoCategories(data.categories || []);
+    } catch (err) {
+      console.error('Failed to fetch video categories:', err);
+    }
+  };
+
+  const handleEditVideo = (video: any) => {
+    if (videoCategories.length === 0) {
+      fetchVideoCategories();
+    }
+    setEditingVideo(video);
+  };
+
+  const handleVideoEditSuccess = () => {
+    setEditingVideo(null);
+    setVideoListKey((prev) => prev + 1);
+  };
 
   const loadAdminQuizzes = async (testType?: string) => {
     setQuizLoading(true);
@@ -638,7 +665,7 @@ export function AdminPortalPage() {
                     </button>
                   </div>
                   <div key={videoListKey}>
-                    <VideoList />
+                    <VideoList onEditVideo={handleEditVideo} />
                   </div>
                 </div>
               )}
@@ -1178,6 +1205,14 @@ export function AdminPortalPage() {
           }}
         />
       )}
+
+      <VideoEditModal
+        isOpen={editingVideo !== null}
+        video={editingVideo}
+        categories={videoCategories}
+        onClose={() => setEditingVideo(null)}
+        onSuccess={handleVideoEditSuccess}
+      />
 
       {showInsightsModal && (
         <div className={`fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm ${
