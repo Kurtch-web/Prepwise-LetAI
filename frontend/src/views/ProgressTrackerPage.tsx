@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../providers/AuthProvider';
 import { useTheme } from '../providers/ThemeProvider';
 import { fetchAllQuizResults, QuizResult, fetchAnalytics, AnalyticsData, fetchQuizResultDetails } from '../services/progressService';
+import { API_BASE } from '../config/backends';
 
 type Tab = 'users' | 'progress' | 'analytics';
 
@@ -12,12 +13,12 @@ export function ProgressTrackerPage() {
   const isLightMode = theme === 'light';
 
   return (
-    <div className={`transition-colors duration-200 ${
+    <div className={`transition-colors duration-200 min-h-screen ${
       isLightMode
         ? 'bg-gradient-to-b from-green-50 via-white to-slate-50'
         : 'bg-[#051b15]'
     }`}>
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
           <h1 className={`text-4xl font-black mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
@@ -28,67 +29,70 @@ export function ProgressTrackerPage() {
           </p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className={`rounded-t-2xl border-b overflow-x-auto ${
-          isLightMode
-            ? 'bg-white/95 border-slate-200 shadow-md'
-            : 'bg-slate-800/50 border-slate-700 shadow-lg'
-        }`}>
-          <div className="flex gap-1 p-4">
-            <button
-              onClick={() => setActiveTab('users')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
-                activeTab === 'users'
-                  ? isLightMode
-                    ? 'bg-emerald-500 text-white shadow-lg'
-                    : 'bg-emerald-600 text-white shadow-lg'
-                  : isLightMode
-                  ? 'text-slate-600 hover:bg-slate-100'
-                  : 'text-slate-400 hover:bg-slate-700/40'
-              }`}
-            >
-              👤 Account
-            </button>
-            <button
-              onClick={() => setActiveTab('progress')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
-                activeTab === 'progress'
-                  ? isLightMode
-                    ? 'bg-emerald-500 text-white shadow-lg'
-                    : 'bg-emerald-600 text-white shadow-lg'
-                  : isLightMode
-                  ? 'text-slate-600 hover:bg-slate-100'
-                  : 'text-slate-400 hover:bg-slate-700/40'
-              }`}
-            >
-              📈 Progress
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`px-6 py-3 rounded-lg font-semibold transition-all whitespace-nowrap ${
-                activeTab === 'analytics'
-                  ? isLightMode
-                    ? 'bg-emerald-500 text-white shadow-lg'
-                    : 'bg-emerald-600 text-white shadow-lg'
-                  : isLightMode
-                  ? 'text-slate-600 hover:bg-slate-100'
-                  : 'text-slate-400 hover:bg-slate-700/40'
-              }`}
-            >
-              📊 Analytics
-            </button>
+        {/* Main Layout: Sidebar + Content */}
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          {/* Sidebar Navigation */}
+          <div className={`rounded-2xl p-4 h-fit sticky top-4 ${
+            isLightMode
+              ? 'bg-white/95 border border-slate-200 shadow-md'
+              : 'bg-slate-800/50 border border-slate-700 shadow-lg'
+          }`}>
+            <div className="space-y-2">
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-left ${
+                  activeTab === 'users'
+                    ? isLightMode
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'bg-emerald-600 text-white shadow-lg'
+                    : isLightMode
+                    ? 'text-slate-600 hover:bg-slate-100'
+                    : 'text-slate-400 hover:bg-slate-700/40'
+                }`}
+              >
+                👤 Account
+              </button>
+              <button
+                onClick={() => setActiveTab('progress')}
+                className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-left ${
+                  activeTab === 'progress'
+                    ? isLightMode
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'bg-emerald-600 text-white shadow-lg'
+                    : isLightMode
+                    ? 'text-slate-600 hover:bg-slate-100'
+                    : 'text-slate-400 hover:bg-slate-700/40'
+                }`}
+              >
+                📈 Progress
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-left ${
+                  activeTab === 'analytics'
+                    ? isLightMode
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'bg-emerald-600 text-white shadow-lg'
+                    : isLightMode
+                    ? 'text-slate-600 hover:bg-slate-100'
+                    : 'text-slate-400 hover:bg-slate-700/40'
+                }`}
+              >
+                📊 Analytics
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Tab Content */}
-        <div className={`rounded-b-2xl border-t-0 p-8 backdrop-blur-xl ${
-          isLightMode
-            ? 'bg-white/95 border-slate-200 shadow-md'
-            : 'bg-slate-800/50 border-slate-700 shadow-lg'
-        }`}>
-          {activeTab === 'users' && <UsersTab isLightMode={isLightMode} />}
-          {activeTab === 'progress' && <ProgressTab isLightMode={isLightMode} />}
-          {activeTab === 'analytics' && <AnalyticsTab isLightMode={isLightMode} />}
+          {/* Tab Content */}
+          <div className={`md:col-span-3 lg:col-span-4 rounded-2xl p-8 backdrop-blur-xl ${
+            isLightMode
+              ? 'bg-white/95 border border-slate-200 shadow-md'
+              : 'bg-slate-800/50 border border-slate-700 shadow-lg'
+          }`}>
+            {activeTab === 'users' && <UsersTab isLightMode={isLightMode} />}
+            {activeTab === 'progress' && <ProgressTab isLightMode={isLightMode} />}
+            {activeTab === 'analytics' && <AnalyticsTab isLightMode={isLightMode} />}
+          </div>
         </div>
       </div>
     </div>
@@ -113,7 +117,7 @@ function UsersTab({ isLightMode }: { isLightMode: boolean }) {
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch('/auth/login-history', {
+        const response = await fetch(`${API_BASE}/auth/login-history`, {
           credentials: 'include',
           headers
         });
