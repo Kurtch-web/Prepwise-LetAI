@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { useNavigate } from 'react-router-dom';
 import { TakeAssessmentModal } from '../components/TakeAssessmentModal';
-import api from '../services/api';
+import { AssessmentAnswersModal } from '../components/AssessmentAnswersModal';
+import api, { type AssessmentItem } from '../services/api';
 import { formatRelativeTime } from '../utils/dateFormatter';
 
 interface AssessmentTemplate {
@@ -21,8 +22,13 @@ export function StudyAssessmentPage() {
   const navigate = useNavigate();
   const isLightMode = theme === 'light';
   const [assessmentTemplates, setAssessmentTemplates] = useState<AssessmentTemplate[]>([]);
+  const [userAssessments, setUserAssessments] = useState<AssessmentItem[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentTemplate | null>(null);
+  const [showAnswersModal, setShowAnswersModal] = useState(false);
+  const [selectedAnswerAssessment, setSelectedAnswerAssessment] = useState<AssessmentItem | null>(null);
+  const [selectedAnswerTemplate, setSelectedAnswerTemplate] = useState<AssessmentTemplate | null>(null);
+  const [loadingAnswers, setLoadingAnswers] = useState(false);
   const [backendError, setBackendError] = useState<string | null>(null);
 
   const fetchTemplates = async () => {
@@ -41,9 +47,15 @@ export function StudyAssessmentPage() {
       }
 
       console.log('Fetching assessment templates...');
-      const response = await api.fetchAssessmentTemplates();
-      console.log('Assessment templates fetched:', response.templates);
-      setAssessmentTemplates(response.templates || []);
+      const [templatesResponse, userAssessmentsResponse] = await Promise.all([
+        api.fetchAssessmentTemplates(),
+        api.fetchUserAssessments().catch(() => ({ assessments: [] }))
+      ]);
+
+      console.log('Assessment templates fetched:', templatesResponse.templates);
+      console.log('User assessments fetched:', userAssessmentsResponse.assessments);
+      setAssessmentTemplates(templatesResponse.templates || []);
+      setUserAssessments(userAssessmentsResponse.assessments || []);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Failed to fetch assessment templates:', errorMessage);
@@ -51,6 +63,20 @@ export function StudyAssessmentPage() {
       setAssessmentTemplates([]);
     } finally {
       setLoadingTemplates(false);
+    }
+  };
+
+  const handleViewAnswers = async (assessment: AssessmentTemplate) => {
+    try {
+      setLoadingAnswers(true);
+      const userAssessment = await api.fetchUserAssessmentByTemplate(assessment.id);
+      setSelectedAnswerAssessment(userAssessment);
+      setSelectedAnswerTemplate(assessment);
+      setShowAnswersModal(true);
+    } catch (err) {
+      console.error('Failed to load assessment answers:', err);
+    } finally {
+      setLoadingAnswers(false);
     }
   };
 
@@ -183,53 +209,99 @@ export function StudyAssessmentPage() {
             </div>
 
             <div className="grid gap-4">
-              {assessmentTemplates.map((assessment) => (
-                <button
-                  key={assessment.id}
-                  onClick={() => setSelectedAssessment(assessment)}
-                  className={`rounded-2xl border p-6 text-left transition ${
-                    isLightMode
-                      ? 'border-slate-200 bg-white hover:border-emerald-400 hover:shadow-lg cursor-pointer'
-                      : 'border-slate-700 bg-slate-800/50 hover:border-emerald-400 hover:shadow-lg cursor-pointer'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                        {assessment.name}
-                      </h3>
-                      {assessment.description && (
-                        <p className={`text-sm mb-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                          {assessment.description}
-                        </p>
-                      )}
-                      <div className="flex flex-wrap gap-2">
-                        <span className={`text-xs px-3 py-1 rounded-full ${
-                          isLightMode
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-blue-500/20 text-blue-300'
-                        }`}>
-                          📝 {assessment.questions.length} question{assessment.questions.length !== 1 ? 's' : ''}
-                        </span>
-                        <span className={`text-xs px-3 py-1 rounded-full ${
-                          isLightMode
-                            ? 'bg-slate-100 text-slate-700'
-                            : 'bg-slate-700 text-slate-300'
-                        }`}>
-                          Created {formatRelativeTime(assessment.created_at)}
-                        </span>
+              {assessmentTemplates.map((assessment) => {
+                const userTakes = userAssessments.filter(a => a.template_id === assessment.id);
+                const lastTake = userTakes.length > 0 ? userTakes[0] : null;
+
+                return (
+                  <button
+                    key={assessment.id}
+                    onClick={() => setSelectedAssessment(assessment)}
+                    className={`rounded-2xl border p-6 text-left transition ${
+                      isLightMode
+                        ? 'border-slate-200 bg-white hover:border-emerald-400 hover:shadow-lg cursor-pointer'
+                        : 'border-slate-700 bg-slate-800/50 hover:border-emerald-400 hover:shadow-lg cursor-pointer'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                            {assessment.name}
+                          </h3>
+                          {lastTake && (
+                            <span className={`inline-flex text-xs px-3 py-1 rounded-full font-semibold ${
+                              isLightMode
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-emerald-500/20 text-emerald-300'
+                            }`}>
+                              ✓ Completed
+                            </span>
+                          )}
+                        </div>
+                        {assessment.description && (
+                          <p className={`text-sm mb-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                            {assessment.description}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`text-xs px-3 py-1 rounded-full ${
+                            isLightMode
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-blue-500/20 text-blue-300'
+                          }`}>
+                            📝 {assessment.questions.length} question{assessment.questions.length !== 1 ? 's' : ''}
+                          </span>
+                          <span className={`text-xs px-3 py-1 rounded-full ${
+                            isLightMode
+                              ? 'bg-slate-100 text-slate-700'
+                              : 'bg-slate-700 text-slate-300'
+                          }`}>
+                            Created {formatRelativeTime(assessment.created_at)}
+                          </span>
+                          {lastTake && (
+                            <span className={`text-xs px-3 py-1 rounded-full ${
+                              isLightMode
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-amber-500/20 text-amber-300'
+                            }`}>
+                              Last taken {formatRelativeTime(lastTake.createdAt)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 flex gap-2">
+                        {lastTake && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewAnswers(assessment);
+                            }}
+                            disabled={loadingAnswers}
+                            className={`px-4 py-3 rounded-lg font-semibold transition ${
+                              isLightMode
+                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                            } ${loadingAnswers ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {loadingAnswers ? '⏳' : '👁️ View'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setSelectedAssessment(assessment)}
+                          className={`px-6 py-3 rounded-lg font-semibold transition ${
+                            isLightMode
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-emerald-500/20 text-emerald-300'
+                          }`}
+                        >
+                          {lastTake ? 'Retake →' : 'Take →'}
+                        </button>
                       </div>
                     </div>
-                    <div className={`flex-shrink-0 px-6 py-3 rounded-lg font-semibold transition ${
-                      isLightMode
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-emerald-500/20 text-emerald-300'
-                    }`}>
-                      Take Assessment →
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -242,9 +314,26 @@ export function StudyAssessmentPage() {
           onClose={() => setSelectedAssessment(null)}
           onSuccess={() => {
             setSelectedAssessment(null);
+            fetchTemplates();
           }}
         />
       )}
+
+      {/* View Assessment Answers Modal */}
+      <AssessmentAnswersModal
+        isOpen={showAnswersModal}
+        onClose={() => {
+          setShowAnswersModal(false);
+          setSelectedAnswerAssessment(null);
+          setSelectedAnswerTemplate(null);
+        }}
+        assessment={selectedAnswerAssessment}
+        template={selectedAnswerTemplate ? {
+          name: selectedAnswerTemplate.name,
+          description: selectedAnswerTemplate.description,
+          questions: selectedAnswerTemplate.questions
+        } : null}
+      />
     </div>
   );
 }

@@ -335,6 +335,14 @@ export const api = {
     }),
 
   // Assessments API
+  fetchUserAssessments: () =>
+    request<{ assessments: AssessmentItem[] }>('/assessments', {
+      method: 'GET'
+    }),
+  fetchUserAssessmentByTemplate: (templateId: string) =>
+    request<AssessmentItem>(`/assessments/${templateId}`, {
+      method: 'GET'
+    }),
   fetchAssessmentTemplates: () =>
     request<{ templates: any[] }>('/assessments/templates', {
       method: 'GET'

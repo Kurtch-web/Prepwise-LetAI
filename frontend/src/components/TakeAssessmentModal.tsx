@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../services/api';
+import { api, type AssessmentItem } from '../services/api';
 import { useTheme } from '../providers/ThemeProvider';
 
 interface AssessmentQuestion {
@@ -29,6 +29,7 @@ export function TakeAssessmentModal({ assessment, onClose, onSuccess }: TakeAsse
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedAssessment, setSubmittedAssessment] = useState<AssessmentItem | null>(null);
 
   const handleAnswerChange = (questionIndex: number, answer: string) => {
     setResponses({
@@ -48,14 +49,17 @@ export function TakeAssessmentModal({ assessment, onClose, onSuccess }: TakeAsse
       return;
     }
 
-    // Close immediately without waiting for backend
-    onSuccess?.();
-    onClose();
-
-    // Submit assessment in the background (don't wait for response)
-    api.createAssessment(assessment.id, responses).catch(err => {
+    try {
+      setLoading(true);
+      const result = await api.createAssessment(assessment.id, responses);
+      setSubmittedAssessment(result);
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit assessment');
       console.error('Failed to submit assessment:', err);
-    });
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -63,18 +67,60 @@ export function TakeAssessmentModal({ assessment, onClose, onSuccess }: TakeAsse
       <div className={`fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm ${
         isLightMode ? 'bg-black/30' : 'bg-black/60'
       }`}>
-        <div className={`rounded-3xl border p-12 text-center max-w-md mx-4 ${
+        <div className={`rounded-3xl border max-w-md mx-4 p-8 ${
           isLightMode
             ? 'border-emerald-200 bg-white'
             : 'border-emerald-500/20 bg-[#064e3b]'
         }`}>
-          <div className="mb-6 text-6xl">✓</div>
-          <h2 className={`mb-3 text-2xl font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
-            Assessment Completed!
-          </h2>
-          <p className={`${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>
-            Your responses have been submitted successfully. Your instructor can now view your results.
+          <div className="mb-6 text-center">
+            <div className="text-6xl mb-4">✓</div>
+            <h2 className={`text-2xl font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
+              Assessment Submitted!
+            </h2>
+          </div>
+
+          <p className={`mb-6 text-center ${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>
+            Your responses have been recorded successfully.
           </p>
+
+          {submittedAssessment && (
+            <div className={`rounded-2xl border p-4 mb-6 ${
+              isLightMode
+                ? 'border-emerald-200 bg-emerald-50'
+                : 'border-emerald-500/20 bg-emerald-900/10'
+            }`}>
+              <p className={`text-xs uppercase tracking-wide mb-2 ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
+                Primary Learning Method
+              </p>
+              <p className={`text-lg font-semibold ${isLightMode ? 'text-emerald-900' : 'text-emerald-100'}`}>
+                {submittedAssessment.recommendations.primary_method}
+              </p>
+            </div>
+          )}
+
+          <div className={`rounded-2xl border p-4 mb-6 ${
+            isLightMode
+              ? 'border-blue-200 bg-blue-50'
+              : 'border-blue-500/20 bg-blue-900/20'
+          }`}>
+            <p className={`text-sm ${isLightMode ? 'text-blue-700' : 'text-blue-300'}`}>
+              💡 You can view your submitted answers and retake this assessment at any time.
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              onSuccess?.();
+              onClose();
+            }}
+            className={`w-full px-6 py-3 rounded-xl font-semibold transition ${
+              isLightMode
+                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+            }`}
+          >
+            Done
+          </button>
         </div>
       </div>
     );
@@ -251,7 +297,7 @@ export function TakeAssessmentModal({ assessment, onClose, onSuccess }: TakeAsse
               type="submit"
               disabled={loading || !isAllAnswered}
               className={`flex-1 px-6 py-3 rounded-xl font-semibold transition ${
-                isAllAnswered
+                isAllAnswered && !loading
                   ? isLightMode
                     ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                     : 'bg-emerald-600 text-white hover:bg-emerald-700'

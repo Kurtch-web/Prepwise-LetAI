@@ -169,13 +169,23 @@ async def submit_assessment(
     current_user: UserAccount = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> AssessmentOut:
-    """Submit assessment responses"""
+    """Submit assessment responses. Replaces any previous submission for this user+template."""
     # Verify template exists
     template = await db.scalar(
         select(AssessmentTemplate).where(AssessmentTemplate.id == assessment_in.template_id)
     )
     if not template:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Assessment template not found')
+
+    # Delete any existing assessment for this user and template
+    existing = await db.scalar(
+        select(Assessment).where(
+            Assessment.user_id == current_user.id,
+            Assessment.template_id == assessment_in.template_id
+        )
+    )
+    if existing:
+        await db.delete(existing)
 
     # Analyze responses
     learning_preferences = analyze_learning_preferences(assessment_in.responses)
@@ -200,6 +210,63 @@ async def submit_assessment(
         responses=assessment.responses,
         learning_preferences=LearningPreference(**learning_preferences),
         recommendations=AssessmentRecommendation(**recommendations),
+        createdAt=assessment.created_at,
+        updatedAt=assessment.updated_at,
+    )
+
+
+@router.get('/assessments', response_model=AssessmentList)
+async def get_user_assessments(
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> AssessmentList:
+    """Get current user's assessment submissions"""
+    result = await db.execute(
+        select(Assessment)
+        .where(Assessment.user_id == current_user.id)
+        .order_by(Assessment.created_at.desc())
+    )
+    assessments = result.scalars().all()
+
+    items = [
+        AssessmentOut(
+            id=a.id,
+            template_id=a.template_id,
+            responses=a.responses,
+            learning_preferences=LearningPreference(**a.learning_preferences),
+            recommendations=AssessmentRecommendation(**a.recommendations),
+            createdAt=a.created_at,
+            updatedAt=a.updated_at,
+        )
+        for a in assessments
+    ]
+
+    return AssessmentList(assessments=items)
+
+
+@router.get('/assessments/{template_id}', response_model=AssessmentOut)
+async def get_user_assessment_by_template(
+    template_id: str,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> AssessmentOut:
+    """Get current user's assessment for a specific template"""
+    assessment = await db.scalar(
+        select(Assessment).where(
+            Assessment.user_id == current_user.id,
+            Assessment.template_id == template_id
+        )
+    )
+
+    if not assessment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Assessment not found')
+
+    return AssessmentOut(
+        id=assessment.id,
+        template_id=assessment.template_id,
+        responses=assessment.responses,
+        learning_preferences=LearningPreference(**assessment.learning_preferences),
+        recommendations=AssessmentRecommendation(**assessment.recommendations),
         createdAt=assessment.created_at,
         updatedAt=assessment.updated_at,
     )
