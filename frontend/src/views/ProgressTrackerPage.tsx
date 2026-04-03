@@ -169,58 +169,9 @@ function UsersTab({ isLightMode }: { isLightMode: boolean }) {
               {user?.email || 'Not provided'}
             </p>
           </div>
-          <div>
-            <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              Last Login
-            </p>
-            <p className={`text-lg font-bold mt-1 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              {loginHistory?.last_login ? new Date(loginHistory.last_login).toLocaleString() : 'Never'}
-            </p>
-          </div>
-          <div>
-            <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              Total Logins
-            </p>
-            <p className={`text-lg font-bold mt-1 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              {loginHistory?.total_logins || 0}
-            </p>
-          </div>
         </div>
       </div>
 
-      {/* Login History */}
-      <div className={`rounded-lg p-6 border ${
-        isLightMode
-          ? 'bg-slate-50 border-slate-200'
-          : 'bg-slate-700/30 border-slate-600'
-      }`}>
-        <h3 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-          📋 Login Activity
-        </h3>
-
-        {loginHistory?.login_events && loginHistory.login_events.length > 0 ? (
-          <div className="space-y-2 max-h-80 overflow-y-auto">
-            {loginHistory.login_events.map((event: any, idx: number) => (
-              <div key={idx} className={`p-3 rounded-lg flex items-center justify-between ${
-                isLightMode
-                  ? 'bg-white border border-slate-200'
-                  : 'bg-slate-800/30 border border-slate-600'
-              }`}>
-                <span className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  {event.event_type === 'login' ? '🔓 Logged In' : '🔒 Logged Out'}
-                </span>
-                <span className={`text-sm font-medium ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                  {new Date(event.created_at).toLocaleString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>
-            No login activity recorded yet.
-          </p>
-        )}
-      </div>
     </div>
   );
 }
