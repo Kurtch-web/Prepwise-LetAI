@@ -79,9 +79,6 @@ export function AdminPortalPage() {
 
   useEffect(() => {
     fetchUsers();
-    // Refresh users every 5 seconds for real-time updates
-    const interval = setInterval(fetchUsers, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   const fetchVideoCategories = async () => {
@@ -1284,7 +1281,20 @@ export function AdminPortalPage() {
                           try {
                             setInsightsLoading(true);
                             const data = await api.fetchAssessmentInsights(template.id);
-                            setSelectedAssessmentTemplate({ ...template, ...data });
+                            // Merge template questions with insights data
+                            const mergedQuestions = template.questions.map((q, idx) => {
+                              const insightQuestion = data.questions[idx];
+                              return {
+                                ...q,
+                                ...insightQuestion,
+                                title: q.title // Keep the original title
+                              };
+                            });
+                            setSelectedAssessmentTemplate({
+                              ...template,
+                              ...data,
+                              questions: mergedQuestions
+                            });
                           } catch (err) {
                             setError(err instanceof Error ? err.message : 'Failed to fetch template insights');
                           } finally {
@@ -1368,8 +1378,8 @@ export function AdminPortalPage() {
                           >
                             <div>
                               <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                                Q{idx + 1}. {question.id}
-                              </h3>
+                              Q{idx + 1}. {question.title || question.id}
+                            </h3>
                               <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>
                                 Majority Answer: <span className={`font-semibold ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>{question.majority}</span>
                               </p>
