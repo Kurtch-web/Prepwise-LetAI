@@ -42,6 +42,7 @@ export function LearningMaterialsPage() {
   const [showAnswersModal, setShowAnswersModal] = useState(false);
   const [selectedAnswerAssessment, setSelectedAnswerAssessment] = useState<any | null>(null);
   const [selectedAnswerTemplate, setSelectedAnswerTemplate] = useState<AssessmentTemplate | null>(null);
+  const [previousAnswersForModal, setPreviousAnswersForModal] = useState<Record<string, unknown> | null>(null);
 
   const fetchTemplates = async () => {
     try {
@@ -508,53 +509,97 @@ export function LearningMaterialsPage() {
                 </div>
 
                 <div className="grid gap-4">
-                  {assessmentTemplates.map((assessment) => (
-                    <button
-                      key={assessment.id}
-                      onClick={() => setSelectedAssessment(assessment)}
-                      className={`rounded-2xl border p-6 text-left transition ${
-                        isLightMode
-                          ? 'border-slate-200 bg-white hover:border-emerald-400 hover:shadow-lg cursor-pointer'
-                          : 'border-slate-700 bg-slate-800/50 hover:border-emerald-400 hover:shadow-lg cursor-pointer'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                            {assessment.name}
-                          </h3>
-                          {assessment.description && (
-                            <p className={`text-sm mb-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                              {assessment.description}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap gap-2">
-                            <span className={`text-xs px-3 py-1 rounded-full ${
-                              isLightMode
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-blue-500/20 text-blue-300'
-                            }`}>
-                              📝 {assessment.questions.length} question{assessment.questions.length !== 1 ? 's' : ''}
-                            </span>
-                            <span className={`text-xs px-3 py-1 rounded-full ${
-                              isLightMode
-                                ? 'bg-slate-100 text-slate-700'
-                                : 'bg-slate-700 text-slate-300'
-                            }`}>
-                              Created {formatRelativeTime(assessment.created_at)}
-                            </span>
+                  {assessmentTemplates.map((assessment) => {
+                    const userTakes = userAssessments.filter(a => a.template_id === assessment.id);
+                    const hasCompleted = userTakes.length > 0;
+                    const lastTake = hasCompleted ? userTakes[0] : null;
+
+                    const handleRetakeClick = async () => {
+                      try {
+                        if (hasCompleted && lastTake) {
+                          // Fetch the full previous answers for editing
+                          const userAssessment = await api.fetchUserAssessmentByTemplate(assessment.id);
+                          setPreviousAnswersForModal(userAssessment.responses);
+                        } else {
+                          setPreviousAnswersForModal(null);
+                        }
+                        setSelectedAssessment(assessment);
+                      } catch (err) {
+                        console.error('Failed to load previous answers:', err);
+                        // Still open the modal without previous answers if fetch fails
+                        setPreviousAnswersForModal(null);
+                        setSelectedAssessment(assessment);
+                      }
+                    };
+
+                    return (
+                      <button
+                        key={assessment.id}
+                        onClick={handleRetakeClick}
+                        className={`rounded-2xl border p-6 text-left transition ${
+                          isLightMode
+                            ? 'border-slate-200 bg-white hover:border-emerald-400 hover:shadow-lg cursor-pointer'
+                            : 'border-slate-700 bg-slate-800/50 hover:border-emerald-400 hover:shadow-lg cursor-pointer'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                                {assessment.name}
+                              </h3>
+                              {hasCompleted && (
+                                <span className={`inline-flex text-xs px-3 py-1 rounded-full font-semibold ${
+                                  isLightMode
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : 'bg-emerald-500/20 text-emerald-300'
+                                }`}>
+                                  ✓ Answered
+                                </span>
+                              )}
+                            </div>
+                            {assessment.description && (
+                              <p className={`text-sm mb-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                                {assessment.description}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap gap-2">
+                              <span className={`text-xs px-3 py-1 rounded-full ${
+                                isLightMode
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-blue-500/20 text-blue-300'
+                              }`}>
+                                📝 {assessment.questions.length} question{assessment.questions.length !== 1 ? 's' : ''}
+                              </span>
+                              <span className={`text-xs px-3 py-1 rounded-full ${
+                                isLightMode
+                                  ? 'bg-slate-100 text-slate-700'
+                                  : 'bg-slate-700 text-slate-300'
+                              }`}>
+                                Created {formatRelativeTime(assessment.created_at)}
+                              </span>
+                              {hasCompleted && (
+                                <span className={`text-xs px-3 py-1 rounded-full ${
+                                  isLightMode
+                                    ? 'bg-amber-100 text-amber-700'
+                                    : 'bg-amber-500/20 text-amber-300'
+                                }`}>
+                                  Last answered {formatRelativeTime(lastTake.createdAt)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className={`flex-shrink-0 px-6 py-3 rounded-lg font-semibold transition ${
+                            isLightMode
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-emerald-500/20 text-emerald-300'
+                          }`}>
+                            {hasCompleted ? 'Edit Answer →' : 'Take Assessment →'}
                           </div>
                         </div>
-                        <div className={`flex-shrink-0 px-6 py-3 rounded-lg font-semibold transition ${
-                          isLightMode
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-emerald-500/20 text-emerald-300'
-                        }`}>
-                          Take Assessment →
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -565,11 +610,16 @@ export function LearningMaterialsPage() {
         {selectedAssessment && (
           <TakeAssessmentModal
             assessment={selectedAssessment}
-            onClose={() => setSelectedAssessment(null)}
+            onClose={() => {
+              setSelectedAssessment(null);
+              setPreviousAnswersForModal(null);
+            }}
             onSuccess={() => {
               setSelectedAssessment(null);
+              setPreviousAnswersForModal(null);
               fetchTemplates();
             }}
+            previousAnswers={previousAnswersForModal}
           />
         )}
 

@@ -19,13 +19,18 @@ interface TakeAssessmentModalProps {
   assessment: AssessmentTemplate;
   onClose: () => void;
   onSuccess?: () => void;
+  previousAnswers?: Record<string, unknown> | null;
 }
 
-export function TakeAssessmentModal({ assessment, onClose, onSuccess }: TakeAssessmentModalProps) {
+export function TakeAssessmentModal({ assessment, onClose, onSuccess, previousAnswers }: TakeAssessmentModalProps) {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
 
-  const [responses, setResponses] = useState<Record<string, string>>({});
+  const [responses, setResponses] = useState<Record<string, string>>(
+    previousAnswers ? Object.fromEntries(
+      Object.entries(previousAnswers).map(([key, value]) => [key, String(value)])
+    ) : {}
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -75,12 +80,12 @@ export function TakeAssessmentModal({ assessment, onClose, onSuccess }: TakeAsse
           <div className="mb-6 text-center">
             <div className="text-6xl mb-4">✓</div>
             <h2 className={`text-2xl font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
-              Assessment Submitted!
+              {previousAnswers ? 'Assessment Updated!' : 'Assessment Submitted!'}
             </h2>
           </div>
 
           <p className={`mb-6 text-center ${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>
-            Your responses have been recorded successfully.
+            {previousAnswers ? 'Your updated responses have been saved successfully.' : 'Your responses have been recorded successfully.'}
           </p>
 
           {submittedAssessment && (
