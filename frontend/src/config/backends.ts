@@ -4,10 +4,28 @@
  * VITE_API_BASE: Points to the FastAPI backend (local or deployed)
  *
  * For local development: http://127.0.0.1:8000
- * For Vercel deployment: https://prepwise-let-ai-e789.vercel.app
+ * For Vercel deployment: Set VITE_API_BASE environment variable to your backend URL
+ *
+ * Examples:
+ * - Local: http://localhost:8000
+ * - Production: https://your-backend-api.com
  */
 
-export const API_BASE = (import.meta.env.VITE_API_BASE || 'https://prepwise-let-ai-e789.vercel.app').replace(/\/$/, '');
+// Determine the API base URL
+let apiBase = import.meta.env.VITE_API_BASE;
+
+if (!apiBase) {
+  // In development, default to localhost
+  if (import.meta.env.DEV) {
+    apiBase = 'http://localhost:8000';
+  } else {
+    // In production on Vercel, you MUST set VITE_API_BASE environment variable
+    console.error('[API Config] VITE_API_BASE is not set! API calls will fail. Please configure this environment variable in Vercel.');
+    apiBase = '';
+  }
+}
+
+export const API_BASE = apiBase.replace(/\/$/, '');
 
 // Helper to check if API is properly configured
 export const isApiConfigured = (): boolean => {
