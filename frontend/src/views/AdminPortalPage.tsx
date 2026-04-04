@@ -1282,7 +1282,7 @@ export function AdminPortalPage() {
                             setInsightsLoading(true);
                             const data = await api.fetchAssessmentInsights(template.id);
                             // Merge template questions with insights data
-                            const mergedQuestions = template.questions.map((q, idx) => {
+                            const mergedQuestions = template.questions.map((q: any, idx: number) => {
                               const insightQuestion = data.questions[idx];
                               return {
                                 ...q,

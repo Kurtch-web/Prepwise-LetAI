@@ -69,6 +69,7 @@ export interface AssessmentRecommendation {
 
 export interface AssessmentItem {
   id: string;
+  template_id: string;
   responses: Record<string, unknown>;
   learning_preferences: LearningPreference;
   recommendations: AssessmentRecommendation;

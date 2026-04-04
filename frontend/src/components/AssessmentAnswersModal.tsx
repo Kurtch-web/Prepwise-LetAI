@@ -107,7 +107,7 @@ export function AssessmentAnswersModal({
             <div className="space-y-6">
               {template.questions.map((question, qIdx) => {
                 const questionKey = `q${qIdx}`;
-                const userAnswerLetter = assessment.responses[questionKey];
+                const userAnswerLetter = String(assessment.responses[questionKey] || '');
                 const userAnswerIndex = userAnswerLetter
                   ? userAnswerLetter.charCodeAt(0) - 65
                   : -1;
