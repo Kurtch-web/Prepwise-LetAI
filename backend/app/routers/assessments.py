@@ -244,6 +244,33 @@ async def get_user_assessments(
     return AssessmentList(assessments=items)
 
 
+@router.get('/assessments/templates', response_model=AssessmentTemplateList)
+async def get_assessment_templates(db: AsyncSession = Depends(get_db)) -> AssessmentTemplateList:
+    """Get all active assessment templates (public endpoint for students)"""
+    result = await db.execute(
+        select(AssessmentTemplate)
+        .where(AssessmentTemplate.is_active == True)
+        .order_by(AssessmentTemplate.created_at.desc())
+    )
+    templates = result.scalars().all()
+
+    items = [
+        AssessmentTemplateOut(
+            id=t.id,
+            creator_id=t.creator_id,
+            name=t.name,
+            description=t.description,
+            questions=[AssessmentQuestion(**q) for q in t.questions],
+            is_active=t.is_active,
+            created_at=t.created_at,
+            updated_at=t.updated_at,
+        )
+        for t in templates
+    ]
+
+    return AssessmentTemplateList(templates=items)
+
+
 @router.get('/assessments/{template_id}', response_model=AssessmentOut)
 async def get_user_assessment_by_template(
     template_id: str,
@@ -270,33 +297,6 @@ async def get_user_assessment_by_template(
         createdAt=assessment.created_at,
         updatedAt=assessment.updated_at,
     )
-
-
-@router.get('/assessments/templates', response_model=AssessmentTemplateList)
-async def get_assessment_templates(db: AsyncSession = Depends(get_db)) -> AssessmentTemplateList:
-    """Get all active assessment templates (public endpoint for students)"""
-    result = await db.execute(
-        select(AssessmentTemplate)
-        .where(AssessmentTemplate.is_active == True)
-        .order_by(AssessmentTemplate.created_at.desc())
-    )
-    templates = result.scalars().all()
-
-    items = [
-        AssessmentTemplateOut(
-            id=t.id,
-            creator_id=t.creator_id,
-            name=t.name,
-            description=t.description,
-            questions=[AssessmentQuestion(**q) for q in t.questions],
-            is_active=t.is_active,
-            created_at=t.created_at,
-            updated_at=t.updated_at,
-        )
-        for t in templates
-    ]
-
-    return AssessmentTemplateList(templates=items)
 
 
 # Admin assessment endpoints
