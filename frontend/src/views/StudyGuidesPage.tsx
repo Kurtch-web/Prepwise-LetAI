@@ -36,28 +36,28 @@ export function StudyGuidesPage() {
           },
           {
             type: 'content',
-            heading: 'English & Filipino - Language Skills',
-            content: 'This covers proper use of grammar, building your vocabulary, and understanding what you read. Grammar includes sentence structure, correct verb tenses, and punctuation. Vocabulary means knowing many words and their meanings. Reading comprehension means understanding the main ideas, details, and purpose of texts. You need these skills in BOTH English and Filipino because the LET exam tests both languages. Practice identifying common grammar mistakes, learning new words daily, and reading various materials (news, books, articles) to improve comprehension.'
+            heading: 'English and Filipino Language Skills',
+            content: 'This covers proper use of grammar, building your vocabulary, and understanding what you read. Grammar includes sentence structure, correct verb tenses, and punctuation. Vocabulary means knowing many words and their meanings. Reading comprehension means understanding the main ideas, details, and purpose of texts. You need these skills in both English and Filipino because the LET exam tests both languages. Practice identifying common grammar mistakes, learning new words daily, and reading various materials like news, books, and articles to improve comprehension.'
           },
           {
             type: 'content',
-            heading: 'Mathematics - Numbers & Problem Solving',
-            content: 'Mathematics isn\'t just about getting the right answer—it\'s about understanding HOW and WHY. This section covers: Arithmetic (adding, subtracting, multiplying, dividing), Algebra (using letters like X to solve problems), and Geometry (shapes, measurements, angles). You need to understand these concepts deeply so you can explain them simply to students. Practice solving word problems, understanding what formulas mean, and thinking logically about mathematical situations. Many teaching concepts actually use these mathematical principles.'
+            heading: 'Mathematics for Teaching',
+            content: 'Mathematics isn\'t just about getting the right answer. It\'s about understanding how and why things work. This section covers arithmetic (adding, subtracting, multiplying, dividing), algebra (using letters like X to solve problems), and geometry (shapes, measurements, angles). You need to understand these concepts deeply so you can explain them simply to students. Practice solving word problems, understanding what formulas mean, and thinking logically about mathematical situations. Many teaching concepts actually use these mathematical principles.'
           },
           {
             type: 'content',
-            heading: 'Science - Understanding the Natural World',
-            content: 'Science explores how our world works. Physical Science covers matter, energy, forces, and motion—like why objects fall or how electricity works. Biological Science covers living things—how plants and animals survive, how our bodies work, and how organisms interact. Environmental Science covers ecosystems, pollution, climate, and sustainability. Don\'t just memorize facts; understand the concepts. For example, don\'t just memorize "photosynthesis"—understand WHY plants need sunlight and how they convert it to energy. This helps you explain science in interesting ways to students.'
+            heading: 'Science Understanding the Natural World',
+            content: 'Science explores how our world works. Physical Science covers matter, energy, forces, and motion like why objects fall or how electricity works. Biological Science covers living things including how plants and animals survive, how our bodies work, and how organisms interact. Environmental Science covers ecosystems, pollution, climate, and sustainability. Don\'t just memorize facts. Understand the concepts. For example, don\'t just memorize photosynthesis. Understand why plants need sunlight and how they convert it to energy. This helps you explain science in interesting ways to students.'
           },
           {
             type: 'content',
-            heading: 'Social Sciences - History, Government & Society',
-            content: 'This area covers Philippine history (from pre-colonial times to present), the Philippine Constitution (the basic laws that govern the country), and current events. You need to understand WHY historical events happened, not just WHEN. For the Constitution, know the basic structure of government (Executive, Legislative, Judicial), your rights as a citizen, and basic laws. Current events means staying informed about what\'s happening in the world—read news regularly. Teachers need this knowledge to help students understand their country, their rights, and their role in society.'
+            heading: 'Social Sciences History Government and Society',
+            content: 'This area covers Philippine history from pre-colonial times to present, the Philippine Constitution which is the basic laws that govern the country, and current events. You need to understand why historical events happened, not just when. For the Constitution, know the basic structure of government including Executive, Legislative, and Judicial branches, your rights as a citizen, and basic laws. Current events means staying informed about what\'s happening in the world. Read news regularly. Teachers need this knowledge to help students understand their country, their rights, and their role in society.'
           },
           {
             type: 'content',
-            heading: 'Information Technology - Digital World Skills',
-            content: 'Information Technology means understanding how computers and the internet work. Basic computer literacy includes knowing how to use a computer, navigate the internet, use email, and create documents. Digital Safety means protecting yourself online—knowing about scams, password safety, and privacy. As a modern teacher, you need these skills to use educational technology in class, communicate with students and parents online, and teach students about safe internet use. The LET tests whether you understand basic computer concepts and can recognize online safety threats.'
+            heading: 'Information Technology and Digital Skills',
+            content: 'Information Technology means understanding how computers and the internet work. Basic computer literacy includes knowing how to use a computer, navigate the internet, use email, and create documents. Digital Safety means protecting yourself online and knowing about scams, password safety, and privacy. As a modern teacher, you need these skills to use educational technology in class, communicate with students and parents online, and teach students about safe internet use. The LET tests whether you understand basic computer concepts and can recognize online safety threats.'
           }
         ]
       },
@@ -65,23 +65,119 @@ export function StudyGuidesPage() {
         title: 'Professional Education Overview',
         slides: [
           {
-            type: 'image',
-            image: 'https://cdn.builder.io/api/v1/image/assets%2F0628b4d8acdd434d9317f96069ddf2de%2F015f382331944efd899b2d08bb2dd5af?format=webp&width=800&height=1200'
+            type: 'content',
+            heading: 'What is Professional Education?',
+            content: 'Professional Education focuses on the science of being a teacher. It covers the legal, ethical, and theoretical frameworks that guide the teaching profession. Unlike General Education which tests your knowledge of different subjects, Professional Education tests whether you understand how to teach those subjects and what it means to be a professional educator in the Philippines.'
           },
           {
             type: 'content',
-            heading: 'Purpose',
-            content: 'Professional Education equips teachers with pedagogical knowledge, understanding of learning theories, classroom management strategies, and assessment methodologies.'
+            heading: 'The Teaching Profession',
+            content: 'This covers the history of the Philippine educational system, the ethics of teaching, and the Magna Carta for Public School Teachers which outlines your rights and responsibilities. You need to understand that teaching isn\'t just a job, it\'s a profession with a code of ethics. Teachers are expected to be role models for students and their communities. Know the professional standards and the laws that protect teachers and students in Philippine schools.'
           },
           {
             type: 'content',
-            heading: 'Key Components',
-            content: 'Includes child development, learning theories (Piaget, Vygotsky, Bloom), teaching methods, classroom management, and educational assessment techniques.'
+            heading: 'Social Dimensions of Education',
+            content: 'This explores how schools function within society. It includes understanding the relationship between school and society, how to communicate across different cultures and backgrounds, and the importance of peace education. As a teacher, you\'ll work with students from diverse backgrounds. You need to understand intercultural communication and how to create an inclusive classroom that promotes peace and understanding among students with different beliefs and experiences.'
           },
           {
             type: 'content',
-            heading: 'Study Focus',
-            content: 'Master learning outcomes, different teaching approaches, student assessment strategies, and implementation of the DepEd curriculum framework.'
+            heading: 'Field Study and Practice Teaching',
+            content: 'This is where theory meets reality. Field Study means observing real classrooms and learning how experienced teachers work. Practice Teaching means you actually teach a lesson in a real classroom under supervision. This section tests whether you understand how to apply educational theories in actual classroom settings with real students. You\'ll need to understand classroom dynamics, student behavior, and how to adapt your teaching based on student responses.'
+          },
+          {
+            type: 'content',
+            heading: 'Why Professional Education Matters',
+            content: 'Professional Education ensures that you don\'t just know content, but know how to teach it effectively. It covers the legal and ethical responsibilities you have as a teacher. It prepares you for real classroom challenges. Understanding professional education helps you make informed decisions about student learning, classroom management, and your role in shaping the future of your students.'
+          }
+        ]
+      },
+      'Pedagogy and Teaching Methods': {
+        title: 'Pedagogy and Teaching Methods',
+        slides: [
+          {
+            type: 'content',
+            heading: 'What is Pedagogy?',
+            content: 'Pedagogy is simply the art and science of teaching. If General Education is about what to teach and Professional Education is about being a teacher, then Pedagogy is about how to teach effectively. Pedagogy addresses the strategies, methods, and techniques you use to help students learn. It\'s not enough to know your subject. You need to know how to present it in ways that different students can understand and learn from.'
+          },
+          {
+            type: 'content',
+            heading: 'Teaching Strategies for Learning',
+            content: 'Different students learn in different ways. Differentiated instruction means adjusting your teaching for students with different learning levels, abilities, and styles. Inquiry-based learning means students ask questions and discover answers themselves rather than you just telling them. The 5E model includes Engage (get student interest), Explore (let them investigate), Explain (provide the concept), Elaborate (extend the learning), and Evaluate (check understanding). Good teachers use a variety of strategies depending on what they\'re teaching and who they\'re teaching.'
+          },
+          {
+            type: 'content',
+            heading: 'Classroom Management Techniques',
+            content: 'Classroom management is about creating an environment where learning can happen. It\'s not just about discipline or keeping students quiet. It includes establishing clear rules and expectations, creating a positive learning environment where students feel safe and respected, managing your time effectively so lessons flow well, and handling student behavior in ways that teach rather than punish. Good classroom management prevents behavior problems before they start and addresses them constructively when they occur.'
+          },
+          {
+            type: 'content',
+            heading: 'Assessment of Student Learning',
+            content: 'Assessment means checking whether students have learned what you taught. Traditional assessments include tests and quizzes. Authentic assessments include projects, presentations, and real-world tasks. You need to understand different grading systems and how to interpret test scores. This includes understanding statistical data like mean (average), standard deviation (how spread out scores are), and quartiles (dividing scores into groups). Assessment helps you know if your teaching is working and where students need more help.'
+          },
+          {
+            type: 'content',
+            heading: 'Connecting Assessment to Instruction',
+            content: 'Good teachers use assessment not just to give grades, but to improve their teaching. You assess students before teaching to know what they already know. You assess during teaching to check understanding and adjust. You assess after teaching to know if learning happened. This is called formative and summative assessment. Understanding assessment helps you make better decisions about what to teach next and how to help struggling students.'
+          }
+        ]
+      },
+      'Educational Psychology': {
+        title: 'Educational Psychology',
+        slides: [
+          {
+            type: 'content',
+            heading: 'What is Educational Psychology?',
+            content: 'Educational Psychology is the study of how people learn. It combines psychology with education. Understanding your students goes beyond just understanding the subject you teach. You need to understand how students think, how they grow, what motivates them, and how they process information. The better you understand your students as learners, the better you can teach them. This is one of the most important areas for becoming an effective teacher.'
+          },
+          {
+            type: 'content',
+            heading: 'Learner Development',
+            content: 'Students develop in three ways. Physical development includes growth of the body and brain. Cognitive development means how their thinking abilities change as they age. Socio-emotional development includes how they develop emotionally, how they interact with peers, and how they form relationships. As a teacher, you need to understand what physical, cognitive, and emotional abilities students have at different ages. A teaching method that works for high school students won\'t work for elementary students because they develop differently.'
+          },
+          {
+            type: 'content',
+            heading: 'Learning Theories in Practice',
+            content: 'Different theories explain how people learn. Behaviorism says people learn through rewards and punishments, repetition, and practice. Cognitivism focuses on how people think and process information. Piaget said children think differently at different ages and must move through stages of thinking. Constructivism says people build their own understanding through experience. Vygotsky talked about how social interaction and culture affect learning. No single theory is completely right. Good teachers use ideas from all these theories depending on what and who they\'re teaching.'
+          },
+          {
+            type: 'content',
+            heading: 'Zone of Proximal Development',
+            content: 'This comes from Vygotsky. It\'s the gap between what a student can do alone and what they can do with help. For example, a child might not be able to read a complex book alone, but can understand it if an adult reads it with them and explains. As a teacher, your job is to provide just enough help so students can do things they couldn\'t do alone. This is called scaffolding. Over time, students need less help as they become independent. Understanding ZPD helps you know when to challenge students and when to provide support.'
+          },
+          {
+            type: 'content',
+            heading: 'Motivation and Student Needs',
+            content: 'Understanding what motivates students is crucial. Intrinsic motivation means students want to learn because they find it interesting or important. Extrinsic motivation means students learn for grades, rewards, or to avoid punishment. Maslow\'s Hierarchy of Needs explains that students have basic needs (food, safety) before they can focus on learning. If a student is hungry or feels unsafe, they won\'t learn well no matter how good your lesson is. Good teachers create classrooms where students feel safe, respected, and motivated to learn for their own reasons, not just for grades.'
+          }
+        ]
+      },
+      'Curriculum Development': {
+        title: 'Curriculum Development',
+        slides: [
+          {
+            type: 'content',
+            heading: 'What is Curriculum?',
+            content: 'Curriculum is everything students learn in school. It\'s not just textbooks and lessons. It includes what you plan to teach, how you teach it, the materials you use, and even what students learn through interactions with each other. Curriculum Development is the process of planning, designing, implementing, and then evaluating what students learn. Good curriculum aligns with national standards but also responds to local community needs. It\'s constantly being improved based on how well it works.'
+          },
+          {
+            type: 'content',
+            heading: 'Curriculum Models',
+            content: 'There are different ways to organize curriculum. A linear model moves step by step through content from basic to complex. A cyclical model revisits topics at deeper levels each time. A dynamic model adjusts based on student needs and current events. The Philippine Department of Education uses the K-12 Program which is structured as a spiral curriculum where students return to topics year after year but understand them more deeply each time. Understanding these models helps you see how individual lessons fit into the bigger picture of student learning.'
+          },
+          {
+            type: 'content',
+            heading: 'Phases of Curriculum Work',
+            content: 'Curriculum Planning means deciding what students should learn and why. Curriculum Design means creating the actual learning experiences, lessons, and assessments. Curriculum Implementation means actually teaching using the designed curriculum. Curriculum Evaluation means checking if the curriculum worked and if students learned. You don\'t just teach lessons that someone else planned. You participate in all these phases. As a teacher, you help implement the national curriculum but also adapt it for your specific students and community.'
+          },
+          {
+            type: 'content',
+            heading: 'National Standards and Local Context',
+            content: 'The Philippines has national standards for what all students should know. The K-12 Program provides these standards. However, curriculum isn\'t one-size-fits-all. You need to align with national standards while also responding to your local community\'s needs. If you teach in a fishing community, you might include lessons about ocean ecology and fishing practices. If you teach in an urban area, you might include lessons about city life and technology. Good teachers balance national requirements with local relevance.'
+          },
+          {
+            type: 'content',
+            heading: 'Why Curriculum Development Matters',
+            content: 'Understanding curriculum development helps you be more than just a teacher who follows a textbook. You become a professional who can evaluate what students need to learn, design meaningful learning experiences, and assess whether learning actually happened. This knowledge helps you make decisions about what to emphasize, what to skip, and how to make learning relevant and engaging for your particular students in your particular community.'
           }
         ]
       }
@@ -91,18 +187,19 @@ export function StudyGuidesPage() {
       title: guideName,
       slides: [
         {
-          type: 'image',
-          image: 'https://cdn.builder.io/api/v1/image/assets%2F0628b4d8acdd434d9317f96069ddf2de%2F015f382331944efd899b2d08bb2dd5af?format=webp&width=800&height=1200'
+          type: 'content',
+          heading: 'Guide Overview',
+          content: 'This comprehensive guide provides in-depth coverage of essential concepts and practical strategies for LET exam preparation. Study the material carefully and take notes on key points.'
         },
         {
           type: 'content',
-          heading: 'Learning Objectives',
-          content: 'This guide provides comprehensive coverage of key concepts and practical strategies for LET exam preparation.'
+          heading: 'Key Focus Areas',
+          content: 'This guide covers important topics that are commonly tested in the LET examination. Understanding these concepts will help you prepare effectively and boost your confidence during the exam.'
         },
         {
           type: 'content',
-          heading: 'Main Topics',
-          content: 'Explore in-depth content covering all essential areas tested in the LET examination.'
+          heading: 'How to Use This Guide',
+          content: 'Read through each section carefully, take notes, and review regularly. Don\\\'t just memorize information. Try to understand the concepts so you can explain them to others. This deeper understanding will help you answer exam questions correctly.'
         }
       ]
     };
