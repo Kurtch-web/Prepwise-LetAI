@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { API_BASE } from '../config/backends';
 
@@ -15,6 +16,8 @@ interface VideoPlayerModalProps {
 export function VideoPlayerModal({ isOpen, video, onClose }: VideoPlayerModalProps) {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
+  const [isLoading, setIsLoading] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
 
   if (!isOpen || !video) return null;
 
@@ -79,25 +82,59 @@ export function VideoPlayerModal({ isOpen, video, onClose }: VideoPlayerModalPro
                 allowFullScreen
               />
             ) : (
-              <video
-                className="absolute top-0 left-0 w-full h-full"
-                controls
-                autoPlay
-              >
-                <source src={`${API_BASE}/api/videos/${video.id}/stream`} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <>
+                <video
+                  className="absolute top-0 left-0 w-full h-full"
+                  controls
+                  autoPlay
+                  onLoadStart={() => setIsLoading(true)}
+                  onCanPlay={() => setIsLoading(false)}
+                  onWaiting={() => setIsBuffering(true)}
+                  onPlaying={() => setIsBuffering(false)}
+                >
+                  <source src={`${API_BASE}/api/videos/${video.id}/stream`} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+
+                {/* Loading Spinner */}
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500" />
+                      <p className="text-white text-sm font-medium">Loading video...</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Buffering Indicator */}
+                {isBuffering && !isLoading && (
+                  <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-3 py-2 rounded-lg text-xs font-medium">
+                    ⏳ Buffering...
+                  </div>
+                )}
+              </>
             )}
           </div>
 
-          {/* Description */}
-          {video.description && (
-            <div className={`px-6 py-4 ${isLightMode ? 'bg-white' : 'bg-slate-900'}`}>
-              <p className={`text-sm leading-relaxed ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+          {/* Description & Info */}
+          <div className={`px-6 py-4 ${isLightMode ? 'bg-white' : 'bg-slate-900'}`}>
+            {video.description && (
+              <p className={`text-sm leading-relaxed mb-3 ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
                 {video.description}
               </p>
+            )}
+
+            {/* Video Loading Tip */}
+            <div className={`p-3 rounded-lg text-xs ${
+              isLightMode
+                ? 'bg-blue-50 border border-blue-200'
+                : 'bg-blue-900/20 border border-blue-500/20'
+            }`}>
+              <p className={isLightMode ? 'text-blue-700' : 'text-blue-300'}>
+                💡 <span className="font-semibold">Tip:</span> If video is slow to load, try refreshing or waiting a moment. Larger videos buffer in the background while you watch.
+              </p>
             </div>
-          )}
+          </div>
 
           {/* Footer */}
           <div className={`px-6 py-4 border-t ${
