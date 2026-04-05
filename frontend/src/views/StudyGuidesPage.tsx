@@ -25,23 +25,39 @@ export function StudyGuidesPage() {
         title: 'General Education Fundamentals',
         slides: [
           {
-            type: 'image',
-            image: 'https://cdn.builder.io/api/v1/image/assets%2F0628b4d8acdd434d9317f96069ddf2de%2F015f382331944efd899b2d08bb2dd5af?format=webp&width=800&height=1200'
+            type: 'content',
+            heading: 'What is General Education?',
+            content: 'General Education tests your foundational knowledge across various academic disciplines. It\'s not about being an expert in everything, but rather having a well-rounded understanding of basic concepts that every educated person should know. This ensures teachers can communicate effectively with students, answer their questions, and connect different subjects together. Think of it as building a strong foundation before constructing a building—without it, everything else falls apart.'
           },
           {
             type: 'content',
-            heading: 'Overview',
-            content: 'General Education in the Philippines focuses on foundational knowledge and skills essential for all educators. This includes comprehension of Filipino history, cultural values, and contemporary educational philosophies.'
+            heading: 'Why Does It Matter for Teachers?',
+            content: 'As a teacher, you\'ll encounter students asking questions across many subjects. A student in your class might ask about history, science, or current events. General Education ensures you have enough knowledge to guide them properly. It also helps you understand the bigger picture of how different subjects relate to each other, making you a more effective educator who can inspire and guide students beyond just one specific subject area.'
           },
           {
             type: 'content',
-            heading: 'Core Concepts',
-            content: 'Key areas include: Filipino nationalism, constitutional awareness, environmental science, ethics and values education, and digital literacy for the 21st century.'
+            heading: 'English & Filipino - Language Skills',
+            content: 'This covers proper use of grammar, building your vocabulary, and understanding what you read. Grammar includes sentence structure, correct verb tenses, and punctuation. Vocabulary means knowing many words and their meanings. Reading comprehension means understanding the main ideas, details, and purpose of texts. You need these skills in BOTH English and Filipino because the LET exam tests both languages. Practice identifying common grammar mistakes, learning new words daily, and reading various materials (news, books, articles) to improve comprehension.'
           },
           {
             type: 'content',
-            heading: 'Preparation Tips',
-            content: 'Focus on understanding the Philippine Constitution, historical events, and cultural context. Review key principles in values education and their application in modern society.'
+            heading: 'Mathematics - Numbers & Problem Solving',
+            content: 'Mathematics isn\'t just about getting the right answer—it\'s about understanding HOW and WHY. This section covers: Arithmetic (adding, subtracting, multiplying, dividing), Algebra (using letters like X to solve problems), and Geometry (shapes, measurements, angles). You need to understand these concepts deeply so you can explain them simply to students. Practice solving word problems, understanding what formulas mean, and thinking logically about mathematical situations. Many teaching concepts actually use these mathematical principles.'
+          },
+          {
+            type: 'content',
+            heading: 'Science - Understanding the Natural World',
+            content: 'Science explores how our world works. Physical Science covers matter, energy, forces, and motion—like why objects fall or how electricity works. Biological Science covers living things—how plants and animals survive, how our bodies work, and how organisms interact. Environmental Science covers ecosystems, pollution, climate, and sustainability. Don\'t just memorize facts; understand the concepts. For example, don\'t just memorize "photosynthesis"—understand WHY plants need sunlight and how they convert it to energy. This helps you explain science in interesting ways to students.'
+          },
+          {
+            type: 'content',
+            heading: 'Social Sciences - History, Government & Society',
+            content: 'This area covers Philippine history (from pre-colonial times to present), the Philippine Constitution (the basic laws that govern the country), and current events. You need to understand WHY historical events happened, not just WHEN. For the Constitution, know the basic structure of government (Executive, Legislative, Judicial), your rights as a citizen, and basic laws. Current events means staying informed about what\'s happening in the world—read news regularly. Teachers need this knowledge to help students understand their country, their rights, and their role in society.'
+          },
+          {
+            type: 'content',
+            heading: 'Information Technology - Digital World Skills',
+            content: 'Information Technology means understanding how computers and the internet work. Basic computer literacy includes knowing how to use a computer, navigate the internet, use email, and create documents. Digital Safety means protecting yourself online—knowing about scams, password safety, and privacy. As a modern teacher, you need these skills to use educational technology in class, communicate with students and parents online, and teach students about safe internet use. The LET tests whether you understand basic computer concepts and can recognize online safety threats.'
           }
         ]
       },
