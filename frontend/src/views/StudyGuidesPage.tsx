@@ -197,27 +197,27 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'Multiple Choice Mastery',
-            content: 'Since the LET is entirely objective, your ability to navigate distractors is key. Multiple choice questions test not just what you know, but how well you can identify the best answer among plausible options. Mastering this skill can significantly improve your score.'
+            content: 'Since the LET is entirely objective, your ability to navigate distractors is key. Multiple choice questions test not just what you know, but how well you can identify the best answer among plausible options. Mastering this skill can significantly improve your score. In fact, test construction experts design incorrect answer choices (distractors) to appeal to common misconceptions or to test careless reading. Understanding the psychology behind these questions puts you at a major advantage. When you know how test makers think, you can spot their tricks and avoid the traps they set.'
           },
           {
             type: 'content',
             heading: 'The Power of Elimination',
-            content: 'Cross out options that are clearly incorrect or contain "absolute" words like Always, Never, Only, or Must. These extreme words rarely appear in correct answers because education and teaching are nuanced fields with exceptions. By eliminating 1-2 obviously wrong answers, you improve your odds on the remaining choices.'
+            content: 'Cross out options that are clearly incorrect or contain "absolute" words like Always, Never, Only, Must, or Every. These extreme words rarely appear in correct answers because education and teaching are nuanced fields with exceptions. By eliminating 1-2 obviously wrong answers, you improve your odds on the remaining choices. Example: "Students will NEVER learn effectively if they don\'t..." is likely wrong because there are always exceptions. Instead, look for moderate language like "Students generally learn better when...", "Most effective teachers...", or "In most cases...". This moderate language reflects educational reality better.'
           },
           {
             type: 'content',
             heading: 'Identify the Distractor',
-            content: 'Be wary of "plausible but incorrect" options that look like the right answer but don\'t quite fit the specific context of the question. These distractors are carefully constructed to catch students who haven\'t read carefully or who are rushing. Read the question stem multiple times if needed.'
+            content: 'Be wary of "plausible but incorrect" options that look like the right answer but don\'t quite fit the specific context of the question. These distractors are carefully constructed to catch students who haven\'t read carefully or who are rushing. Read the question stem multiple times if needed. Example: A question might ask "Which assessment method is BEST for evaluating student growth over time?" Option A says "Multiple choice tests" which ARE assessments, but they\'re not best for showing growth over time. Option B says "Portfolios showing student work samples" which directly addresses growth over time. The distractor (A) is true but doesn\'t answer the specific question asked.'
           },
           {
             type: 'content',
             heading: 'Grammatical Alignment',
-            content: 'Ensure the answer you choose grammatically matches the stem of the question. For example, if the question asks "Which of the following is..." look for an answer that is a noun or noun phrase. If it asks "How should a teacher...", look for verbs or action phrases.'
+            content: 'Ensure the answer you choose grammatically matches the stem of the question. For example, if the question asks "Which of the following is..." look for an answer that is a noun or noun phrase. If it asks "How should a teacher...", look for verbs or action phrases. This technique alone can eliminate 25% of options without even knowing the content. Example: If a question asks "The primary purpose of formative assessment is to..." the correct answer must be a complete phrase that follows logically like "identify areas where students need additional support" not "multiple choice tests" (which doesn\'t fit grammatically). Pay attention to whether the blank requires a noun, verb, adjective, or complete phrase.'
           },
           {
             type: 'content',
             heading: 'The Umbrella Rule',
-            content: 'If two or more options seem correct, look for the "umbrella" answer—the choice that is broad enough to include the other correct points within it. The most comprehensive and inclusive answer is typically correct. For example, if some options are specific examples and one is a general principle that covers all examples, the general principle is usually right.'
+            content: 'If two or more options seem correct, look for the "umbrella" answer—the choice that is broad enough to include the other correct points within it. The most comprehensive and inclusive answer is typically correct. Example: Question asks "What should a teacher do to create an inclusive classroom?" Options: A) Use visuals for English language learners, B) Provide extra time for students with disabilities, C) Use differentiated instruction to meet diverse learner needs, D) Have students sit together in groups. Answer C is the umbrella because differentiated instruction encompasses both A and B plus many other strategies. The umbrella answer is the principle or concept that covers all the specific strategies. Look for answers that are broader in scope when multiple options seem correct.'
           }
         ]
       },
@@ -227,27 +227,27 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'Strategic Time Management',
-            content: 'The LET is a marathon. You have a set number of hours to finish hundreds of questions. How you allocate your time can be just as important as knowing the content. Effective time management prevents you from getting stuck on difficult questions while missing easy ones later.'
+            content: 'The LET is a marathon, not a sprint. You have a set number of hours to finish hundreds of questions across different subject areas. How you allocate your time can be just as important as knowing the content. Effective time management prevents you from getting stuck on difficult questions while missing easy ones later. Many students fail not because they don\'t know the answers, but because they run out of time. By using proven time management strategies, you maximize the number of questions you answer correctly. Remember: five correct easy answers are better than two correct hard answers. Speed is less important than strategic thinking about which questions to tackle when.'
           },
           {
             type: 'content',
             heading: 'The Three-Pass Method',
-            content: 'First Pass: Answer all easy questions you know instantly. Skip the ones that require deep thought. This builds confidence and secures quick points. Second Pass: Go back to the "maybe" questions and dedicate more time to analyze them. Third Pass: Tackle the difficult or math-heavy problems with your remaining time.'
+            content: 'First Pass (Speed Round): Answer all easy questions you know instantly. Skip the ones that require deep thought. Don\'t read slowly or double-check. If you know it, shade it and move on. This builds confidence and secures quick points fast. Second Pass (Reflection Round): Go back to the "maybe" questions and dedicate more time to analyze them carefully. This is when you can use elimination strategies and think through options. Third Pass (Challenge Round): Tackle the difficult or math-heavy problems with your remaining time. You\'ll be fresher because you already have many correct answers. Example: In a 200-question test, you might answer 80 easy questions in first pass (30 minutes), 60 medium questions in second pass (40 minutes), leaving 60 minutes for 60 difficult questions.'
           },
           {
             type: 'content',
             heading: 'The 1-Minute Rule',
-            content: 'If you haven\'t made progress on a question within 60 seconds, mark it and move on. Never let one difficult question "steal" time from five easy ones later in the test. You can return to it during the third pass if time permits. Spending 5 minutes on one hard question means missing 3-4 easier questions.'
+            content: 'If you haven\'t made progress on a question within 60 seconds, mark it and move on. Never let one difficult question "steal" time from five easy ones later in the test. You can return to it during the third pass if time permits. Spending 5 minutes on one hard question means missing 3-4 easier questions. Example: You encounter a complex math problem about statistics. You read it, try to set it up, but get confused. Rather than spending another 3 minutes trying different approaches, take 5 more seconds to make an educated guess, mark it for review, and move to the next question. You\'ll probably pick up 2-3 easy questions in that same 5 minutes. The math of it is clear: missing one hard question is better than missing multiple easy ones.'
           },
           {
             type: 'content',
             heading: 'How to Answer Situational Questions',
-            content: 'Situational questions describe a classroom scenario and ask how you would respond. Read the situation carefully and look for the key details. Identify the specific problem or challenge. Then evaluate each option based on best teaching practices, professional standards, and student welfare. The best answer usually prioritizes the student\'s learning and well-being while maintaining professionalism and following proper procedures.'
+            content: 'Situational questions describe a classroom scenario and ask how you would respond. These test your judgment and professional ethics, not just content knowledge. Read the situation carefully and look for the key details—what exactly is the problem? Is it a behavior issue, a learning issue, or an emotional issue? Identify the specific problem or challenge before looking at options. Then evaluate each option based on best teaching practices, professional standards, and student welfare. Example: A situational question describes a student who is always late to class and has started failing. Options might include: A) Give the student detention, B) Call the student\'s parents to understand why they\'re late, C) Recommend the student transfer to another class, D) Fail the student. The best answer usually involves understanding the root cause (B) rather than punishment or avoidance.'
           },
           {
             type: 'content',
             heading: 'Situational Questions Strategy',
-            content: 'Eliminate answers that are unprofessional, harmful to students, or violate teaching ethics. Watch for options that seem to solve the immediate problem but create bigger issues. The correct answer usually involves communication, proper protocols, and considering the student\'s perspective. When in doubt, choose the response that is most respectful and supportive of student development.'
+            content: 'Eliminate answers that are unprofessional, harmful to students, or violate teaching ethics. Watch for options that seem to solve the immediate problem but create bigger issues. The correct answer usually involves communication, proper protocols, and considering the student\'s perspective. When in doubt, choose the response that is most respectful and supportive of student development. Example: A student cheats on a test. Bad answers: "Publicly embarrass them", "Give them an F without investigating", "Ignore it". Good answer: "Have a private conversation to understand why, contact parents, follow school protocol, offer support or tutoring". The best answer shows the teacher as a professional who is firm but fair, and who wants to help the student improve rather than just punish them.'
           }
         ]
       },
@@ -257,27 +257,27 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'Stress Management & Mental Focus',
-            content: 'Your state of mind directly affects your recall ability. Test anxiety can cause you to forget information you actually know or misread questions. Learning stress management techniques is just as important as studying the content.'
+            content: 'Your state of mind directly affects your recall ability. Test anxiety can cause you to forget information you actually know or misread questions. Neuroscience shows that anxiety activates the amygdala (your fear center) and reduces activity in the prefrontal cortex (your thinking center). This means when you\'re anxious, your brain literally cannot think as clearly. Learning stress management techniques is just as important as studying the content. Many test takers fail not because they don\'t know the material, but because anxiety prevented them from accessing what they knew. The good news is that these techniques are proven to work and take only seconds to apply during the exam.'
           },
           {
             type: 'content',
             heading: 'Box Breathing Technique',
-            content: 'If you feel panic rising, use the 4-4-4-4 technique: Inhale for 4 seconds, hold for 4 seconds, exhale for 4 seconds, hold for 4 seconds. Repeat 5-10 times. This technique activates your parasympathetic nervous system and calms your body\'s stress response. It\'s quick enough to use during the exam without losing much time.'
+            content: 'If you feel panic rising, use the 4-4-4-4 technique: Inhale slowly for 4 seconds, hold your breath for 4 seconds, exhale slowly for 4 seconds, hold empty for 4 seconds. Repeat 5-10 times. This technique activates your parasympathetic nervous system and calms your body\'s stress response. It\'s quick enough to use during the exam without losing much time. Why it works: Your body cannot be in fight-or-flight mode and relaxation mode simultaneously. Deep breathing forces your nervous system into relaxation. Example: You\'re on question 47 and panic starts building. Take 20 seconds for box breathing (about 5 cycles). Your heart rate will slow, your mind will clear, and you can return to the question with fresh perspective. This is far better than trying to push through panic.'
           },
           {
             type: 'content',
             heading: 'Positive Visualization',
-            content: 'Before the exam starts, spend two minutes visualizing yourself calmly answering questions and shading the final circle successfully. Imagine yourself confident and focused. Visualization prepares your brain for success and reduces anxiety by making the experience feel familiar.'
+            content: 'Before the exam starts, spend two minutes visualizing yourself calmly answering questions and shading the final circle successfully. Imagine yourself confident and focused. Visualization prepares your brain for success and reduces anxiety by making the experience feel familiar. Create a detailed mental movie: See yourself walking into the testing room, opening the test booklet, reading questions clearly, making good choices confidently, and handing in your completed test with satisfaction. Athletes use visualization before competitions because it\'s scientifically proven to improve performance. Your brain doesn\'t distinguish between vivid imagination and real experience, so this primes your brain for success.'
           },
           {
             type: 'content',
             heading: 'Managing Test Anxiety During the Day',
-            content: 'During the lunch break, avoid discussing answers with others. It only increases anxiety for the second half of the day. Instead, take a walk, eat well, and mentally prepare for the afternoon session. If you\'re worried you got something wrong, remember that one or two questions won\'t determine your pass or fail.'
+            content: 'During the lunch break, avoid discussing answers with others. It only increases anxiety for the second half of the day. Instead, take a walk outside, eat a balanced meal with protein and carbs, and mentally prepare for the afternoon session. If you\'re worried you got something wrong in the morning session, remember that one or two questions won\'t determine your pass or fail. The LET typically requires around 60-70% to pass, so you have a buffer. Example scenario: You finish the morning portion and worried you got 10-15 questions wrong. That\'s probably fine if the test has 100 morning questions—you\'re still at 85-90%. Instead of spiraling in anxiety, focus on fresh performance in the afternoon portion. What you do now affects your afternoon performance, not past performance.'
           },
           {
             type: 'content',
             heading: 'Mental Reset Strategies',
-            content: 'If you encounter a difficult question, take a breath, mark it, and move on. Don\'t let frustration build. Remember that everyone finds some questions difficult. Your goal is to answer as many as you can correctly, not to answer every single one. Maintaining a calm, focused mindset throughout the exam is crucial.'
+            content: 'If you encounter a difficult question, take a breath, mark it, and move on. Don\'t let frustration build. Remember that everyone finds some questions difficult. Your goal is to answer as many as you can correctly, not to answer every single one. Maintaining a calm, focused mindset throughout the exam is crucial. Think of it like a video game with multiple levels—you don\'t have to beat every single enemy (question) on the first level (first pass). Some enemies are harder than others. Your strategy is to beat the easy enemies quickly, then come back for the harder ones. The same applies here. If you spend 5 minutes on one question and feel frustrated, you\'re losing both time and mental clarity. A strategic retreat (moving on) is a victory, not a defeat.'
           }
         ]
       },
@@ -287,27 +287,27 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'Common Test-Taking Strategies',
-            content: 'Beyond content knowledge, smart test-taking strategies can boost your score. These techniques help you work more efficiently, avoid careless mistakes, and improve your odds on questions where you\'re unsure.'
+            content: 'Beyond content knowledge, smart test-taking strategies can boost your score by up to 5-10 points. These techniques help you work more efficiently, avoid careless mistakes, and improve your odds on questions where you\'re unsure. Professional test takers know that the difference between a 75 score and an 80 score often comes from technique, not from knowing more content. These are practical tricks that you can implement immediately during your exam. They require no additional studying, just smart execution.'
           },
           {
             type: 'content',
             heading: 'Reading the Question Carefully',
-            content: 'Read the entire question stem before looking at the options. Understand what is being asked. Is it asking for the best answer or asking what is NOT true? Pay special attention to negations. Reread the question if the options seem confusing.'
+            content: 'Read the entire question stem before looking at the options. Understand what is being asked. Is it asking for the best answer or asking what is NOT true? Pay special attention to negations like NOT, EXCEPT, LEAST, or DOESN\'T. Highlight or circle these words in your test booklet so you don\'t miss them. Reread the question if the options seem confusing. Example: "Which of the following is NOT a characteristic of effective teaching?" If you miss the word NOT, you\'ll choose an answer that IS a characteristic when you should choose one that ISN\'T. This is one of the most common mistakes. Slow down on the question stem, speed up on the options.'
           },
           {
             type: 'content',
             heading: 'Cover the Options While Reading',
-            content: 'When you first read a question, cover the options with your hand. Try to answer the question in your own words before looking at the choices. This prevents the options from biasing your thinking and helps you think more clearly about what the answer should be.'
+            content: 'When you first read a question, cover the options with your hand or a piece of paper. Try to answer the question in your own words before looking at the choices. This prevents the options from biasing your thinking and helps you think more clearly about what the answer should be. Example: Question asks "What is the primary purpose of formative assessment?" Without looking at options, you might think "to see where students are struggling so you can help them improve." Then look at options. If option B is "to identify learning gaps and provide feedback for improvement," you recognize it matches your thinking. If option A is "to assign grades," you know it\'s wrong. This strategy stops you from being led astray by clever distractors.'
           },
           {
             type: 'content',
             heading: 'Pattern Recognition',
-            content: 'While avoiding overreliance on patterns, it\'s worth noting that in well-constructed tests, answer choices are fairly evenly distributed. If you\'ve answered many questions with "A," it\'s not wrong to eventually choose other options. However, never select an answer just because of patterns. Always choose based on content.'
+            content: 'While avoiding overreliance on patterns, it\'s worth noting that in well-constructed tests, answer choices are fairly evenly distributed. If you\'ve answered many questions with "A" in a row, it\'s somewhat more likely the next right answer is B, C, or D. However, never select an answer just because of patterns. Always choose based on content. Use this only as a tiebreaker when genuinely unsure. Example: You\'re torn between options C and D. You recently chose C for the last 3 questions. The pattern suggests D might be next, but only consider this if you truly cannot decide between them on content. If option C is clearly better, choose C regardless of pattern.'
           },
           {
             type: 'content',
             heading: 'Mark and Review Strategy',
-            content: 'Mark questionable answers as you go, but only return to them if time permits. Keep a mental note of questions you found tricky. After finishing all questions, if you have time, review only the marked ones. This focused review is more efficient than checking all answers.'
+            content: 'Mark questionable answers as you go using a pencil mark in your test booklet, but only return to them if time permits. Keep a mental note or physical mark of questions you found tricky. After finishing all questions, if you have time remaining, review only the marked ones, not all questions. This focused review is more efficient than checking all answers. Example: You mark questions 23, 45, 67, and 89 as uncertain. If you finish the entire test with 10 minutes left, reviewing only these 4 questions is smart. Reviewing all 200 questions would waste time. This strategy ensures you maximize improvements using remaining time efficiently.'
           }
         ]
       },
@@ -317,27 +317,27 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'Common Pitfalls to Avoid',
-            content: 'Many students lose points not because they don\'t know the content, but because they fall into predictable traps. Being aware of these pitfalls can help you avoid unnecessary mistakes.'
+            content: 'Many students lose points not because they don\'t know the content, but because they fall into predictable traps. Research shows that 20-30% of test failures are due to careless mistakes rather than lack of knowledge. Being aware of these pitfalls can help you avoid unnecessary mistakes and possibly boost your score by 3-5 points. These are the most common errors made by test takers, and knowing about them gives you an advantage.'
           },
           {
             type: 'content',
             heading: 'Misreading the NOT',
-            content: 'Many students miss questions because they overlook words like except, not, or least. These negation words completely change what the question is asking. When you see these words, circle them or highlight them in your test booklet. Practice identifying negation words in your prep.'
+            content: 'Many students miss questions because they overlook words like EXCEPT, NOT, DOESN\'T, or LEAST. These negation words completely change what the question is asking. When you see these words, circle them or highlight them in your test booklet right away. Practice identifying negation words in your prep so they jump out at you during the test. Example: Question asks "Which of the following is NOT a benefit of cooperative learning?" If you miss the word NOT, you might choose "Promotes teamwork" which IS a benefit, when the question wants you to choose something that is NOT a benefit. This single word error costs you the entire question. Make a habit: whenever you see NOT, EXCEPT, EXCEPT, or LEAST—physically mark it in your booklet.'
           },
           {
             type: 'content',
             heading: 'Shading Errors',
-            content: 'Always double-check that the number on your answer sheet matches the number in your test booklet. Shading the wrong circle for the right answer loses you the point. Periodically check that your answer sheet is synchronized with your test booklet number.'
+            content: 'Always double-check that the number on your answer sheet matches the number in your test booklet. Shading the wrong circle for the right answer loses you the point. This error is surprisingly common when people get tired or rush. Periodically check that your answer sheet is synchronized with your test booklet number—perhaps every 20 questions. Example: You knew the answer to question 45 perfectly, but you shaded it in the number 46 circle on your answer sheet. Your knowledge didn\'t matter. The machine scored it wrong. This is 100% avoidable with periodic checks. Take 5 seconds every 20 questions to verify synchronization. It\'s better to be safe than sorry.'
           },
           {
             type: 'content',
             heading: 'Overthinking and Changing Answers',
-            content: 'Often, your first instinct is correct. Avoid changing your answers unless you have found a definitive reason to do so. Second-guessing yourself can lead to changing correct answers to incorrect ones. Only change an answer if you realize you misread the question or have new understanding.'
+            content: 'Often, your first instinct is correct. Research in test psychology shows that changing answers is correct only about 20-30% of the time. Most people change correct answers to incorrect ones. Avoid changing your answers unless you have found a definitive reason to do so. Only change an answer if you: (1) realize you misread the question, (2) suddenly remember relevant information, or (3) catch a logical error in your reasoning. Example: You answer question 30 with option B based on your first reading. Later, you second-guess and think maybe option C is better. When you change it, you move from correct to incorrect. This happens more often than change being an improvement. Trust your preparation and your first thoughtful answer.'
           },
           {
             type: 'content',
             heading: 'Mental Traps to Avoid',
-            content: 'Don\'t fall for options that contain true statements but don\'t answer the specific question asked. Don\'t choose answers just because they match similar topics you studied. Don\'t assume the longest or shortest answer is correct. Read carefully and think critically about each option.'
+            content: 'Don\'t fall for options that contain true statements but don\'t answer the specific question asked. Don\'t choose answers just because they match similar topics you studied. Don\'t assume the longest or shortest answer is correct. Read carefully and think critically about each option. Example trap: Question asks "What is the BEST way to teach reading comprehension to struggling readers?" Option A says "Reading is important for student success" (true, but doesn\'t answer HOW to teach). Option B says "Use guided reading with explicit comprehension strategies" (answers the question). Many students pick A because it\'s true, missing that B actually answers the question asked. Another trap: If you just studied metacognition, and a question appears about student learning, don\'t immediately jump to the metacognition answer unless it truly fits. Stay focused on what the question actually asks.'
           }
         ]
       },
@@ -346,28 +346,28 @@ export function StudyGuidesPage() {
         slides: [
           {
             type: 'content',
-            heading: 'Last-Minute Preparation (Final 48 Hours)',
-            content: 'What you do in the final two days before the exam can significantly impact your performance. The focus shifts from learning new content to reinforcing what you know and preparing mentally and logistically.'
+            heading: 'Last Minute Preparation (Final 48 Hours)',
+            content: 'What you do in the final two days before the exam can significantly impact your performance. The focus shifts from learning new content to reinforcing what you know and preparing mentally and logistically. Many test takers waste these crucial final days by either cramming new material (which backfires) or by doing nothing and increasing anxiety. There\'s a sweet spot: maintain what you\'ve learned, reduce anxiety, and prepare yourself mentally for success. Think of it like an athlete preparing for a big game. The training is done. Now it\'s about rest, mental focus, and logistics.'
           },
           {
             type: 'content',
             heading: 'The No-New-Info Rule',
-            content: 'Stop trying to learn complex new concepts 48 hours before the test. Instead, review your summarized notes and mnemonics. Your brain needs consolidation time, not new information. Focus on active recall—test yourself, don\'t just reread notes. Review the most important concepts and high-frequency topics.'
+            content: 'Stop trying to learn complex new concepts 48 hours before the test. Instead, review your summarized notes and mnemonics that you\'ve already mastered. Your brain needs consolidation time, not new information. Trying to learn new concepts 48 hours before creates anxiety and interferes with retrieval of information you already know. Focus on active recall—test yourself, don\'t just reread notes. Review the most important concepts and high-frequency topics. Example: If you haven\'t fully learned Bloom\'s Taxonomy by 48 hours before, don\'t start then. Instead, review the version you studied 2 weeks ago. Quick refresher of known material boosts confidence. New complex material creates panic and cognitive overload.'
           },
           {
             type: 'content',
             heading: 'Logistics Preparation',
-            content: 'Prepare your NOA (Notice of Admission), pencils (No. 2), black ballpen, and valid ID the night before. Know the exact location of the test venue and plan your route. Arrive 30 minutes early to settle in and avoid stress. Have everything you need so you can focus entirely on the exam.'
+            content: 'Prepare your NOA (Notice of Admission), pencils (No. 2 with erasers), black ballpen, and valid government-issued ID the night before. Check that your pencils have sharp points and functioning erasers. Know the exact location of the test venue and plan your route including travel time and potential traffic. Check exam start time and arrive 30 minutes early to settle in and avoid stress. Have everything you need so you can focus entirely on the exam rather than worrying about materials. Example checklist: NOA ✓, 2-3 No. 2 pencils ✓, Black ballpen ✓, Valid ID ✓, Directions to venue ✓, Transportation plan ✓, Approved items only (no phones, calculators, etc.). Don\'t discover problems on exam day.'
           },
           {
             type: 'content',
             heading: 'Physical Prime: Rest and Nutrition',
-            content: 'Prioritize 7-8 hours of sleep the night before the exam. A fatigued brain cannot process logic as effectively as a rested one. Eat a healthy, balanced breakfast. Avoid heavy foods that might make you sluggish. Stay hydrated. Your physical state directly impacts your cognitive performance.'
+            content: 'Prioritize 7-8 hours of sleep the night before the exam. This is not negotiable. A fatigued brain cannot process logic as effectively as a rested one. Sleep deprivation causes a 15-20% decline in cognitive performance. On exam day, eat a healthy, balanced breakfast with protein, complex carbs, and healthy fats. Examples: Eggs with whole grain toast, oatmeal with nuts and fruit, or rice with viand. Avoid sugary breakfasts that cause energy crashes mid-test. Avoid heavy foods that might make you sluggish. Stay hydrated—drink water before and during the exam (if permitted). Your physical state directly impacts your cognitive performance. Athletes know this; so should test takers.'
           },
           {
             type: 'content',
             heading: 'Mental Preparation',
-            content: 'Review your study notes one final time the morning of the exam, but keep it light. Avoid cramming or reviewing material you found difficult. Instead, build confidence by reviewing topics you\'re strong in. Spend time visualizing success. Take deep breaths. Remember that you\'ve prepared. Trust your preparation.'
+            content: 'Review your study notes one final time the morning of the exam, but keep it light—maybe 15-20 minutes maximum. Avoid cramming or reviewing difficult material you struggled with. Instead, build confidence by reviewing topics you\'re strong in. Spend time visualizing success. Take deep breaths and use box breathing if needed. Remember that you\'ve prepared. Trust your preparation. Example morning routine: Wake up, eat healthy breakfast, review 2-3 favorite strong topics for 15 minutes, visualize success for 5 minutes, arrive at venue 30 minutes early, take a few deep breaths. This is NOT the time to learn new material or panic about what you don\'t know. You are confident, prepared, and ready to show what you know.'
           }
         ]
       },
