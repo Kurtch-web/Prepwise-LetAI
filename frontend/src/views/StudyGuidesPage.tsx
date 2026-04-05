@@ -2,10 +2,95 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { useNavigate } from 'react-router-dom';
 
+interface GuideModalData {
+  title: string;
+  slides: Array<{
+    type: 'image' | 'content';
+    image?: string;
+    heading?: string;
+    content?: string;
+  }>;
+}
+
 export function StudyGuidesPage() {
   const { theme } = useTheme();
   const navigate = useNavigate();
   const isLightMode = theme === 'light';
+  const [selectedGuide, setSelectedGuide] = useState<GuideModalData | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const getGuideModalData = (guideName: string): GuideModalData => {
+    const modalContent: Record<string, GuideModalData> = {
+      'General Education Fundamentals': {
+        title: 'General Education Fundamentals',
+        slides: [
+          {
+            type: 'image',
+            image: 'https://cdn.builder.io/api/v1/image/assets%2F0628b4d8acdd434d9317f96069ddf2de%2F015f382331944efd899b2d08bb2dd5af?format=webp&width=800&height=1200'
+          },
+          {
+            type: 'content',
+            heading: 'Overview',
+            content: 'General Education in the Philippines focuses on foundational knowledge and skills essential for all educators. This includes comprehension of Filipino history, cultural values, and contemporary educational philosophies.'
+          },
+          {
+            type: 'content',
+            heading: 'Core Concepts',
+            content: 'Key areas include: Filipino nationalism, constitutional awareness, environmental science, ethics and values education, and digital literacy for the 21st century.'
+          },
+          {
+            type: 'content',
+            heading: 'Preparation Tips',
+            content: 'Focus on understanding the Philippine Constitution, historical events, and cultural context. Review key principles in values education and their application in modern society.'
+          }
+        ]
+      },
+      'Professional Education Overview': {
+        title: 'Professional Education Overview',
+        slides: [
+          {
+            type: 'image',
+            image: 'https://cdn.builder.io/api/v1/image/assets%2F0628b4d8acdd434d9317f96069ddf2de%2F015f382331944efd899b2d08bb2dd5af?format=webp&width=800&height=1200'
+          },
+          {
+            type: 'content',
+            heading: 'Purpose',
+            content: 'Professional Education equips teachers with pedagogical knowledge, understanding of learning theories, classroom management strategies, and assessment methodologies.'
+          },
+          {
+            type: 'content',
+            heading: 'Key Components',
+            content: 'Includes child development, learning theories (Piaget, Vygotsky, Bloom), teaching methods, classroom management, and educational assessment techniques.'
+          },
+          {
+            type: 'content',
+            heading: 'Study Focus',
+            content: 'Master learning outcomes, different teaching approaches, student assessment strategies, and implementation of the DepEd curriculum framework.'
+          }
+        ]
+      }
+    };
+
+    return modalContent[guideName] || {
+      title: guideName,
+      slides: [
+        {
+          type: 'image',
+          image: 'https://cdn.builder.io/api/v1/image/assets%2F0628b4d8acdd434d9317f96069ddf2de%2F015f382331944efd899b2d08bb2dd5af?format=webp&width=800&height=1200'
+        },
+        {
+          type: 'content',
+          heading: 'Learning Objectives',
+          content: 'This guide provides comprehensive coverage of key concepts and practical strategies for LET exam preparation.'
+        },
+        {
+          type: 'content',
+          heading: 'Main Topics',
+          content: 'Explore in-depth content covering all essential areas tested in the LET examination.'
+        }
+      ]
+    };
+  };
 
   const studyGuideCategories = [
     {
@@ -133,6 +218,10 @@ export function StudyGuidesPage() {
                 {category.guides.map((guide, idx) => (
                   <div
                     key={idx}
+                    onClick={() => {
+                      setSelectedGuide(getGuideModalData(guide));
+                      setCurrentSlide(0);
+                    }}
                     className={`rounded-xl p-6 border transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${
                       isLightMode
                         ? 'bg-white border-slate-200 hover:border-slate-300'
@@ -181,6 +270,137 @@ export function StudyGuidesPage() {
           </div>
         </div>
       </div>
+
+      {/* Guide Modal */}
+      {selectedGuide && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 transition-opacity"
+            onClick={() => setSelectedGuide(null)}
+            aria-hidden="true"
+          />
+
+          {/* Modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className={`relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl ${
+                isLightMode ? 'bg-white' : 'bg-slate-900'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div
+                className={`px-6 py-4 border-b flex items-center justify-between ${
+                  isLightMode
+                    ? 'bg-slate-50 border-slate-200'
+                    : 'bg-slate-800 border-slate-700'
+                }`}
+              >
+                <h2 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  {selectedGuide.title}
+                </h2>
+                <button
+                  onClick={() => setSelectedGuide(null)}
+                  className={`text-2xl leading-none transition hover:scale-110 ${
+                    isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                  }`}
+                  aria-label="Close modal"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Slide Content */}
+              <div className="relative w-full bg-black min-h-96 flex items-center justify-center overflow-hidden">
+                {selectedGuide.slides[currentSlide].type === 'image' ? (
+                  <img
+                    src={selectedGuide.slides[currentSlide].image}
+                    alt="Guide slide"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className={`w-full h-full p-8 flex flex-col justify-center ${
+                    isLightMode ? 'bg-slate-50' : 'bg-slate-800'
+                  }`}>
+                    <h3 className={`text-2xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      {selectedGuide.slides[currentSlide].heading}
+                    </h3>
+                    <p className={`text-base leading-relaxed ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                      {selectedGuide.slides[currentSlide].content}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Slide Navigation */}
+              <div className={`px-6 py-4 border-t flex items-center justify-between ${
+                isLightMode
+                  ? 'bg-slate-50 border-slate-200'
+                  : 'bg-slate-800 border-slate-700'
+              }`}>
+                <button
+                  onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
+                  disabled={currentSlide === 0}
+                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                    currentSlide === 0
+                      ? isLightMode
+                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      : isLightMode
+                      ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+                      : 'bg-slate-700 text-white hover:bg-slate-600'
+                  }`}
+                >
+                  ← Previous
+                </button>
+
+                <div className={`text-sm font-medium ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Slide {currentSlide + 1} of {selectedGuide.slides.length}
+                </div>
+
+                <button
+                  onClick={() => setCurrentSlide(Math.min(selectedGuide.slides.length - 1, currentSlide + 1))}
+                  disabled={currentSlide === selectedGuide.slides.length - 1}
+                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                    currentSlide === selectedGuide.slides.length - 1
+                      ? isLightMode
+                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      : isLightMode
+                      ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+                      : 'bg-slate-700 text-white hover:bg-slate-600'
+                  }`}
+                >
+                  Next →
+                </button>
+              </div>
+
+              {/* Slide Indicators */}
+              <div className={`px-6 py-3 flex justify-center gap-2 ${
+                isLightMode ? 'bg-slate-50' : 'bg-slate-800'
+              }`}>
+                {selectedGuide.slides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    className={`w-2 h-2 rounded-full transition ${
+                      idx === currentSlide
+                        ? isLightMode
+                          ? 'bg-slate-900'
+                          : 'bg-white'
+                        : isLightMode
+                        ? 'bg-slate-300'
+                        : 'bg-slate-600'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
