@@ -61,6 +61,46 @@ export function StudyGuidesPage() {
           }
         ]
       },
+      'Subject Matter Expertise': {
+        title: 'Subject Matter Expertise',
+        slides: [
+          {
+            type: 'content',
+            heading: 'What is Subject Matter Expertise?',
+            content: 'Subject Matter Expertise is deep knowledge of the subjects you teach. If you teach English, you need to understand literature, grammar, and communication deeply. If you teach Science, you need to know scientific concepts and how they work. If you teach Mathematics, you need to understand not just how to solve problems but why the methods work. This is different from General Education which gives you basic knowledge of many subjects. Subject Matter Expertise means becoming an expert in your specific teaching field.'
+          },
+          {
+            type: 'content',
+            heading: 'Why Deep Knowledge Matters',
+            content: 'When you know your subject deeply, you teach better. You can answer unexpected student questions. You can connect your subject to real-world situations. You can see how concepts link together. You can explain things in multiple ways when students don\\\'t understand. Students can tell when you really know your subject versus when you\\\'re just reading from a book. Deep knowledge also helps you design better activities and assessments. Most importantly, your enthusiasm for the subject becomes contagious and students want to learn it.'
+          },
+          {
+            type: 'content',
+            heading: 'For Language Teachers',
+            content: 'If you teach English or Filipino, you need expertise in literature, grammar, vocabulary, writing, speaking, and listening. You should read widely and understand different literary genres. You should know the rules of grammar and be able to explain why they exist. You should help students become excellent communicators in both written and spoken forms. You should understand how languages work and how people acquire language skills. This deep knowledge allows you to teach languages as a tool for communication, not just rules to memorize.'
+          },
+          {
+            type: 'content',
+            heading: 'For Math and Science Teachers',
+            content: 'If you teach Mathematics or Science, you need to understand concepts deeply and know how they apply in the real world. In Math, understand that formulas aren\\\'t just rules but come from logical reasoning. In Science, understand that scientific knowledge comes from observation and experimentation. You should be able to explain why a formula works, why a scientific principle is true, and how these concepts apply to everyday situations. You should understand the history of how these fields developed. This helps you make abstract concepts concrete and interesting for students.'
+          },
+          {
+            type: 'content',
+            heading: 'For Social Studies Teachers',
+            content: 'If you teach Social Studies, History, Geography, or Civics, you need expertise in understanding societies, cultures, and how people interact. You should understand Philippine history deeply and see how past events shape the present. You should understand how governments work and what rights and responsibilities citizens have. You should understand different cultures and respect diversity. You should help students think critically about social issues and become informed citizens. This expertise helps you teach students not just to pass tests but to become thoughtful, engaged members of society.'
+          },
+          {
+            type: 'content',
+            heading: 'Building Your Expertise',
+            content: 'Subject Matter Expertise develops over time. Continue learning throughout your teaching career. Read books, take courses, attend workshops in your subject area. Learn about current developments in your field. Visit museums, laboratories, historical sites, or other places related to your subject. Talk to experts in your field. Join professional organizations for teachers in your subject. Stay curious and passionate about what you teach. Your continuous learning becomes a model for students about the importance of lifelong learning.'
+          },
+          {
+            type: 'content',
+            heading: 'Why It is Tested on the LET',
+            content: 'The LET tests Subject Matter Expertise to ensure you know your subject well enough to teach it effectively. You might be asked about specific concepts, applications, or deeper understanding of content. The test checks not just that you memorized information but that you truly understand your subject. This ensures that teachers in the Philippines have the expertise needed to prepare students well. Subject Matter Expertise combined with Professional Education creates effective teachers who inspire students to love learning.'
+          }
+        ]
+      },
       'Professional Education Overview': {
         title: 'Professional Education Overview',
         slides: [
@@ -345,7 +385,7 @@ export function StudyGuidesPage() {
                       {guide}
                     </h3>
                     <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                      Access comprehensive guide and resources
+                      Click to explore detailed lessons and study materials
                     </p>
                   </div>
                 ))}
