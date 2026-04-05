@@ -27,7 +27,7 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'What is General Education?',
-            content: 'General Education tests your foundational knowledge across various academic disciplines. It\'s not about being an expert in everything, but rather having a well-rounded understanding of basic concepts that every educated person should know. This ensures teachers can communicate effectively with students, answer their questions, and connect different subjects together. Think of it as building a strong foundation before constructing a building—without it, everything else falls apart.'
+            content: 'General Education tests your foundational knowledge across various academic disciplines. It\'s not about being an expert in everything, but rather having a well-rounded understanding of basic concepts that every educated person should know. This ensures teachers can communicate effectively with students, answer their questions, and connect different subjects together. Think of it as building a strong foundation before constructing a building. Without it, everything else falls apart.'
           },
           {
             type: 'content',
