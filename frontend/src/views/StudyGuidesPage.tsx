@@ -72,7 +72,7 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'Why Deep Knowledge Matters',
-            content: 'When you know your subject deeply, you teach better. You can answer unexpected student questions. You can connect your subject to real-world situations. You can see how concepts link together. You can explain things in multiple ways when students don\\\'t understand. Students can tell when you really know your subject versus when you\\\'re just reading from a book. Deep knowledge also helps you design better activities and assessments. Most importantly, your enthusiasm for the subject becomes contagious and students want to learn it.'
+            content: 'When you know your subject deeply, you teach better. You can answer unexpected student questions. You can connect your subject to real-world situations. You can see how concepts link together. You can explain things in multiple ways when students don\'t understand. Students can tell when you really know your subject versus when you\'re just reading from a book. Deep knowledge also helps you design better activities and assessments. Most importantly, your enthusiasm for the subject becomes contagious and students want to learn it.'
           },
           {
             type: 'content',
@@ -82,7 +82,7 @@ export function StudyGuidesPage() {
           {
             type: 'content',
             heading: 'For Math and Science Teachers',
-            content: 'If you teach Mathematics or Science, you need to understand concepts deeply and know how they apply in the real world. In Math, understand that formulas aren\\\'t just rules but come from logical reasoning. In Science, understand that scientific knowledge comes from observation and experimentation. You should be able to explain why a formula works, why a scientific principle is true, and how these concepts apply to everyday situations. You should understand the history of how these fields developed. This helps you make abstract concepts concrete and interesting for students.'
+            content: 'If you teach Mathematics or Science, you need to understand concepts deeply and know how they apply in the real world. In Math, understand that formulas aren\'t just rules but come from logical reasoning. In Science, understand that scientific knowledge comes from observation and experimentation. You should be able to explain why a formula works, why a scientific principle is true, and how these concepts apply to everyday situations. You should understand the history of how these fields developed. This helps you make abstract concepts concrete and interesting for students.'
           },
           {
             type: 'content',
@@ -191,6 +191,186 @@ export function StudyGuidesPage() {
           }
         ]
       },
+      'Multiple Choice Strategy': {
+        title: 'Multiple Choice Mastery',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Multiple Choice Mastery',
+            content: 'Since the LET is entirely objective, your ability to navigate distractors is key. Multiple choice questions test not just what you know, but how well you can identify the best answer among plausible options. Mastering this skill can significantly improve your score.'
+          },
+          {
+            type: 'content',
+            heading: 'The Power of Elimination',
+            content: 'Cross out options that are clearly incorrect or contain "absolute" words like Always, Never, Only, or Must. These extreme words rarely appear in correct answers because education and teaching are nuanced fields with exceptions. By eliminating 1-2 obviously wrong answers, you improve your odds on the remaining choices.'
+          },
+          {
+            type: 'content',
+            heading: 'Identify the Distractor',
+            content: 'Be wary of "plausible but incorrect" options that look like the right answer but don\'t quite fit the specific context of the question. These distractors are carefully constructed to catch students who haven\'t read carefully or who are rushing. Read the question stem multiple times if needed.'
+          },
+          {
+            type: 'content',
+            heading: 'Grammatical Alignment',
+            content: 'Ensure the answer you choose grammatically matches the stem of the question. For example, if the question asks "Which of the following is..." look for an answer that is a noun or noun phrase. If it asks "How should a teacher...", look for verbs or action phrases.'
+          },
+          {
+            type: 'content',
+            heading: 'The Umbrella Rule',
+            content: 'If two or more options seem correct, look for the "umbrella" answer—the choice that is broad enough to include the other correct points within it. The most comprehensive and inclusive answer is typically correct. For example, if some options are specific examples and one is a general principle that covers all examples, the general principle is usually right.'
+          }
+        ]
+      },
+      'Time Management Techniques': {
+        title: 'Strategic Time Management',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Strategic Time Management',
+            content: 'The LET is a marathon. You have a set number of hours to finish hundreds of questions. How you allocate your time can be just as important as knowing the content. Effective time management prevents you from getting stuck on difficult questions while missing easy ones later.'
+          },
+          {
+            type: 'content',
+            heading: 'The Three-Pass Method',
+            content: 'First Pass: Answer all easy questions you know instantly. Skip the ones that require deep thought. This builds confidence and secures quick points. Second Pass: Go back to the "maybe" questions and dedicate more time to analyze them. Third Pass: Tackle the difficult or math-heavy problems with your remaining time.'
+          },
+          {
+            type: 'content',
+            heading: 'The 1-Minute Rule',
+            content: 'If you haven\'t made progress on a question within 60 seconds, mark it and move on. Never let one difficult question "steal" time from five easy ones later in the test. You can return to it during the third pass if time permits. Spending 5 minutes on one hard question means missing 3-4 easier questions.'
+          },
+          {
+            type: 'content',
+            heading: 'How to Answer Situational Questions',
+            content: 'Situational questions describe a classroom scenario and ask how you would respond. Read the situation carefully and look for the key details. Identify the specific problem or challenge. Then evaluate each option based on best teaching practices, professional standards, and student welfare. The best answer usually prioritizes the student\'s learning and well-being while maintaining professionalism and following proper procedures.'
+          },
+          {
+            type: 'content',
+            heading: 'Situational Questions Strategy',
+            content: 'Eliminate answers that are unprofessional, harmful to students, or violate teaching ethics. Watch for options that seem to solve the immediate problem but create bigger issues. The correct answer usually involves communication, proper protocols, and considering the student\'s perspective. When in doubt, choose the response that is most respectful and supportive of student development.'
+          }
+        ]
+      },
+      'Stress Management During Exam': {
+        title: 'Stress Management & Mental Focus',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Stress Management & Mental Focus',
+            content: 'Your state of mind directly affects your recall ability. Test anxiety can cause you to forget information you actually know or misread questions. Learning stress management techniques is just as important as studying the content.'
+          },
+          {
+            type: 'content',
+            heading: 'Box Breathing Technique',
+            content: 'If you feel panic rising, use the 4-4-4-4 technique: Inhale for 4 seconds, hold for 4 seconds, exhale for 4 seconds, hold for 4 seconds. Repeat 5-10 times. This technique activates your parasympathetic nervous system and calms your body\'s stress response. It\'s quick enough to use during the exam without losing much time.'
+          },
+          {
+            type: 'content',
+            heading: 'Positive Visualization',
+            content: 'Before the exam starts, spend two minutes visualizing yourself calmly answering questions and shading the final circle successfully. Imagine yourself confident and focused. Visualization prepares your brain for success and reduces anxiety by making the experience feel familiar.'
+          },
+          {
+            type: 'content',
+            heading: 'Managing Test Anxiety During the Day',
+            content: 'During the lunch break, avoid discussing answers with others. It only increases anxiety for the second half of the day. Instead, take a walk, eat well, and mentally prepare for the afternoon session. If you\'re worried you got something wrong, remember that one or two questions won\'t determine your pass or fail.'
+          },
+          {
+            type: 'content',
+            heading: 'Mental Reset Strategies',
+            content: 'If you encounter a difficult question, take a breath, mark it, and move on. Don\'t let frustration build. Remember that everyone finds some questions difficult. Your goal is to answer as many as you can correctly, not to answer every single one. Maintaining a calm, focused mindset throughout the exam is crucial.'
+          }
+        ]
+      },
+      'Test Taking Tips and Tricks': {
+        title: 'Test Taking Tips and Tricks',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Common Test-Taking Strategies',
+            content: 'Beyond content knowledge, smart test-taking strategies can boost your score. These techniques help you work more efficiently, avoid careless mistakes, and improve your odds on questions where you\'re unsure.'
+          },
+          {
+            type: 'content',
+            heading: 'Reading the Question Carefully',
+            content: 'Read the entire question stem before looking at the options. Understand what is being asked. Is it asking for the best answer or asking what is NOT true? Pay special attention to negations. Reread the question if the options seem confusing.'
+          },
+          {
+            type: 'content',
+            heading: 'Cover the Options While Reading',
+            content: 'When you first read a question, cover the options with your hand. Try to answer the question in your own words before looking at the choices. This prevents the options from biasing your thinking and helps you think more clearly about what the answer should be.'
+          },
+          {
+            type: 'content',
+            heading: 'Pattern Recognition',
+            content: 'While avoiding overreliance on patterns, it\'s worth noting that in well-constructed tests, answer choices are fairly evenly distributed. If you\'ve answered many questions with "A," it\'s not wrong to eventually choose other options. However, never select an answer just because of patterns. Always choose based on content.'
+          },
+          {
+            type: 'content',
+            heading: 'Mark and Review Strategy',
+            content: 'Mark questionable answers as you go, but only return to them if time permits. Keep a mental note of questions you found tricky. After finishing all questions, if you have time, review only the marked ones. This focused review is more efficient than checking all answers.'
+          }
+        ]
+      },
+      'Common Pitfalls to Avoid': {
+        title: 'Common Pitfalls to Avoid',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Common Pitfalls to Avoid',
+            content: 'Many students lose points not because they don\'t know the content, but because they fall into predictable traps. Being aware of these pitfalls can help you avoid unnecessary mistakes.'
+          },
+          {
+            type: 'content',
+            heading: 'Misreading the NOT',
+            content: 'Many students miss questions because they overlook words like except, not, or least. These negation words completely change what the question is asking. When you see these words, circle them or highlight them in your test booklet. Practice identifying negation words in your prep.'
+          },
+          {
+            type: 'content',
+            heading: 'Shading Errors',
+            content: 'Always double-check that the number on your answer sheet matches the number in your test booklet. Shading the wrong circle for the right answer loses you the point. Periodically check that your answer sheet is synchronized with your test booklet number.'
+          },
+          {
+            type: 'content',
+            heading: 'Overthinking and Changing Answers',
+            content: 'Often, your first instinct is correct. Avoid changing your answers unless you have found a definitive reason to do so. Second-guessing yourself can lead to changing correct answers to incorrect ones. Only change an answer if you realize you misread the question or have new understanding.'
+          },
+          {
+            type: 'content',
+            heading: 'Mental Traps to Avoid',
+            content: 'Don\'t fall for options that contain true statements but don\'t answer the specific question asked. Don\'t choose answers just because they match similar topics you studied. Don\'t assume the longest or shortest answer is correct. Read carefully and think critically about each option.'
+          }
+        ]
+      },
+      'Last Minute Preparation Guide': {
+        title: 'Last Minute Preparation',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Last-Minute Preparation (Final 48 Hours)',
+            content: 'What you do in the final two days before the exam can significantly impact your performance. The focus shifts from learning new content to reinforcing what you know and preparing mentally and logistically.'
+          },
+          {
+            type: 'content',
+            heading: 'The No-New-Info Rule',
+            content: 'Stop trying to learn complex new concepts 48 hours before the test. Instead, review your summarized notes and mnemonics. Your brain needs consolidation time, not new information. Focus on active recall—test yourself, don\'t just reread notes. Review the most important concepts and high-frequency topics.'
+          },
+          {
+            type: 'content',
+            heading: 'Logistics Preparation',
+            content: 'Prepare your NOA (Notice of Admission), pencils (No. 2), black ballpen, and valid ID the night before. Know the exact location of the test venue and plan your route. Arrive 30 minutes early to settle in and avoid stress. Have everything you need so you can focus entirely on the exam.'
+          },
+          {
+            type: 'content',
+            heading: 'Physical Prime: Rest and Nutrition',
+            content: 'Prioritize 7-8 hours of sleep the night before the exam. A fatigued brain cannot process logic as effectively as a rested one. Eat a healthy, balanced breakfast. Avoid heavy foods that might make you sluggish. Stay hydrated. Your physical state directly impacts your cognitive performance.'
+          },
+          {
+            type: 'content',
+            heading: 'Mental Preparation',
+            content: 'Review your study notes one final time the morning of the exam, but keep it light. Avoid cramming or reviewing material you found difficult. Instead, build confidence by reviewing topics you\'re strong in. Spend time visualizing success. Take deep breaths. Remember that you\'ve prepared. Trust your preparation.'
+          }
+        ]
+      },
       'Curriculum Development': {
         title: 'Curriculum Development',
         slides: [
@@ -269,9 +449,9 @@ export function StudyGuidesPage() {
         'Multiple Choice Strategy',
         'Time Management Techniques',
         'Stress Management During Exam',
-        'Test-Taking Tips and Tricks',
+        'Test Taking Tips and Tricks',
         'Common Pitfalls to Avoid',
-        'Last-Minute Preparation Guide'
+        'Last Minute Preparation Guide'
       ]
     },
     {
