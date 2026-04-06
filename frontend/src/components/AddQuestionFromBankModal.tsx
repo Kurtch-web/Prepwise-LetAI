@@ -17,18 +17,41 @@ export function AddQuestionFromBankModal({ isOpen, onClose, onAddQuestions }: Ad
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      loadCategories();
       loadQuestions();
     }
   }, [isOpen]);
 
-  const loadQuestions = async () => {
+  useEffect(() => {
+    if (selectedCategory && isOpen) {
+      setSelectedQuestions(new Set()); // Clear selections when category changes
+      loadQuestions();
+    }
+  }, [selectedCategory]);
+
+  const loadCategories = async () => {
+    try {
+      const response = await questionsService.getCategories();
+      setCategories(response.categories);
+      if (response.categories.length > 0) {
+        setSelectedCategory(response.categories[0]);
+      }
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+    }
+  };
+
+  const loadQuestions = async (category?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await questionsService.listQuestions();
+      const categoryToUse = category || selectedCategory;
+      const response = await questionsService.listQuestions(categoryToUse || undefined);
       setQuestions(response.questions);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load questions');
@@ -150,6 +173,34 @@ export function AddQuestionFromBankModal({ isOpen, onClose, onAddQuestions }: Ad
               } focus:outline-none`}
             />
           </div>
+
+          {/* Category Selector */}
+          {categories.length > 0 && (
+            <div className="space-y-3">
+              <label className={`block text-sm font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                📚 Choose Education Type
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                      selectedCategory === category
+                        ? isLightMode
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-emerald-600 text-white'
+                        : isLightMode
+                        ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Quick Actions */}
           <div className="flex gap-3 flex-wrap items-center">
