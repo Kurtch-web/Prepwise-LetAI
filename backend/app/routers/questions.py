@@ -88,9 +88,13 @@ async def list_questions(
 async def get_categories(db: AsyncSession = Depends(get_db)):
     """Get all unique question categories."""
     result = await db.execute(select(Question.category).distinct())
-    categories = result.scalars().all()
-    
-    return {"categories": list(set(categories)) if categories else ["General Education", "Professional Education"]}
+    categories = set(result.scalars().all())
+
+    # Always include default categories
+    default_categories = {"General Education", "Professional Education"}
+    all_categories = list(default_categories | categories)
+
+    return {"categories": sorted(all_categories)}
 
 
 @router.delete("/{question_id}")
