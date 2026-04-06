@@ -133,13 +133,22 @@ export function QuizPage() {
   const handleSubmitQuiz = async () => {
     if (!currentSession) return;
 
-    // Close the test tab immediately without waiting for backend
-    setView('main');
+    setLoading(true);
+    setError(null);
 
-    // Submit quiz in the background (don't wait for response)
-    quizService.submitQuiz(currentSession.session_id).catch(err => {
-      console.error('Failed to submit quiz:', err);
-    });
+    try {
+      // Submit the quiz
+      await quizService.submitQuiz(currentSession.session_id);
+
+      // Fetch detailed session results
+      const results = await quizService.getSessionResults(currentSession.session_id);
+      setSessionResults(results);
+      setView('results');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit quiz');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadLeaderboard = async (quizId: string) => {
