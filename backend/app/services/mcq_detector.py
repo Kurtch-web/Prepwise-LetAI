@@ -123,18 +123,22 @@ class MCQDetector:
         """
         Detect MCQ question blocks by splitting on question numbers (1-150).
 
-        Uses a stricter approach: each question block contains ONLY the content
-        between the current question number and the NEXT question number.
-        This prevents mixing of questions from scrambled PDF extraction.
+        Improved pattern matching that handles both strict line-start matching
+        and more flexible whitespace/special character handling for PDFs with
+        various extraction formats.
         """
         # First, remove section headers and junk
         text = re.sub(r'\n\s*(Part|PART|Section|SECTION|UNIT|Unit|Contents|Contents)\s+\d+.*\n', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'\n\s*\d+\s+QUESTIONS?\s+WITH?\s+ANSWERS?.*\n', '\n', text, flags=re.IGNORECASE)
         text = re.sub(r'This\s+file\s+was\s+submitted.*\n', '\n', text, flags=re.IGNORECASE)
 
-        # Main pattern: split by question numbers (must be at line start)
-        # This is STRICT: only matches when "N." is at the start of a line
-        pattern = r'(?:^|\n)(\d{1,3})\s*[\.\)]\s+'
+        # Remove footer/header text that breaks detection
+        text = re.sub(r'Get\s+more\s+Free\s+LET\s+Reviewers.*\n', '\n', text, flags=re.IGNORECASE)
+
+        # Main pattern: split by question numbers
+        # More flexible: matches question numbers with optional leading whitespace/special chars
+        # Matches: "N." "N)" "N." (after punctuation) etc.
+        pattern = r'(?:^|\n|\s)(\d{1,3})\s*[\.\)]\s+'
 
         # Split the text while keeping the question numbers
         parts = re.split(pattern, text, flags=re.MULTILINE)
@@ -148,18 +152,13 @@ class MCQDetector:
                 question_num = parts[i]
                 question_content = parts[i + 1]
 
-                # For each block: take only lines up to the NEXT question number
-                # This is implicit in the split, but we need to clean up the content
-
                 # Split question_content into lines
                 lines = [line.strip() for line in question_content.split('\n')]
 
                 # Remove trailing content that looks like it belongs to next question
-                # (If extraction went wrong, there might be extra question text at the end)
                 cleaned_lines = []
                 for line in lines:
                     # Stop if we hit what looks like a new question starting
-                    # (This shouldn't happen with proper split, but just in case)
                     if line and re.match(r'^\d{1,3}[\.\)]\s+', line):
                         break
                     cleaned_lines.append(line)
@@ -183,6 +182,7 @@ class MCQDetector:
         """
         Extract question text and options from a question block.
         Supports: A. B. C. D. / A) B) C) D) / a) b) c) d) / 1) 2) 3) 4) formats
+        Also handles checkmarks (✓), asterisks (*), and other special markers before options.
 
         STRICT mode: Rejects blocks with suspicious patterns that indicate
         mixed/scrambled questions (e.g., multiple question numbers, out-of-order choices).
@@ -208,7 +208,8 @@ class MCQDetector:
             return '', []
 
         # Try Pattern 1: A. or A) with capital letters (most common)
-        option_pattern = r'^([A-D])[\.\)]\s+(.+)$'
+        # Also handles special markers like ✓, *, etc. before the option
+        option_pattern = r'^[\✓\*\s]*([A-D])[\.\)]\s+(.+)$'
         option_matches = [(re.match(option_pattern, line), line, idx) for idx, line in enumerate(lines)]
         valid_options = [(m, line, idx) for m, line, idx in option_matches if m]
 
@@ -238,8 +239,8 @@ class MCQDetector:
                 if question_text and len(options) >= 2:
                     return question_text, options
 
-        # Try Pattern 2: a) or (a) with lowercase letters
-        option_pattern = r'^[\(\[]?([a-d])[\)\.\]]\s+(.+)$'
+        # Try Pattern 2: a) or (a) with lowercase letters (handle mixed case)
+        option_pattern = r'^[\✓\*\s]*[\(\[]?([a-d])[\)\.\]]\s+(.+)$'
         option_matches = [(re.match(option_pattern, line), line, idx) for idx, line in enumerate(lines)]
         valid_options = [(m, line, idx) for m, line, idx in option_matches if m]
 
@@ -265,7 +266,7 @@ class MCQDetector:
                     return question_text, options
 
         # Try Pattern 3: 1) 2) 3) 4) with numbers
-        option_pattern = r'^([1-4])\)\s+(.+)$'
+        option_pattern = r'^[\✓\*\s]*([1-4])\)\s+(.+)$'
         option_matches = [(re.match(option_pattern, line), line, idx) for idx, line in enumerate(lines)]
         valid_options = [(m, line, idx) for m, line, idx in option_matches if m]
 
@@ -293,7 +294,7 @@ class MCQDetector:
                     return question_text, options
 
         # Try Pattern 4: Just letters in parentheses with text after (A) text format
-        option_pattern = r'^\(([A-D])\)\s+(.+)$'
+        option_pattern = r'^[\✓\*\s]*\(([A-D])\)\s+(.+)$'
         option_matches = [(re.match(option_pattern, line), line, idx) for idx, line in enumerate(lines)]
         valid_options = [(m, line, idx) for m, line, idx in option_matches if m]
 
@@ -397,8 +398,9 @@ class MCQDetector:
                 continue
 
             # VALIDATION: Check if question_text looks suspiciously long (likely mixed questions)
-            # A typical question should be < 500 characters (increased from 300 to allow longer questions)
-            if len(question_text) > 500:
+            # Increased threshold to 1000 chars to accommodate longer questions
+            # (especially for translation/language tests with longer questions)
+            if len(question_text) > 1000:
                 skipped_blocks.append({
                     'block_num': block_idx,
                     'reason': f'Question too long ({len(question_text)} chars) - likely mixed questions'
@@ -407,9 +409,9 @@ class MCQDetector:
 
             # VALIDATION: Check if question text contains suspicious patterns
             # (multiple choice letters in succession indicating mixed content)
-            # Only reject if there are 2 or more A/B/C/D patterns - this is more lenient
+            # Only reject if there are 3 or more A/B/C/D patterns - this is more lenient
             choice_patterns = len(re.findall(r'[A-D]\.\s+', question_text))
-            if choice_patterns > 2:
+            if choice_patterns > 3:
                 skipped_blocks.append({
                     'block_num': block_idx,
                     'reason': f'Question text contains too many choice-like patterns ({choice_patterns}) - likely mixed'
