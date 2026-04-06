@@ -231,12 +231,13 @@ export function QuestionsBank() {
     setError(null);
 
     try {
-      // Filter selected MCQs and add batch name
+      // Filter selected MCQs and add batch name and ensure category is set from user selection
       const mcqsToSave = detectedMCQs
         .filter((_, idx) => selectedMCQs.has(idx))
         .map(mcq => ({
           ...mcq,
-          batch_name: pdfBatchName.trim()
+          batch_name: pdfBatchName.trim(),
+          category: pdfCategory  // Override with user-selected category
         }));
 
       const token = localStorage.getItem('auth_token');
@@ -749,12 +750,12 @@ export function QuestionsBank() {
                       }`}>
                         {mcq.needs_review ? '⚠️ Review' : '✓ Detected'}
                       </span>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
+                      <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
                         isLightMode
-                          ? 'bg-slate-200 text-slate-700'
-                          : 'bg-slate-700 text-slate-300'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-emerald-900/30 text-emerald-300'
                       }`}>
-                        {mcq.category}
+                        📁 {pdfCategory}
                       </span>
                     </div>
                     <p className={`font-semibold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
