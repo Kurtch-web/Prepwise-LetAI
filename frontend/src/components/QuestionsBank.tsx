@@ -94,6 +94,11 @@ export function QuestionsBank() {
       return;
     }
 
+    if (!pdfBatchName.trim()) {
+      setError('Folder name is required');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -139,6 +144,11 @@ export function QuestionsBank() {
   };
 
   const handleCreateManual = async () => {
+    if (!manualQuestion.batchName.trim()) {
+      setError('Folder name is required');
+      return;
+    }
+
     if (!manualQuestion.text.trim()) {
       setError('Question text is required');
       return;
@@ -160,7 +170,7 @@ export function QuestionsBank() {
         manualQuestion.correctAnswer,
         manualQuestion.category,
         'manual',
-        manualQuestion.batchName.trim() || undefined
+        manualQuestion.batchName.trim()
       );
 
       setManualQuestion({
@@ -207,6 +217,11 @@ export function QuestionsBank() {
   };
 
   const handleSaveDetectedMCQs = async () => {
+    if (!pdfBatchName.trim()) {
+      setError('Folder name is required');
+      return;
+    }
+
     if (selectedMCQs.size === 0) {
       setError('Please select at least one question to save');
       return;
@@ -221,7 +236,7 @@ export function QuestionsBank() {
         .filter((_, idx) => selectedMCQs.has(idx))
         .map(mcq => ({
           ...mcq,
-          batch_name: pdfBatchName.trim() || undefined
+          batch_name: pdfBatchName.trim()
         }));
 
       const token = localStorage.getItem('auth_token');
@@ -541,11 +556,11 @@ export function QuestionsBank() {
 
           <div>
             <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Folder Name (Optional)
+              Folder Name *
             </label>
             <input
               type="text"
-              placeholder="e.g., Batch 1 - 2024"
+              placeholder="e.g., General Education - 2024"
               value={pdfBatchName}
               onChange={(e) => setPdfBatchName(e.target.value)}
               className={`w-full px-4 py-2 rounded-lg border transition ${
@@ -815,11 +830,11 @@ export function QuestionsBank() {
 
           <div>
             <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Folder Name (Optional)
+              Folder Name *
             </label>
             <input
               type="text"
-              placeholder="e.g., Manual Quiz 1"
+              placeholder="e.g., Professional Education - Weekly"
               value={manualQuestion.batchName}
               onChange={(e) => setManualQuestion({ ...manualQuestion, batchName: e.target.value })}
               className={`w-full px-4 py-2 rounded-lg border transition ${
