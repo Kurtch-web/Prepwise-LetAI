@@ -47,6 +47,38 @@ export function AddQuestionFromBankModal({ isOpen, onClose, onAddQuestions }: Ad
     setSelectedQuestions(newSelected);
   };
 
+  const selectAllFiltered = () => {
+    const allFilteredIds = new Set(filteredQuestions.map(q => q.id));
+    setSelectedQuestions(allFilteredIds);
+  };
+
+  const deselectAll = () => {
+    setSelectedQuestions(new Set());
+  };
+
+  const addRandomQuestions = (count: number) => {
+    const availableQuestions = filteredQuestions.filter(
+      q => !selectedQuestions.has(q.id)
+    );
+
+    if (availableQuestions.length === 0) {
+      setError('No more questions available to add');
+      return;
+    }
+
+    const toAdd = Math.min(count, availableQuestions.length);
+    const selectedIds = new Set(selectedQuestions);
+
+    // Shuffle and select random questions
+    const shuffled = [...availableQuestions].sort(() => Math.random() - 0.5);
+    for (let i = 0; i < toAdd; i++) {
+      selectedIds.add(shuffled[i].id);
+    }
+
+    setSelectedQuestions(selectedIds);
+    setError(null);
+  };
+
   const handleAddQuestions = () => {
     if (selectedQuestions.size === 0) {
       setError('Please select at least one question');
@@ -117,6 +149,72 @@ export function AddQuestionFromBankModal({ isOpen, onClose, onAddQuestions }: Ad
                   : 'bg-slate-900/20 border-slate-600 text-white focus:border-emerald-500 focus:bg-slate-900/40'
               } focus:outline-none`}
             />
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex gap-3 flex-wrap items-center">
+            <div className="flex gap-2">
+              <button
+                onClick={selectAllFiltered}
+                disabled={filteredQuestions.length === 0 || loading}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  isLightMode
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                    : 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                ✓ Select All
+              </button>
+              <button
+                onClick={deselectAll}
+                disabled={selectedQuestions.size === 0 || loading}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  isLightMode
+                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                ✕ Deselect All
+              </button>
+            </div>
+
+            <div className="h-6 w-px bg-slate-300 dark:bg-slate-600" />
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => addRandomQuestions(5)}
+                disabled={filteredQuestions.filter(q => !selectedQuestions.has(q.id)).length === 0 || loading}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  isLightMode
+                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                    : 'bg-emerald-900/30 text-emerald-300 hover:bg-emerald-900/50 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                +5 Random
+              </button>
+              <button
+                onClick={() => addRandomQuestions(10)}
+                disabled={filteredQuestions.filter(q => !selectedQuestions.has(q.id)).length === 0 || loading}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  isLightMode
+                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                    : 'bg-emerald-900/30 text-emerald-300 hover:bg-emerald-900/50 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                +10 Random
+              </button>
+              <button
+                onClick={() => addRandomQuestions(50)}
+                disabled={filteredQuestions.filter(q => !selectedQuestions.has(q.id)).length === 0 || loading}
+                className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                  isLightMode
+                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed'
+                    : 'bg-emerald-900/30 text-emerald-300 hover:bg-emerald-900/50 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                +50 Random
+              </button>
+            </div>
           </div>
 
           {/* Error Message */}
