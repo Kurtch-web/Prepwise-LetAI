@@ -2,6 +2,7 @@ from datetime import datetime
 from datetime import datetime
 from typing import List, Optional
 from uuid import uuid4
+import os
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import StreamingResponse
@@ -16,6 +17,40 @@ from ..services.storage import get_supabase_storage, get_r2_storage
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix='/api/videos', tags=['videos'])
+
+
+def _transform_url_to_bunny_cdn(file_url: str) -> str:
+    """Transform R2 URL to Bunny CDN URL if Bunny CDN is configured.
+
+    Replaces the R2 domain with Bunny CDN domain while preserving the file path.
+    Example: https://example.r2.cloudflarestorage.com/videos/123/file.mp4
+             -> https://letvideoprepwise.b-cdn.net/videos/123/file.mp4
+
+    If Bunny CDN is not configured, returns the original URL unchanged.
+    """
+    # Get Bunny CDN URL from environment
+    bunny_cdn_url = os.getenv('BUNNY_CDN_URL', '').strip()
+
+    # If Bunny CDN is not configured or it's a YouTube link, return original URL
+    if not bunny_cdn_url or 'youtube' in file_url.lower():
+        return file_url
+
+    # Extract the path part from the URL
+    # R2 URLs look like: https://domain.r2.cloudflarestorage.com/path/to/file
+    # We want to preserve the /path/to/file part
+    try:
+        # Find the path part (everything after the domain)
+        if '://' in file_url:
+            _, rest = file_url.split('://', 1)
+            _, path = rest.split('/', 1)
+            # Construct Bunny CDN URL with the same path
+            bunny_url = f"{bunny_cdn_url}/{path}"
+            return bunny_url
+    except (ValueError, IndexError):
+        # If URL parsing fails, return original
+        return file_url
+
+    return file_url
 
 
 class VideoLinkRequest(BaseModel):
@@ -99,9 +134,12 @@ async def get_presigned_upload_url(
     # Get presigned URL from R2
     presigned_info = r2_storage.create_presigned_upload_url(storage_path, expiration_seconds=3600)
 
+    # Transform R2 public URL to Bunny CDN URL
+    bunny_public_url = _transform_url_to_bunny_cdn(presigned_info['publicUrl'])
+
     return {
         'uploadUrl': presigned_info['uploadUrl'],
-        'publicUrl': presigned_info['publicUrl'],
+        'publicUrl': bunny_public_url,
         'storagePath': storage_path,
         'expiresIn': presigned_info['expiresIn']
     }
@@ -112,20 +150,22 @@ async def _upload_video_file(video_id: str, file: UploadFile, category: str) -> 
     storage = get_supabase_storage()
     if not storage:
         raise HTTPException(status_code=500, detail='Storage service not configured')
-    
+
     content = await file.read()
     safe_filename = _sanitize_filename(file.filename or 'video')
     date_str = datetime.now().strftime('%Y-%m-%d')
     storage_path = f"videos/{video_id}/{category}/{date_str}/{safe_filename}"
-    
+
     storage.upload(
         path=storage_path,
         content=content,
         content_type=file.content_type or 'video/mp4',
         upsert=True
     )
-    
+
     file_url = storage.public_url(storage_path)
+    # Transform to Bunny CDN URL if configured
+    file_url = _transform_url_to_bunny_cdn(file_url)
     return storage_path, file_url
 
 
@@ -149,6 +189,9 @@ async def save_video_metadata(
     except (IndexError, AttributeError):
         video_id = str(uuid4())
 
+    # Transform file_url to Bunny CDN if configured
+    bunny_file_url = _transform_url_to_bunny_cdn(request.file_url)
+
     video = Video(
         id=video_id,
         uploader_id=current_user.id,
@@ -156,7 +199,7 @@ async def save_video_metadata(
         description=request.description.strip() if request.description else None,
         category=request.category.strip(),
         storage_path=request.storage_path,
-        file_url=request.file_url,
+        file_url=bunny_file_url,
         is_downloadable=request.is_downloadable
     )
 
