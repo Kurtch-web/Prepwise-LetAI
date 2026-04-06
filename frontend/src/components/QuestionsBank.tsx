@@ -554,6 +554,18 @@ export function QuestionsBank() {
             </div>
           )}
 
+          <div className={`rounded-lg p-3 border ${
+            isLightMode
+              ? 'border-blue-200 bg-blue-50'
+              : 'border-blue-800 bg-blue-900/20'
+          }`}>
+            <p className={`text-sm font-semibold ${
+              isLightMode ? 'text-blue-900' : 'text-blue-300'
+            }`}>
+              📌 Questions will be saved under: <span className={`font-bold ${isLightMode ? 'text-blue-700' : 'text-blue-200'}`}>{pdfCategory}</span>
+            </p>
+          </div>
+
           <div>
             <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Folder Name *
@@ -573,7 +585,7 @@ export function QuestionsBank() {
 
           <div>
             <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Select Category
+              Select Category *
             </label>
             <select
               value={pdfCategory}
@@ -676,6 +688,18 @@ export function QuestionsBank() {
             </h2>
             <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
               Found {detectedMCQs.length} questions. Review and select which ones to save.
+            </p>
+          </div>
+
+          <div className={`rounded-lg p-3 border ${
+            isLightMode
+              ? 'border-emerald-200 bg-emerald-50'
+              : 'border-emerald-800 bg-emerald-900/20'
+          }`}>
+            <p className={`text-sm font-semibold ${
+              isLightMode ? 'text-emerald-900' : 'text-emerald-300'
+            }`}>
+              ✓ Category: <span className={`font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-200'}`}>{pdfCategory}</span> • Folder: <span className={`font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-200'}`}>{pdfBatchName || '(not set)'}</span>
             </p>
           </div>
 
