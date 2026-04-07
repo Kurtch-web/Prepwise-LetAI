@@ -16,6 +16,14 @@ interface DetectedMCQ {
   source: string;
 }
 
+interface ManualQuestionDraft {
+  text: string;
+  choices: string[];
+  correctAnswer: string;
+  category: string;
+  batchName: string;
+}
+
 export function QuestionsBank() {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
@@ -35,13 +43,14 @@ export function QuestionsBank() {
   const [selectedMCQs, setSelectedMCQs] = useState<Set<number>>(new Set());
 
   // Manual creation state
-  const [manualQuestion, setManualQuestion] = useState({
+  const [manualQuestion, setManualQuestion] = useState<ManualQuestionDraft>({
     text: '',
     choices: ['', '', '', ''],
     correctAnswer: 'A',
     category: 'General Education',
     batchName: ''
   });
+  const [queuedManualQuestions, setQueuedManualQuestions] = useState<ManualQuestionDraft[]>([]);
 
   const [categories, setCategories] = useState(['General Education', 'Professional Education', 'Filipino', 'Math']);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -154,20 +163,74 @@ export function QuestionsBank() {
     }
   };
 
-  const handleCreateManual = async () => {
-    if (!manualQuestion.batchName.trim()) {
+  const getResetManualQuestion = (currentQuestion?: ManualQuestionDraft): ManualQuestionDraft => ({
+    text: '',
+    choices: ['', '', '', ''],
+    correctAnswer: 'A',
+    category: currentQuestion?.category || 'General Education',
+    batchName: currentQuestion?.batchName || ''
+  });
+
+  const getValidatedManualQuestion = (question: ManualQuestionDraft): ManualQuestionDraft | null => {
+    if (!question.batchName.trim()) {
       setError('Folder name is required');
-      return;
+      return null;
     }
 
-    if (!manualQuestion.text.trim()) {
+    if (!question.text.trim()) {
       setError('Question text is required');
-      return;
+      return null;
     }
 
-    const filledChoices = manualQuestion.choices.filter(c => c.trim());
+    const filledChoices = question.choices.map(choice => choice.trim()).filter(Boolean);
     if (filledChoices.length < 2) {
       setError('At least 2 answer choices are required');
+      return null;
+    }
+
+    const correctAnswerIndex = question.correctAnswer.charCodeAt(0) - 65;
+    if (!filledChoices[correctAnswerIndex]) {
+      setError('Please choose a correct answer with a filled choice');
+      return null;
+    }
+
+    return {
+      ...question,
+      text: question.text.trim(),
+      choices: filledChoices,
+      batchName: question.batchName.trim()
+    };
+  };
+
+  const handleAddManualQuestion = () => {
+    const validatedQuestion = getValidatedManualQuestion(manualQuestion);
+    if (!validatedQuestion) {
+      return;
+    }
+
+    setQueuedManualQuestions(prev => [...prev, validatedQuestion]);
+    setManualQuestion(getResetManualQuestion(validatedQuestion));
+    setError(null);
+  };
+
+  const handleRemoveQueuedManualQuestion = (indexToRemove: number) => {
+    setQueuedManualQuestions(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleCreateManual = async () => {
+    const hasCurrentQuestionInput = Boolean(manualQuestion.text.trim()) || manualQuestion.choices.some(choice => Boolean(choice.trim()));
+    const currentQuestionToCreate = hasCurrentQuestionInput ? getValidatedManualQuestion(manualQuestion) : null;
+
+    if (hasCurrentQuestionInput && !currentQuestionToCreate) {
+      return;
+    }
+
+    const questionsToCreate = currentQuestionToCreate
+      ? [...queuedManualQuestions, currentQuestionToCreate]
+      : queuedManualQuestions;
+
+    if (questionsToCreate.length === 0) {
+      setError('Add at least one question first');
       return;
     }
 
@@ -175,22 +238,19 @@ export function QuestionsBank() {
     setError(null);
 
     try {
-      await questionsService.createQuestion(
-        manualQuestion.text,
-        filledChoices,
-        manualQuestion.correctAnswer,
-        manualQuestion.category,
-        'manual',
-        manualQuestion.batchName.trim()
-      );
+      for (const question of questionsToCreate) {
+        await questionsService.createQuestion(
+          question.text,
+          question.choices,
+          question.correctAnswer,
+          question.category,
+          'manual',
+          question.batchName
+        );
+      }
 
-      setManualQuestion({
-        text: '',
-        choices: ['', '', '', ''],
-        correctAnswer: 'A',
-        category: 'General Education',
-        batchName: ''
-      });
+      setQueuedManualQuestions([]);
+      setManualQuestion(getResetManualQuestion());
       await loadQuestions();
       setView('list');
     } catch (err) {
@@ -1170,7 +1230,68 @@ export function QuestionsBank() {
             </div>
           </div>
 
-          <div className="flex gap-3">
+          {queuedManualQuestions.length > 0 && (
+            <div className={`rounded-2xl border p-4 space-y-3 ${
+              isLightMode
+                ? 'border-emerald-200 bg-emerald-50'
+                : 'border-emerald-800 bg-emerald-900/20'
+            }`}>
+              <div className="flex items-center justify-between gap-3">
+                <p className={`font-semibold ${isLightMode ? 'text-emerald-900' : 'text-emerald-200'}`}>
+                  {queuedManualQuestions.length} question{queuedManualQuestions.length !== 1 ? 's' : ''} ready to create
+                </p>
+                <span className={`text-sm ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
+                  Folder: {queuedManualQuestions[0]?.batchName}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {queuedManualQuestions.map((question, index) => (
+                  <div
+                    key={`${question.batchName}-${index}`}
+                    className={`flex items-start justify-between gap-3 rounded-xl border px-4 py-3 ${
+                      isLightMode
+                        ? 'border-emerald-100 bg-white'
+                        : 'border-emerald-900/40 bg-slate-900/30'
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                        {index + 1}. {question.text}
+                      </p>
+                      <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                        {getCategoryLabel(question.category)} • {question.choices.length} choices • Correct answer: {question.correctAnswer}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveQueuedManualQuestion(index)}
+                      type="button"
+                      className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                        isLightMode
+                          ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                          : 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
+                      }`}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={handleAddManualQuestion}
+              type="button"
+              disabled={loading}
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition ${
+                isLightMode
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+              }`}
+            >
+              + Add Question
+            </button>
             <button
               onClick={handleCreateManual}
               disabled={loading}
@@ -1180,7 +1301,7 @@ export function QuestionsBank() {
                   : 'bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed'
               }`}
             >
-              {loading ? 'Creating...' : '✓ Create Question'}
+              {loading ? 'Creating...' : `✓ Create ${queuedManualQuestions.length > 0 ? 'Questions' : 'Question'}`}
             </button>
             <button
               onClick={() => setView('list')}
