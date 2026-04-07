@@ -596,8 +596,8 @@ export function QuestionsBank() {
 
       {/* Edit Modal */}
       {editingQuestion && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className={`rounded-2xl max-w-2xl w-full p-8 space-y-6 ${
+        <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+          <div className={`rounded-2xl max-w-2xl w-full p-8 space-y-6 my-8 ${
             isLightMode
               ? 'bg-white'
               : 'bg-slate-900'
