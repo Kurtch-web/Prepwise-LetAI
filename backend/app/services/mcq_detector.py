@@ -388,11 +388,11 @@ class MCQDetector:
     def extract_answer_keys(text: str) -> Dict[int, str]:
         """
         Extract answer keys from the end of the document.
-        Looks for patterns like:
-        - "ANSWER KEY" section
-        - "1. A 2. B 3. C 4. D 5. A"
-        - "1) A  2) B  3) C"
-        - "1-A, 2-B, 3-C"
+        Handles various formats:
+        - Single column: "1. A" on separate lines
+        - Multi-column: "1. A | 39. A | 77. C | 115. B" on same line
+        - Inline: "1) A  2) B  3) C"
+        - Variations: "1-A, 2-B, 3-C"
 
         Returns: Dict mapping question number to answer letter
         """
@@ -402,7 +402,7 @@ class MCQDetector:
         # Look for common answer key section headers
         answer_section = None
         patterns = [
-            r'(?:ANSWER\s+KEY|Answer\s+Key|ANSWERS?|KEY)[\s:]*\n(.*?)(?=\n\n|$)',
+            r'(?:ANSWER\s+KEY|Answer\s+Keys?|ANSWERS?|KEY)[\s:]*\n(.*?)(?=\n\n|$)',
             r'(?:Solutions?|Correct\s+Answers?|Answer\s+Sheet)[\s:]*\n(.*?)(?=\n\n|$)',
         ]
 
@@ -418,30 +418,17 @@ class MCQDetector:
             answer_section = '\n'.join(lines[int(len(lines) * 0.8):])
 
         # Try to extract answer patterns
-        # Pattern 1: "1. A" or "1) A" or "1-A"
-        answer_pattern = r'^\s*(\d{1,3})\s*[\.\)\-:]\s*([A-D])\s*$'
+        # Pattern 1: Multi-column or inline format "1. A" or "1) A" or "1-A"
+        # This includes multi-column layouts separated by | or multiple on same line
+        # Matches: "1. A", "39. A", "77. C", "115. B" etc.
+        answer_pattern = r'(\d{1,3})\s*[\.\)\-:]\s*([A-D])'
+        matches = re.findall(answer_pattern, answer_section)
 
-        for line in answer_section.split('\n'):
-            line = line.strip()
-            if not line:
-                continue
-
-            match = re.match(answer_pattern, line)
-            if match:
-                question_num = int(match.group(1))
-                answer_letter = match.group(2).upper()
-                answer_keys[question_num] = answer_letter
-
-        # Pattern 2: Multiple answers on one line "1. A 2. B 3. C" or "1A 2B 3C"
-        if not answer_keys:
-            # Try to find compact answer formats
-            compact_pattern = r'(\d{1,3})\s*[\.\)\-:]?\s*([A-D])'
-            matches = re.findall(compact_pattern, answer_section)
-
+        if matches:
             for match in matches:
                 question_num = int(match[0])
                 answer_letter = match[1].upper()
-                # Only add if this looks like a valid answer (not part of question text)
+                # Only add if this looks like a valid answer
                 if 1 <= question_num <= 500:  # Reasonable upper limit for questions
                     answer_keys[question_num] = answer_letter
 
