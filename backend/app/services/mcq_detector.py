@@ -213,8 +213,8 @@ class MCQDetector:
         expanded_lines = []
         for line in lines:
             # Look for pattern of multiple choices on one line: "A. text C. text" or "B. text D. text"
-            # Split when we find " [A-D]." or " [A-D])" in the middle of a line
-            parts = re.split(r'\s+(?=[A-D][\.\)])', line)
+            # Split when we find " [A-D]." or " [A-D])" in the middle of a line (handle both uppercase and lowercase)
+            parts = re.split(r'\s+(?=[A-Da-d][\.\)])', line)
             if len(parts) > 1:
                 expanded_lines.extend(parts)
             else:
