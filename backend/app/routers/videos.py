@@ -681,14 +681,12 @@ async def get_user_watch_stats(
     )
 
     total_watched_seconds = 0
-    videos_watched = []
     videos_list = []
+    watch_list = list(watches)
 
-    for watch in watches:
+    for watch in watch_list:
         if watch.video:
             total_watched_seconds += watch.watched_seconds
-            if watch.video.id not in videos_watched:
-                videos_watched.append(watch.video.id)
 
             videos_list.append({
                 'video_id': watch.video.id,
@@ -702,7 +700,7 @@ async def get_user_watch_stats(
             })
 
     return {
-        'total_videos_watched': len(videos_watched),
+        'total_videos_watched': len(watch_list),
         'total_watch_time_seconds': total_watched_seconds,
         'total_watch_time_hours': round(total_watched_seconds / 3600, 2),
         'videos': videos_list
