@@ -131,3 +131,5 @@ temp/
 dist/
 
 .config/
+
+.builder/config/data.json

@@ -47,6 +47,15 @@ export function QuestionsBank() {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Edit state
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    text: '',
+    choices: ['', '', '', ''],
+    correctAnswer: 'A',
+    category: 'General Education'
+  });
+
   useEffect(() => {
     loadQuestions();
     loadCategories();
@@ -213,6 +222,61 @@ export function QuestionsBank() {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleOpenEdit = (question: Question) => {
+    setEditingQuestion(question);
+    setEditFormData({
+      text: question.question_text,
+      choices: question.choices,
+      correctAnswer: question.correct_answer,
+      category: question.category
+    });
+  };
+
+  const handleCloseEdit = () => {
+    setEditingQuestion(null);
+    setEditFormData({
+      text: '',
+      choices: ['', '', '', ''],
+      correctAnswer: 'A',
+      category: 'General Education'
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingQuestion) return;
+
+    if (!editFormData.text.trim()) {
+      setError('Question text is required');
+      return;
+    }
+
+    const filledChoices = editFormData.choices.filter(c => c.trim());
+    if (filledChoices.length < 2) {
+      setError('At least 2 answer choices are required');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await questionsService.updateQuestion(
+        editingQuestion.id,
+        editFormData.text,
+        filledChoices,
+        editFormData.correctAnswer,
+        editFormData.category
+      );
+
+      await loadQuestions();
+      handleCloseEdit();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update question');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -498,16 +562,28 @@ export function QuestionsBank() {
                           })}
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleDeleteQuestion(question.id)}
-                        className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold transition ${
-                          isLightMode
-                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                            : 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
-                        }`}
-                      >
-                        Delete
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(question)}
+                          className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                            isLightMode
+                              ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                              : 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/50'
+                          }`}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteQuestion(question.id)}
+                          className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                            isLightMode
+                              ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                              : 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
+                          }`}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                     ))}
@@ -517,6 +593,141 @@ export function QuestionsBank() {
             );
           })
         )}
+
+      {/* Edit Modal */}
+      {editingQuestion && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className={`rounded-2xl max-w-2xl w-full p-8 space-y-6 ${
+            isLightMode
+              ? 'bg-white'
+              : 'bg-slate-900'
+          }`}>
+            <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              ✏️ Edit Question
+            </h2>
+
+            {error && (
+              <div className={`rounded-2xl border p-4 ${
+                isLightMode
+                  ? 'border-red-300 bg-red-50 text-red-700'
+                  : 'border-red-500/30 bg-red-900/20 text-red-300'
+              }`}>
+                ❌ {error}
+              </div>
+            )}
+
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Question Text *
+              </label>
+              <textarea
+                value={editFormData.text}
+                onChange={(e) => setEditFormData({ ...editFormData, text: e.target.value })}
+                className={`w-full px-4 py-3 rounded-lg border transition ${
+                  isLightMode
+                    ? 'bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white'
+                    : 'bg-slate-900/20 border-slate-600 text-white focus:border-blue-500 focus:bg-slate-900/40'
+                } focus:outline-none`}
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Category
+              </label>
+              <select
+                value={editFormData.category}
+                onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                className={`w-full px-4 py-2 rounded-lg border transition ${
+                  isLightMode
+                    ? 'bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white'
+                    : 'bg-slate-900/20 border-slate-600 text-white focus:border-blue-500 focus:bg-slate-900/40'
+                } focus:outline-none`}
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className={`block text-sm font-semibold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Answer Choices
+              </label>
+              <div className="space-y-3">
+                {editFormData.choices.map((choice, idx) => {
+                  const letter = String.fromCharCode(65 + idx);
+                  return (
+                    <div key={idx} className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        value={choice}
+                        onChange={(e) => {
+                          const newChoices = [...editFormData.choices];
+                          newChoices[idx] = e.target.value;
+                          setEditFormData({ ...editFormData, choices: newChoices });
+                        }}
+                        placeholder={`Choice ${letter}`}
+                        className={`flex-1 px-4 py-2 rounded-lg border transition ${
+                          isLightMode
+                            ? 'bg-slate-50 border-slate-300 text-slate-900 focus:border-blue-500 focus:bg-white'
+                            : 'bg-slate-900/20 border-slate-600 text-white focus:border-blue-500 focus:bg-slate-900/40'
+                        } focus:outline-none`}
+                      />
+                      <label className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition ${
+                        editFormData.correctAnswer === letter
+                          ? isLightMode
+                            ? 'bg-green-100'
+                            : 'bg-green-900/30'
+                          : isLightMode
+                          ? 'hover:bg-slate-100'
+                          : 'hover:bg-slate-900/20'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="correct-answer-edit"
+                          value={letter}
+                          checked={editFormData.correctAnswer === letter}
+                          onChange={(e) => setEditFormData({ ...editFormData, correctAnswer: e.target.value })}
+                          className="w-4 h-4"
+                        />
+                        <span className={`text-sm font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          Correct
+                        </span>
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleSaveEdit}
+                disabled={loading}
+                className={`flex-1 px-6 py-3 rounded-xl font-semibold transition ${
+                  isLightMode
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                {loading ? 'Saving...' : '✓ Save Changes'}
+              </button>
+              <button
+                onClick={handleCloseEdit}
+                className={`px-6 py-3 rounded-xl font-semibold transition ${
+                  isLightMode
+                    ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+                    : 'bg-slate-800 text-white hover:bg-slate-700'
+                }`}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     );
   }

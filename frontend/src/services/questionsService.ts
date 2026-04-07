@@ -103,6 +103,27 @@ const questionsService = {
     });
   },
 
+  async updateQuestion(
+    questionId: string,
+    questionText: string,
+    choices: string[],
+    correctAnswer: string,
+    category: string,
+    batchName?: string
+  ) {
+    return request(`/api/questions/${questionId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        question_text: questionText,
+        choices,
+        correct_answer: correctAnswer,
+        category,
+        source: 'manual',
+        batch_name: batchName
+      })
+    });
+  },
+
   async deleteQuestion(questionId: string) {
     return request(`/api/questions/${questionId}`, {
       method: 'DELETE'

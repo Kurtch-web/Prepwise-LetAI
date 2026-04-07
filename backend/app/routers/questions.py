@@ -97,6 +97,46 @@ async def get_categories(db: AsyncSession = Depends(get_db)):
     return {"categories": sorted(all_categories)}
 
 
+@router.put("/{question_id}")
+async def update_question(
+    question_id: str,
+    question_data: QuestionCreateSchema,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update a question (admin only)."""
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can update questions")
+
+    result = await db.execute(select(Question).where(Question.id == question_id))
+    question = result.scalars().first()
+
+    if not question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
+
+    # Update question fields
+    question.question_text = question_data.question_text
+    question.choices = question_data.choices
+    question.correct_answer = question_data.correct_answer
+    question.category = question_data.category
+    if question_data.batch_name:
+        question.batch_name = question_data.batch_name
+
+    await db.commit()
+    await db.refresh(question)
+
+    return {
+        "id": question.id,
+        "question_text": question.question_text,
+        "choices": question.choices,
+        "correct_answer": question.correct_answer,
+        "category": question.category,
+        "batch_name": question.batch_name,
+        "source": question.source,
+        "created_at": question.created_at
+    }
+
+
 @router.delete("/{question_id}")
 async def delete_question(
     question_id: str,
