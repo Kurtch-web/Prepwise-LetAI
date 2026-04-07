@@ -43,7 +43,7 @@ export function QuestionsBank() {
     batchName: ''
   });
 
-  const [categories, setCategories] = useState(['General Education', 'Professional Education']);
+  const [categories, setCategories] = useState(['General Education', 'Professional Education', 'Filipino', 'Math']);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
