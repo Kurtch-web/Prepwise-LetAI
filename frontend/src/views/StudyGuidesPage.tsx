@@ -1006,6 +1006,106 @@ export function StudyGuidesPage() {
           }
         ]
       },
+      'How I Passed the LET': {
+        title: 'Success Stories: How I Passed the LET',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Maria Santos - English Teacher (Scored 78%)',
+            content: 'Maria Santos, 28, took the LET in 2024 after 3 years as a private English tutor in Manila. She struggled with her first attempt, scoring 62%, but didn\'t give up. "I realized I was studying hard but not smart," she says. Her second attempt scored 78%. Key strategy: She created a detailed study schedule, allocating 70% of her time to her weakness (Professional Education theory) and 30% to her strength (Subject Matter Expertise in English). She used the Feynman Technique—explaining concepts to her younger sister—which revealed gaps in her understanding. "When I couldn\'t explain pedagogical theory simply, I knew I needed deeper study," Maria explains. She also joined an online study group with 4 other LET takers, which kept her accountable. Her advice: "Don\'t just study; study strategically. Know your weak areas and attack them first when your mind is fresh." Today, Maria teaches English at a public high school in Quezon City.'
+          },
+          {
+            type: 'content',
+            heading: 'Juan dela Cruz - Science Teacher (Scored 81%)',
+            content: 'Juan dela Cruz, 31, is a career-changer who left his IT job to pursue his passion for teaching. He worried about his General Education knowledge since his IT background was narrow. He prepared for 4 months, treating preparation like a full-time job. "I studied 5-6 hours daily, even while working 8 hours," he recalls. Juan credits his success to spaced repetition. He used Anki flashcards and studied 200 questions weekly, reviewing mistakes meticulously. He scored 81%, passing comfortably. "The key was consistency and learning from errors. Every mistake was a lesson," Juan says. He took 5 full-length practice exams over 8 weeks, tracking improvement. His Science score was 88%, Professional Education 79%, General Education 77%. His weakness (General Education) got the most focus, and it improved from 65% on practice exams to 77% on the actual exam. Juan\'s tip: "Understand the TOS. I allocated study time based on the percentages—never wasted time on low-percentage topics." He now teaches Physics at a science high school in Manila and mentors other teachers taking the LET.'
+          },
+          {
+            type: 'content',
+            heading: 'Rosa Villanueva - Mathematics Teacher (Second Attempt, Scored 76%)',
+            content: 'Rosa Villanueva, 26, failed her first LET attempt, scoring 58%, primarily due to test anxiety. "I knew the material, but anxiety consumed my working memory. I\'d read questions and draw blanks," she explains. After the failure, she considered quitting but decided to address the anxiety directly. She took the exam 6 months later after working with a counselor on anxiety management techniques. Rosa used breathing exercises, visualization, and specifically practiced with timed exams to build confidence. She also focused intensely on her weakest area: General Education Social Studies (initially 45% on practice exams). After targeted study, she improved to 72%. Her second attempt: 76% overall (Professional Education 81%, Subject Expertise 73%, General Education 73%). "The second time, I was nervous but not paralyzed. The breathing techniques helped," Rosa reflects. She emphasizes that mental preparation is as important as content preparation. Her advice: "If you fail, don\'t blame yourself. Analyze what went wrong—content gaps or test anxiety?—and address the root cause." Rosa now teaches Mathematics at a public middle school in Laguna and runs after-school tutoring sessions.'
+          }
+        ]
+      },
+      'Study Plans from Top Performers': {
+        title: 'Study Plans from Top Performers',
+        slides: [
+          {
+            type: 'content',
+            heading: 'High Achiever: Dr. Alfonso Reyes (Scored 89%)',
+            content: 'Dr. Alfonso Reyes, 35, was a college instructor when he decided to get his LET for official recognition. With advanced knowledge, he scored 89%—among the highest. His study plan was strategic: Week 1-2 (Assessment): He took a diagnostic practice exam, scoring 72%. He analyzed which topics were weak. Week 3-6 (Targeted Deep Study): Allocated 40% time to weakest area (Philosophy/Educational Theory), 30% to medium areas, 30% to strong areas. He used multiple resources—textbooks, online courses, research papers. Week 7-9 (Integration and Practice): He studied how topics connected across disciplines. He took weekly full-length exams, scores: 74%, 77%, 81%, 84%. Week 10-11 (Fine Tuning): He focused on remaining weak topics identified from practice exams. Week 12 (Light Review): Only reviewed formulas and definitions, kept mind fresh. His schedule: 3 hours weekday mornings before work, 5-6 hours weekend days. Total: roughly 20 hours/week for 12 weeks = 240 hours. His advice: "Study smarter, not just harder. Diagnostic testing reveals what you actually need to improve. Many students waste time on topics they already know well."'
+          },
+          {
+            type: 'content',
+            heading: 'Balanced Achiever: Grace Mercado (Scored 77%, While Working Full-Time)',
+            content: 'Grace Mercado, 29, worked full-time as an administrative officer while preparing for the LET. She couldn\'t dedicate massive hours, so she optimized quality over quantity. Her plan: Monday-Thursday: 2 hours after work (typically 8pm-10pm). Friday: Off (too tired). Saturday: 4 hours morning. Sunday: 3 hours morning. Total: roughly 13 hours/week for 12 weeks = 156 hours. Despite limited time, she scored 77% with consistent, focused study. Her strategy: She used micro-learning—15-30 minute focused sessions on single topics rather than long, unfocused sessions. She chose weekday mornings (5am-6am) before work for reviewing yesterday\'s flashcards. She used commute time (30 min each way) to listen to educational podcasts and Khan Academy videos. "I was strategic about every hour," Grace explains. She took fewer practice exams (8 total) but reviewed each meticulously. By exam day, she knew her level and felt confident. Her advice: "Don\'t think you need 300 hours. With focused study, 150-200 hours is sufficient. Quality matters more than quantity. Eliminate distractions during study time."'
+          },
+          {
+            type: 'content',
+            heading: 'Intensive Achiever: Michael Gonzales (Scored 85%, 10-Week Preparation)',
+            content: 'Michael Gonzales, 27, decided to take the LET with only 10 weeks notice. He took a leave from his teaching position to study full-time. His intensive plan: 8 hours daily, 6 days/week, 1 day rest = 48 hours/week × 10 weeks = 480 hours. His structure: 8am-12pm: Lecture videos and textbook study (content learning). 1pm-2:30pm: Lunch and walk (mental break essential even in intensive study). 2:30pm-5pm: Practice problems and concept application. 5pm-6:30pm: Light study or review depending on energy. His secret: He studied with a friend, and they taught each other daily. "Explaining concepts to someone else revealed my gaps," Michael says. He also did peer review—his friend would read his study notes and ask clarifying questions. By week 6, he took his first full-length exam, scoring 72%. By week 10, his final practice exam was 85%. His actual LET: 85%. "The intensive approach works if you\'re disciplined and don\'t burn out," Michael cautions. He emphasizes the importance of sleep (8 hours) and exercise (daily walks), even in intensive preparation. "Sleep deprivation would have destroyed my progress," he reflects. His advice: "If you can take time off to study intensively, do it. But be disciplined about breaks and self-care. Burnout is real."'
+          }
+        ]
+      },
+      'Overcoming Learning Challenges': {
+        title: 'Overcoming Learning Challenges',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Overcoming Dyslexia: Ramon Torres\' Story',
+            content: 'Ramon Torres, 30, has dyslexia, which makes reading slower and more difficult. When he decided to take the LET, he worried: "How could I possibly read 200 exam questions with dyslexia?" But he didn\'t let it stop him. He prepared with accommodations and compensatory strategies. Accommodations: He formally requested extended time from PRC and received it (time and a half). He used text-to-speech software while studying, reading textbooks aloud with a tool like Immersive Reader or NaturalReader. The auditory input complemented his visual reading, improving comprehension. Strategies: He broke study sessions into shorter chunks (30 minutes instead of 2 hours) because reading fatigue set in faster for him. He used visual organizers—mind maps and concept maps—to represent information visually rather than text-heavy notes. He focused heavily on video learning (Khan Academy, YouTube channels) where he could listen rather than read. He created color-coded flashcards with minimal text, relying on visual and spatial memory. On exam day: He used his extended time wisely, reading questions slowly without rushing. He read each question twice to ensure understanding. Result: He scored 72%, passing the LET. "My dyslexia didn\'t stop me. It just meant I prepared differently," Ramon reflects. His advice to others with learning challenges: "Know your rights. Request accommodations. Develop compensatory strategies. Your learning difference doesn\'t define your capability." He teaches History at a public school and advocates for inclusive education.'
+          },
+          {
+            type: 'content',
+            heading: 'Overcoming Math Anxiety: Teresa de la Cruz\'s Transformation',
+            content: 'Teresa de la Cruz, 32, has math anxiety. Even simple mental math made her nervous. When she started LET preparation, she dreaded the Mathematics section (10% of General Education). Her first practice math test: 35 out of 100. "I froze on problems I actually knew," she says. She realized anxiety, not inability, was her problem. She worked with a math tutor and a counselor. Math Tutoring: Rather than cramming math, she studied fundamentally. Her tutor had her explain WHY formulas work, not just how to apply them. Understanding the WHY reduced anxiety—she felt more confident. Anxiety Therapy: She used cognitive-behavioral techniques. When anxious thoughts arose ("I\'ll fail this problem"), she challenged them: "I\'ve solved this type before. I can do it." She practiced slow, deep breathing before and during practice math sessions. She visualized success—seeing herself calmly solving problems and feeling confident. Progressive Exposure: She started with easy problems (which she could solve), building confidence. She gradually moved to harder problems. Early sessions: 5 easy problems only. After 2 weeks: 5 easy + 5 medium problems. By week 8: Mixed difficulty problems. Desensitization: She took timed math sections repeatedly (the timed aspect triggered anxiety). Early timed tests: 50 minutes for 10 problems (very fast). Later: 30 minutes for 10 problems. By exam day: 20 minutes for 10 problems felt manageable. Result: On her actual LET, she scored 68% on Mathematics (compared to 35% on initial practice). It wasn\'t perfect, but she passed. "I transformed from anxiety-paralyzed to competent," Teresa reflects. Her message: "If a subject triggers anxiety, address the anxiety, not just the content. A tutor for content + a counselor for anxiety = success."'
+          }
+        ]
+      },
+      'Balancing Work and Study': {
+        title: 'Balancing Work and Study',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Full-Time Teacher: Rizal Moreno\'s Success',
+            content: 'Rizal Moreno, 29, is a full-time teacher who took the LET while maintaining his job. "Teaching while preparing for the LET was like having two jobs," he says. His strategy for balance: Protecting Study Time: He negotiated with himself. Study time was non-negotiable, even if tired. Saturday and Sunday mornings (6am-10am before family commitments): 4 hours study, no distractions. Weekday evenings: 1 hour after school (rarely longer—diminishing returns when tired). Total: roughly 9 hours/week. This was modest but consistent. Leveraging Teaching: His teaching job wasn\'t wasted time—it was preparation. Teaching students about concepts deepened his understanding. Explaining topics to students revealed his own gaps. He spent prep periods reviewing flashcards. Efficiency: During his daily commute (1 hour total), he listened to educational podcasts, TED-Ed videos. Lunch break (30 min): Quick flashcard review. Evening walk (20 min): Mental break and light review of that morning\'s notes. Integration: He didn\'t separate work and study—they integrated. His work reinforced his study, and his study enhanced his teaching. Realistic Expectations: He didn\'t expect to study 20+ hours/week. With 9 hours/week for 16 weeks, he had 144 hours—enough with focus. He took 6 practice exams instead of 10 (less volume, thorough analysis). Result: He scored 74%, passing comfortably. His advice: "Don\'t quit your job to study. Your job is valuable—both financially and for motivation. Instead, study efficiently with the time you have. Focus beats hours."'
+          },
+          {
+            type: 'content',
+            heading: 'New Parent: Adrienne Sanchez\'s Flexible Approach',
+            content: 'Adrienne Sanchez, 31, had a newborn when she prepared for the LET. Sleep was interrupted, time was fragmented, energy was limited. Traditional study plans didn\'t work. Her approach: Embracing Flexibility: She let go of a rigid schedule. Instead, she aimed for 7-8 hours study/week (flexible timing). Some weeks were 10 hours; others were 4 hours. Overall average mattered; weekly perfection didn\'t. Chunking Study: She studied in 15-20 minute bursts when her baby napped. Three 20-minute sessions = 1 hour study. Fewer long sessions worked with her reality. Focused topics: She studied one narrow topic per session. Not "Study Photosynthesis" but "Study Photosynthesis: Light Reactions" (20-30 min topic). Focused, deep study was better than scattered attempts. Study Buddy: Her sister came over once/week for 2-3 hours (Adrienne\'s mother watched the baby). Concentrated study with support. Leveraging Commute and Breaks: Stroller walks where she listened to podcasts. Feeding time where she reviewed flashcards on her phone. Naptime where she did 20 minutes focused study. Every minute counted. Realistic Exam Timeline: She took the LET 6 months postpartum instead of 3 months. More time meant less pressure, even with less available hours. Result: She scored 71%, passing with margin. Her advice: "If life is chaotic, accept it and adapt. You don\'t need perfect conditions to succeed. Small, consistent efforts compound. Study when you can, not when you wish you could." Today, she\'s a teacher who mentors other parents pursuing education goals while managing family.'
+          }
+        ]
+      },
+      'Cultural and Language Considerations': {
+        title: 'Cultural and Language Considerations',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Non-Tagalog Region: Luz Reyes from Ilocos',
+            content: 'Luz Reyes, 28, grew up speaking Ilocano. While she learned Tagalog and English in school, her deepest comfort is Ilocano. Taking the LET in English and Tagalog was challenging. "Some words in English or Tagalog don\'t translate perfectly. Understanding nuance was hard," she explains. Her approach: Building Vocabulary in Filipino Languages: She created a vocabulary glossary translating key LET terms into Ilocano. "Pedagogical" = "Panid ng Pagtuturo" in Tagalog, which she understood deeper through her Ilocano concept. This connected concepts to her primary language, aiding understanding. Reading in Multiple Languages: She read English textbook chapters, then read summaries or explanations in Tagalog (using DepEd materials in Filipino). This dual-language approach solidified understanding. She watched educational videos with both English and Filipino subtitles. Embracing Multilingualism: Instead of seeing her Ilocano background as a disadvantage, she used it as an asset. Translating between languages forced deeper cognitive processing—she couldn\'t passively read; she had to actively engage. Finding Support: She joined a study group with other Ilocano speakers taking the LET. They discussed concepts in Ilocano first, then practiced articulating them in Tagalog and English. This helped transfer learning across languages. Result: She scored 75%, with particularly strong scores in Filipino Language (84%) because she understood it deeply through multiple language lenses. Her advice: "Your mother tongue isn\'t a disadvantage; it\'s an advantage. Use it to deepen understanding of English and Tagalog content."'
+          },
+          {
+            type: 'content',
+            heading: 'English Language Learner: David Ortiz from Non-English Background',
+            content: 'David Ortiz, 27, immigrated from Mexico to the Philippines 5 years ago. While fluent in Spanish, his English is intermediate, and Tagalog/Filipino is still developing. The LET, conducted in English and Filipino, was intimidating. "Half the challenge was language comprehension, not content knowledge," David reflects. His strategies: Intensive English and Filipino: He enrolled in an English conversation class and Filipino class 3 months before the LET. 2 hours/week English class + 2 hours/week Filipino class. This intensive language study complemented his LET preparation. Language-Focused Preparation: He used bilingual resources. He found LET materials available in both English and Filipino, studying both versions. English version improved his academic English; Filipino version helped him learn to think in Filipino. Dictionary and Translation Tools: He used a reliable English-Filipino dictionary (app and physical). For difficult terms, he looked up multiple definitions, reading them in different sources. He didn\'t just memorize translations; he understood concepts. Slow, Careful Reading: He read practice exam questions slowly, sometimes reading twice. He wasn\'t rushing to answer; he was ensuring comprehension. He took extra time on exams (not as accommodation, just his approach). Video and Audio Resources: Videos with subtitles (English subtitles for English videos, Filipino subtitles for Filipino videos) helped him see words and hear them. Auditory + visual input improved language comprehension. Language Study Group: He joined a study group with other non-native English speakers. They discussed concepts, sometimes translating between English and Filipino. Teaching each other in simpler English/Filipino improved everyone\'s understanding. Result: He scored 73%. He wasn\'t a top scorer, but he passed. More importantly, his English and Filipino improved dramatically. "The LET was challenging because of language, but it made me bilingual/trilingual," David smiles. His advice: "If English or Filipino isn\'t your first language, invest in language learning, not just content learning. Language skills are foundational." He now teaches in a school with diverse students and uses his multilingual experience to help language-learning students.'
+          }
+        ]
+      },
+      'Teacher-Specific Preparation Tips': {
+        title: 'Teacher-Specific Preparation Tips',
+        slides: [
+          {
+            type: 'content',
+            heading: 'Experienced Teacher: Elena Santos (10 Years Experience)',
+            content: 'Elena Santos, 40, has taught Science for 10 years. When she took the LET (to get official certification), she leveraged her experience. "I knew my subject inside-out. My challenge was Professional Education theory," she explains. Her approach: Using Classroom Experience as a Learning Lab: Every lesson she taught, she thought about underlying pedagogical principles. "Today I used scaffolding in my photosynthesis lesson. Let me review what Vygotsky says about scaffolding." She connected real classroom practice to theory. This integration of theory and practice made learning meaningful and memorable. Reflecting on Student Learning: She analyzed her own students\' learning patterns through the lens of cognitive psychology. "My struggling reader might have issues with working memory. That\'s Baddeley\'s model. How do I teach differently?" This reflection deepened her understanding of both her students and the theory. Mentoring Younger Teachers: She studied with a younger teacher taking the LET. Explaining concepts to her mentee revealed her own gaps and solidified her understanding. Teaching others is the ultimate way to master material. Subject Matter Strength: Her Science knowledge was already strong (she scored 89%). She focused 70% of study time on Professional Education, where she was weaker. Strategic allocation based on her baseline strengths/weaknesses. Result: She scored 78%, strongest in Science (89%), solidly in Professional Education (73%), General Education (71%). Her advice to experienced teachers: "You have experiential knowledge. Use it to understand theory. Connect classroom practice to educational principles. Your 10 years of experience is worth something."'
+          },
+          {
+            type: 'content',
+            heading: 'Career-Changer: Kenneth Tan (Former Corporate Professional)',
+            content: 'Kenneth Tan, 35, left a corporate management job to become a teacher. He had no classroom experience but strong analytical skills. When preparing for the LET, he worried: "I\'ve never taught. How can I understand pedagogical concepts?" His strategy: Observing Experienced Teachers: He visited classrooms and observed experienced teachers. He didn\'t just watch lessons; he analyzed them. "Why did the teacher use pair work here instead of individual work? That\'s cooperative learning theory." This observation-based learning was powerful. Taking a Teaching Certificate Course: Many teacher-training programs offer certificates. He enrolled in a 2-month certificate course (weekends) while preparing for the LET. The course gave him foundational teaching knowledge and classroom observation. Learning by Teaching: He volunteered to tutor high school students in his subject (Mathematics). "Now I understand classroom management, student motivation, learning challenges. I could apply theory because I was teaching." Translating Corporate Experience: He realized his corporate experience was valuable. Project management = lesson planning. Team motivation = classroom motivation. Change management = managing classroom transitions. He translated his strengths to teaching context. Building a Study Group with Actual Teachers: His study group included 2 experienced teachers who explained "what it\'s really like in classrooms." Their insights made theory come alive. Result: He scored 76%, respectable for someone new to teaching. Over a year of teaching, his understanding deepened. Looking back, he credits the teaching certificate course and volunteer tutoring for making concepts concrete. His advice to career-changers: "Get classroom experience BEFORE or WHILE preparing for LET. Theory without practice is abstract; practice without theory is ineffective. Both together create understanding."'
+          }
+        ]
+      },
       'Glossary of Key Terms': {
         title: 'Glossary of Key Terms',
         slides: [
@@ -1250,22 +1350,22 @@ export function StudyGuidesPage() {
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
             <div
-              className={`relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl ${
+              className={`relative w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl my-4 ${
                 isLightMode ? 'bg-white' : 'bg-slate-900'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
               <div
-                className={`px-6 py-4 border-b flex items-center justify-between ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 border-b flex items-center justify-between gap-2 ${
                   isLightMode
                     ? 'bg-slate-50 border-slate-200'
                     : 'bg-slate-800 border-slate-700'
                 }`}
               >
-                <h2 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <h2 className={`text-base sm:text-lg md:text-xl font-bold truncate ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   {selectedGuide.title}
                 </h2>
                 <button
@@ -1280,7 +1380,7 @@ export function StudyGuidesPage() {
               </div>
 
               {/* Slide Content */}
-              <div className="relative w-full bg-black min-h-96 flex items-center justify-center overflow-hidden">
+              <div className="relative w-full min-h-96 max-h-[60vh] sm:max-h-[65vh] flex items-center justify-center overflow-y-auto bg-black">
                 {selectedGuide.slides[currentSlide].type === 'image' ? (
                   <img
                     src={selectedGuide.slides[currentSlide].image}
@@ -1288,13 +1388,13 @@ export function StudyGuidesPage() {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <div className={`w-full h-full p-8 flex flex-col justify-center ${
+                  <div className={`w-full p-4 sm:p-6 md:p-8 flex flex-col justify-center ${
                     isLightMode ? 'bg-slate-50' : 'bg-slate-800'
                   }`}>
-                    <h3 className={`text-2xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                    <h3 className={`text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                       {selectedGuide.slides[currentSlide].heading}
                     </h3>
-                    <p className={`text-base leading-relaxed ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                    <p className={`text-sm sm:text-base leading-relaxed ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
                       {selectedGuide.slides[currentSlide].content}
                     </p>
                   </div>
@@ -1302,7 +1402,7 @@ export function StudyGuidesPage() {
               </div>
 
               {/* Slide Navigation */}
-              <div className={`px-6 py-4 border-t flex items-center justify-between ${
+              <div className={`px-3 sm:px-6 py-3 sm:py-4 border-t flex items-center justify-between gap-2 ${
                 isLightMode
                   ? 'bg-slate-50 border-slate-200'
                   : 'bg-slate-800 border-slate-700'
@@ -1310,7 +1410,7 @@ export function StudyGuidesPage() {
                 <button
                   onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
                   disabled={currentSlide === 0}
-                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
                     currentSlide === 0
                       ? isLightMode
                         ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -1320,17 +1420,17 @@ export function StudyGuidesPage() {
                       : 'bg-slate-700 text-white hover:bg-slate-600'
                   }`}
                 >
-                  ← Previous
+                  ← Prev
                 </button>
 
-                <div className={`text-sm font-medium ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  Slide {currentSlide + 1} of {selectedGuide.slides.length}
+                <div className={`text-xs sm:text-sm font-medium ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  {currentSlide + 1}/{selectedGuide.slides.length}
                 </div>
 
                 <button
                   onClick={() => setCurrentSlide(Math.min(selectedGuide.slides.length - 1, currentSlide + 1))}
                   disabled={currentSlide === selectedGuide.slides.length - 1}
-                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition whitespace-nowrap ${
                     currentSlide === selectedGuide.slides.length - 1
                       ? isLightMode
                         ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
@@ -1345,14 +1445,14 @@ export function StudyGuidesPage() {
               </div>
 
               {/* Slide Indicators */}
-              <div className={`px-6 py-3 flex justify-center gap-2 ${
+              <div className={`px-3 sm:px-6 py-2 sm:py-3 flex justify-center gap-1 sm:gap-2 overflow-x-auto ${
                 isLightMode ? 'bg-slate-50' : 'bg-slate-800'
               }`}>
                 {selectedGuide.slides.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentSlide(idx)}
-                    className={`w-2 h-2 rounded-full transition ${
+                    className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition flex-shrink-0 ${
                       idx === currentSlide
                         ? isLightMode
                           ? 'bg-slate-900'
