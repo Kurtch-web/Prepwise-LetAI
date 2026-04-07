@@ -91,7 +91,7 @@ async def get_categories(db: AsyncSession = Depends(get_db)):
     categories = set(result.scalars().all())
 
     # Always include default categories
-    default_categories = {"General Education", "Professional Education"}
+    default_categories = {"General Education", "Professional Education", "Filipino", "Math"}
     all_categories = list(default_categories | categories)
 
     return {"categories": sorted(all_categories)}
