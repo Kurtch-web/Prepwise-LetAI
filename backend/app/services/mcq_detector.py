@@ -135,6 +135,14 @@ class MCQDetector:
         # Remove footer/header text that breaks detection
         text = re.sub(r'Get\s+more\s+Free\s+LET\s+Reviewers.*\n', '\n', text, flags=re.IGNORECASE)
 
+        # Remove "Answer Keys:" sections and answer key pages
+        # This handles sections like:
+        # "Answer Keys:" or "Answer Key" followed by numbered answers (1. A, 2. B, etc.)
+        text = re.sub(r'\n\s*Answer\s+Keys?[\s:]*\n(?:\s*\d{1,3}\s*[\.\)]\s*[A-D]\s*\n)+', '\n', text, flags=re.IGNORECASE)
+        # Also remove standalone answer key lines that appear in sequences (multiple consecutive answer lines)
+        # Match patterns like "1.  A" or "1)  B" or "1. B" with optional spaces
+        text = re.sub(r'(?:^|\n)\s*(\d{1,3})\s*[\.\)]\s*([A-D])\s*(?=\n\s*\d{1,3}\s*[\.\)]\s*[A-D])', r'\n', text, flags=re.MULTILINE)
+
         # Main pattern: split by question numbers
         # More flexible: matches question numbers with optional leading whitespace/special chars
         # Matches: "N." "N)" "N." (after punctuation) etc.
