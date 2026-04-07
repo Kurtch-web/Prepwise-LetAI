@@ -92,7 +92,7 @@ export function VideoPlayerModal({ isOpen, video, onClose }: VideoPlayerModalPro
                   onWaiting={() => setIsBuffering(true)}
                   onPlaying={() => setIsBuffering(false)}
                 >
-                  <source src={`${API_BASE}/api/videos/${video.id}/stream`} type="video/mp4" />
+                  <source src={video.file_url} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
 
