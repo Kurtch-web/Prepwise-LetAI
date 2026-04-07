@@ -9,7 +9,7 @@ interface PracticeTestsViewProps {
 
 interface PracticeQuestion {
   id: string;
-  subject: 'math' | 'filipino';
+  subject: 'math' | 'english';
   question: string;
   topic: string;
   options: string[];
@@ -28,7 +28,9 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
   const [activeTab, setActiveTab] = useState<'test-taken' | 'materials'>('test-taken');
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showSolution, setShowSolution] = useState<Record<string, boolean>>({});
-  const [materialsSubject, setMaterialsSubject] = useState<'math' | 'filipino'>('math');
+  const [materialsSubject, setMaterialsSubject] = useState<'math' | 'english'>('math');
+  const [selectedMathTopic, setSelectedMathTopic] = useState<string>('Arithmetic and Number Theory');
+  const [selectedEnglishTopic, setSelectedEnglishTopic] = useState<string>('English for Specific Purposes');
 
   const testTypeInfo: Record<string, { emoji: string; label: string }> = {
     'diagnostic-test': { emoji: '🔍', label: 'Diagnostic Test' },
@@ -47,6 +49,13 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
     'Analytic Geometry',
     'Business Mathematics',
     'Calculus'
+  ];
+
+  const englishTopics = [
+    'English for Specific Purposes',
+    'Theoretical Foundations of Language and Literature',
+    'Literary Criticism',
+    'Campus Journalism'
   ];
 
   const practiceQuestions: PracticeQuestion[] = [
@@ -178,16 +187,89 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
       solution: 'Using the power rule: d/dx(xⁿ) = n·xⁿ⁻¹\nf(x) = 3x²\nf\'(x) = 3 · 2 · x²⁻¹\nf\'(x) = 6x',
       explanation: 'The power rule states that the derivative of xⁿ is n·xⁿ⁻¹. We multiply the coefficient by the power and reduce the exponent by 1.'
     },
-    // Filipino will be added later
+    // English for Specific Purposes
     {
-      id: 'filipino-1',
-      subject: 'filipino',
-      topic: 'Pang-uri',
-      question: 'Alin ang pang-uri sa sumusunod na pangungusap: "Ang maliit na bahay ay maroon."',
-      options: ['maliit', 'bahay', 'maroon', 'ang'],
-      correctAnswer: 0,
-      solution: 'Ang pang-uri ay ang salita na naglalarawan ng katangian ng pangalan. Sa pangungusapang ito, "maliit" ang naglalarawan sa "bahay".',
-      explanation: 'Ang pang-uri (adjective) ay nagbibigay ng dagdag na impormasyon tungkol sa noun. Sinasabi nito kung paano, gaano kalaki, anong kulay, o anong uri.'
+      id: 'english-1',
+      subject: 'english',
+      topic: 'English for Specific Purposes',
+      question: 'Which of the following best describes English for Specific Purposes (ESP)?',
+      options: ['English taught for general communication', 'English designed for specific professions or fields', 'English used in academic settings only', 'English for beginners only'],
+      correctAnswer: 1,
+      solution: 'English for Specific Purposes refers to English language instruction tailored to specific professional or academic fields such as business English, medical English, or technical English.',
+      explanation: 'ESP focuses on teaching English language skills relevant to specific professions, industries, or academic disciplines, as opposed to general English language teaching.'
+    },
+    {
+      id: 'english-2',
+      subject: 'english',
+      topic: 'English for Specific Purposes',
+      question: 'What is the primary goal of teaching Business English as part of ESP?',
+      options: ['To teach general communication skills', 'To prepare professionals for workplace communication in English', 'To teach literature and culture', 'To improve grammar only'],
+      correctAnswer: 1,
+      solution: 'Business English aims to equip professionals with the language skills needed for workplace contexts such as meetings, presentations, negotiations, and professional correspondence.',
+      explanation: 'Business English is a branch of ESP that focuses on practical communication skills for professional environments.'
+    },
+    // Theoretical Foundations of Language and Literature
+    {
+      id: 'english-3',
+      subject: 'english',
+      topic: 'Theoretical Foundations of Language and Literature',
+      question: 'According to Chomsky, what is Universal Grammar?',
+      options: ['A grammar book used globally', 'The innate linguistic knowledge all humans possess', 'A standardized grammar system', 'A historical linguistic system'],
+      correctAnswer: 1,
+      solution: 'Noam Chomsky proposed that Universal Grammar is an innate system of language principles that all human beings possess, which enables them to acquire and use language.',
+      explanation: 'Universal Grammar theory suggests that the fundamental structure of language is hardwired into the human brain, allowing children to rapidly acquire language despite limited exposure.'
+    },
+    {
+      id: 'english-4',
+      subject: 'english',
+      topic: 'Theoretical Foundations of Language and Literature',
+      question: 'What is the primary focus of structuralism in literary analysis?',
+      options: ['The author\'s biography', 'The underlying structures and patterns within a text', 'The historical period of publication', 'The reader\'s personal emotions'],
+      correctAnswer: 1,
+      solution: 'Structuralism in literary criticism examines the underlying structures, systems, and patterns within a text to understand how meaning is constructed.',
+      explanation: 'Structuralist literary analysis focuses on identifying recurring patterns, binary oppositions, and organizational structures within literary works rather than biographical or historical context.'
+    },
+    // Literary Criticism
+    {
+      id: 'english-5',
+      subject: 'english',
+      topic: 'Literary Criticism',
+      question: 'Which literary criticism approach focuses on the reader\'s interpretation and response to the text?',
+      options: ['Formalism', 'Reader-Response Criticism', 'New Historicism', 'Marxist Criticism'],
+      correctAnswer: 1,
+      solution: 'Reader-Response Criticism emphasizes the active role of the reader in creating meaning from a text, acknowledging that different readers may interpret the same text differently.',
+      explanation: 'Reader-Response Criticism shifts focus from the author\'s intent or the text\'s structure to the reader\'s subjective experience and interpretation of the work.'
+    },
+    {
+      id: 'english-6',
+      subject: 'english',
+      topic: 'Literary Criticism',
+      question: 'What does Feminist Literary Criticism examine?',
+      options: ['Only works written by women', 'Gender representations and power dynamics in literature', 'The historical accuracy of literary works', 'The technical aspects of poetry'],
+      correctAnswer: 1,
+      solution: 'Feminist Literary Criticism analyzes how literature represents gender roles, explores the marginalization of women\'s voices, and challenges patriarchal assumptions in texts.',
+      explanation: 'Feminist criticism is concerned with examining gender dynamics, women\'s representation in literature, and exposing how literature can reinforce or challenge gender stereotypes.'
+    },
+    // Campus Journalism
+    {
+      id: 'english-7',
+      subject: 'english',
+      topic: 'Campus Journalism',
+      question: 'What is the inverted pyramid style in journalism?',
+      options: ['A pyramid-shaped article layout', 'Presenting the most important information first, followed by supporting details', 'A writing style used only in academic papers', 'A method of organizing citations'],
+      correctAnswer: 1,
+      solution: 'The inverted pyramid is a journalism writing structure where the most newsworthy and essential information is presented at the beginning, with supporting details and background information following.',
+      explanation: 'This style allows readers to grasp the key facts immediately and helps editors trim articles from the bottom without losing crucial information.'
+    },
+    {
+      id: 'english-8',
+      subject: 'english',
+      topic: 'Campus Journalism',
+      question: 'Which of the following is essential for responsible journalism?',
+      options: ['Sensationalism and exaggeration', 'Fact-checking and verification of sources', 'Including only one perspective', 'Writing without editorial review'],
+      correctAnswer: 1,
+      solution: 'Responsible journalism requires careful fact-checking, verification of sources, and accuracy to maintain credibility and avoid spreading misinformation.',
+      explanation: 'Campus journalists must follow ethical standards including verifying facts, protecting sources, and avoiding bias to maintain journalistic integrity.'
     }
   ];
 
@@ -255,10 +337,10 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
     return mathQuestions.length > 0 ? Math.round((correct / mathQuestions.length) * 100) : 0;
   };
 
-  const getFilipinoScore = () => {
-    const filipinoQuestions = practiceQuestions.filter(q => q.subject === 'filipino');
-    const correct = filipinoQuestions.filter(q => answers[q.id] === q.correctAnswer).length;
-    return filipinoQuestions.length > 0 ? Math.round((correct / filipinoQuestions.length) * 100) : 0;
+  const getEnglishScore = () => {
+    const englishQuestions = practiceQuestions.filter(q => q.subject === 'english');
+    const correct = englishQuestions.filter(q => answers[q.id] === q.correctAnswer).length;
+    return englishQuestions.length > 0 ? Math.round((correct / englishQuestions.length) * 100) : 0;
   };
 
   return (
@@ -490,337 +572,446 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
               🔢 Mathematics
             </button>
             <button
-              onClick={() => setMaterialsSubject('filipino')}
+              onClick={() => setMaterialsSubject('english')}
               className={`px-6 py-3 font-semibold text-lg transition-all ${
-                materialsSubject === 'filipino'
+                materialsSubject === 'english'
                   ? isLightMode
-                    ? 'text-purple-600 border-b-2 border-purple-600'
-                    : 'text-purple-400 border-b-2 border-purple-400'
+                    ? 'text-amber-600 border-b-2 border-amber-600'
+                    : 'text-amber-400 border-b-2 border-amber-400'
                   : isLightMode
                   ? 'text-slate-600 hover:text-slate-900'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              🇵🇭 Filipino
+              📖 English
             </button>
           </div>
 
           {/* Math Section */}
           {materialsSubject === 'math' && (
-            <div className="space-y-8">
-              {mathTopics.map((topic) => {
-                const topicQuestions = practiceQuestions.filter(q => q.subject === 'math' && q.topic === topic);
-                
-                if (topicQuestions.length === 0) return null;
+            <div className="flex gap-6">
+              {/* Topics Sidebar */}
+              <div className={`w-64 flex-shrink-0 rounded-2xl border p-4 h-fit sticky top-20 ${
+                isLightMode
+                  ? 'bg-white border-slate-200 shadow-md'
+                  : 'bg-slate-800/50 border-slate-700 shadow-md'
+              }`}>
+                <h3 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  📚 Topics
+                </h3>
+                <div className="space-y-2">
+                  {mathTopics.map((topic) => {
+                    const topicQCount = practiceQuestions.filter(q => q.subject === 'math' && q.topic === topic).length;
+                    const isSelected = selectedMathTopic === topic;
 
-                return (
-                  <div key={topic} className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <h3 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                        {topic}
-                      </h3>
-                      <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                        isLightMode
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-blue-500/20 text-blue-300'
-                      }`}>
-                        {topicQuestions.length} question{topicQuestions.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-
-                    {topicQuestions.map((question) => (
-                      <div
-                        key={question.id}
-                        className={`rounded-2xl border p-6 ${
-                          isLightMode
-                            ? 'bg-white border-slate-200 shadow-md'
-                            : 'bg-slate-800/50 border-slate-700 shadow-md'
+                    return (
+                      <button
+                        key={topic}
+                        onClick={() => setSelectedMathTopic(topic)}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition ${
+                          isSelected
+                            ? isLightMode
+                              ? 'bg-blue-100 text-blue-900 border border-blue-300'
+                              : 'bg-blue-500/20 text-blue-300 border border-blue-500'
+                            : isLightMode
+                            ? 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+                            : 'bg-slate-700/20 text-slate-300 hover:bg-slate-700/30 border border-slate-600'
                         }`}
                       >
-                        {/* Question */}
-                        <h4 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                          {question.question}
-                        </h4>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-sm">{topic}</span>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                            isSelected
+                              ? isLightMode
+                                ? 'bg-blue-200 text-blue-800'
+                                : 'bg-blue-600 text-white'
+                              : isLightMode
+                              ? 'bg-slate-200 text-slate-600'
+                              : 'bg-slate-600 text-slate-300'
+                          }`}>
+                            {topicQCount}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-                        {/* Answer Options */}
-                        <div className="space-y-2 mb-4">
-                          {question.options.map((option, idx) => {
-                            const isSelected = answers[question.id] === idx;
-                            const isCorrect = idx === question.correctAnswer;
-                            const hasAnswered = answers[question.id] !== undefined;
-                            
-                            return (
-                              <button
-                                key={idx}
-                                onClick={() => handleAnswerSelect(question.id, idx)}
-                                className={`w-full text-left p-3 rounded-lg border-2 transition ${
-                                  isSelected
-                                    ? hasAnswered
-                                      ? isCorrect
-                                        ? isLightMode
-                                          ? 'bg-green-50 border-green-400 text-green-900'
-                                          : 'bg-green-500/20 border-green-400 text-green-300'
-                                        : isLightMode
-                                        ? 'bg-red-50 border-red-400 text-red-900'
-                                        : 'bg-red-500/20 border-red-400 text-red-300'
-                                      : isLightMode
-                                      ? 'bg-blue-50 border-blue-400 text-blue-900'
-                                      : 'bg-blue-500/20 border-blue-400 text-blue-300'
-                                    : isLightMode
-                                    ? 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
-                                    : 'bg-slate-700/20 border-slate-600 text-slate-300 hover:border-slate-500'
-                                }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <span className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center font-semibold ${
+              {/* Questions Content */}
+              <div className="flex-1">
+                {(() => {
+                  const topicQuestions = practiceQuestions.filter(q => q.subject === 'math' && q.topic === selectedMathTopic);
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-6">
+                        <h3 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedMathTopic}
+                        </h3>
+                        <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                          isLightMode
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-blue-500/20 text-blue-300'
+                        }`}>
+                          {topicQuestions.length} question{topicQuestions.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+
+                      {topicQuestions.map((question) => (
+                        <div
+                          key={question.id}
+                          className={`rounded-2xl border p-6 ${
+                            isLightMode
+                              ? 'bg-white border-slate-200 shadow-md'
+                              : 'bg-slate-800/50 border-slate-700 shadow-md'
+                          }`}
+                        >
+                          {/* Question */}
+                          <h4 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                            {question.question}
+                          </h4>
+
+                          {/* Answer Options */}
+                          <div className="space-y-2 mb-4">
+                            {question.options.map((option, idx) => {
+                              const isSelected = answers[question.id] === idx;
+                              const isCorrect = idx === question.correctAnswer;
+                              const hasAnswered = answers[question.id] !== undefined;
+
+                              return (
+                                <button
+                                  key={idx}
+                                  onClick={() => handleAnswerSelect(question.id, idx)}
+                                  className={`w-full text-left p-3 rounded-lg border-2 transition ${
                                     isSelected
                                       ? hasAnswered
                                         ? isCorrect
                                           ? isLightMode
-                                            ? 'bg-green-400 border-green-400 text-white'
-                                            : 'bg-green-500 border-green-500 text-white'
+                                            ? 'bg-green-50 border-green-400 text-green-900'
+                                            : 'bg-green-500/20 border-green-400 text-green-300'
                                           : isLightMode
-                                          ? 'bg-red-400 border-red-400 text-white'
-                                          : 'bg-red-500 border-red-500 text-white'
+                                          ? 'bg-red-50 border-red-400 text-red-900'
+                                          : 'bg-red-500/20 border-red-400 text-red-300'
                                         : isLightMode
-                                        ? 'bg-blue-400 border-blue-400 text-white'
-                                        : 'bg-blue-500 border-blue-500 text-white'
+                                        ? 'bg-blue-50 border-blue-400 text-blue-900'
+                                        : 'bg-blue-500/20 border-blue-400 text-blue-300'
                                       : isLightMode
-                                      ? 'border-slate-400'
-                                      : 'border-slate-500'
-                                  }`}>
-                                    {isSelected && hasAnswered && isCorrect ? '✓' : String.fromCharCode(65 + idx)}
-                                  </span>
-                                  <span>{option}</span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Feedback and Solution Button */}
-                        {answers[question.id] !== undefined && (
-                          <div className="space-y-3">
-                            <div className={`p-3 rounded-lg text-sm font-semibold ${
-                              answers[question.id] === question.correctAnswer
-                                ? isLightMode
-                                  ? 'bg-green-100 text-green-700'
-                                  : 'bg-green-500/20 text-green-300'
-                                : isLightMode
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-red-500/20 text-red-300'
-                            }`}>
-                              {answers[question.id] === question.correctAnswer
-                                ? '✓ Correct!'
-                                : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
-                            </div>
-
-                            {/* Solution Toggle */}
-                            <button
-                              onClick={() => toggleSolution(question.id)}
-                              className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
-                                isLightMode
-                                  ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-                                  : 'bg-slate-700/50 text-white hover:bg-slate-700'
-                              }`}
-                            >
-                              {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
-                            </button>
-
-                            {/* Solution and Explanation */}
-                            {showSolution[question.id] && (
-                              <div className={`p-4 rounded-lg space-y-3 ${
-                                isLightMode
-                                  ? 'bg-amber-50 border border-amber-200'
-                                  : 'bg-amber-500/10 border border-amber-700'
-                              }`}>
-                                <div>
-                                  <h5 className={`font-bold mb-2 ${
-                                    isLightMode ? 'text-amber-900' : 'text-amber-200'
-                                  }`}>
-                                    📝 Solution:
-                                  </h5>
-                                  <pre className={`text-sm font-mono whitespace-pre-wrap break-words ${
-                                    isLightMode ? 'text-amber-800' : 'text-amber-100'
-                                  }`}>
-                                    {question.solution}
-                                  </pre>
-                                </div>
-                                <div>
-                                  <h5 className={`font-bold mb-2 ${
-                                    isLightMode ? 'text-amber-900' : 'text-amber-200'
-                                  }`}>
-                                    💡 Explanation:
-                                  </h5>
-                                  <p className={`text-sm leading-relaxed ${
-                                    isLightMode ? 'text-amber-800' : 'text-amber-100'
-                                  }`}>
-                                    {question.explanation}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
+                                      ? 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                                      : 'bg-slate-700/20 border-slate-600 text-slate-300 hover:border-slate-500'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center font-semibold ${
+                                      isSelected
+                                        ? hasAnswered
+                                          ? isCorrect
+                                            ? isLightMode
+                                              ? 'bg-green-400 border-green-400 text-white'
+                                              : 'bg-green-500 border-green-500 text-white'
+                                            : isLightMode
+                                            ? 'bg-red-400 border-red-400 text-white'
+                                            : 'bg-red-500 border-red-500 text-white'
+                                          : isLightMode
+                                          ? 'bg-blue-400 border-blue-400 text-white'
+                                          : 'bg-blue-500 border-blue-500 text-white'
+                                        : isLightMode
+                                        ? 'border-slate-400'
+                                        : 'border-slate-500'
+                                    }`}>
+                                      {isSelected && hasAnswered && isCorrect ? '✓' : String.fromCharCode(65 + idx)}
+                                    </span>
+                                    <span>{option}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
+
+                          {/* Feedback and Solution Button */}
+                          {answers[question.id] !== undefined && (
+                            <div className="space-y-3">
+                              <div className={`p-3 rounded-lg text-sm font-semibold ${
+                                answers[question.id] === question.correctAnswer
+                                  ? isLightMode
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-green-500/20 text-green-300'
+                                  : isLightMode
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-red-500/20 text-red-300'
+                              }`}>
+                                {answers[question.id] === question.correctAnswer
+                                  ? '✓ Correct!'
+                                  : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
+                              </div>
+
+                              {/* Solution Toggle */}
+                              <button
+                                onClick={() => toggleSolution(question.id)}
+                                className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
+                                  isLightMode
+                                    ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                                }`}
+                              >
+                                {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
+                              </button>
+
+                              {/* Solution and Explanation */}
+                              {showSolution[question.id] && (
+                                <div className={`p-4 rounded-lg space-y-3 ${
+                                  isLightMode
+                                    ? 'bg-amber-50 border border-amber-200'
+                                    : 'bg-amber-500/10 border border-amber-700'
+                                }`}>
+                                  <div>
+                                    <h5 className={`font-bold mb-2 ${
+                                      isLightMode ? 'text-amber-900' : 'text-amber-200'
+                                    }`}>
+                                      📝 Solution:
+                                    </h5>
+                                    <pre className={`text-sm font-mono whitespace-pre-wrap break-words ${
+                                      isLightMode ? 'text-amber-800' : 'text-amber-100'
+                                    }`}>
+                                      {question.solution}
+                                    </pre>
+                                  </div>
+                                  <div>
+                                    <h5 className={`font-bold mb-2 ${
+                                      isLightMode ? 'text-amber-900' : 'text-amber-200'
+                                    }`}>
+                                      💡 Explanation:
+                                    </h5>
+                                    <p className={`text-sm leading-relaxed ${
+                                      isLightMode ? 'text-amber-800' : 'text-amber-100'
+                                    }`}>
+                                      {question.explanation}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           )}
 
-          {/* Filipino Section */}
-          {materialsSubject === 'filipino' && (
-            <div className="space-y-6">
-              {practiceQuestions
-                .filter(q => q.subject === 'filipino')
-                .map((question) => (
-                  <div
-                    key={question.id}
-                    className={`rounded-2xl border p-6 ${
-                      isLightMode
-                        ? 'bg-white border-slate-200 shadow-md'
-                        : 'bg-slate-800/50 border-slate-700 shadow-md'
-                    }`}
-                  >
-                    <div className="mb-4">
-                      <span className={`text-sm font-semibold px-3 py-1 rounded-full inline-block ${
-                        isLightMode
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-purple-500/20 text-purple-300'
-                      }`}>
-                        {question.topic}
-                      </span>
-                    </div>
+          {/* English Section */}
+          {materialsSubject === 'english' && (
+            <div className="flex gap-6">
+              {/* Topics Sidebar */}
+              <div className={`w-64 flex-shrink-0 rounded-2xl border p-4 h-fit sticky top-20 ${
+                isLightMode
+                  ? 'bg-white border-slate-200 shadow-md'
+                  : 'bg-slate-800/50 border-slate-700 shadow-md'
+              }`}>
+                <h3 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  📚 Topics
+                </h3>
+                <div className="space-y-2">
+                  {englishTopics.map((topic) => {
+                    const topicQCount = practiceQuestions.filter(q => q.subject === 'english' && q.topic === topic).length;
+                    const isSelected = selectedEnglishTopic === topic;
 
-                    {/* Question */}
-                    <h4 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                      {question.question}
-                    </h4>
-
-                    {/* Answer Options */}
-                    <div className="space-y-2 mb-4">
-                      {question.options.map((option, idx) => {
-                        const isSelected = answers[question.id] === idx;
-                        const isCorrect = idx === question.correctAnswer;
-                        const hasAnswered = answers[question.id] !== undefined;
-                        
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => handleAnswerSelect(question.id, idx)}
-                            className={`w-full text-left p-3 rounded-lg border-2 transition ${
-                              isSelected
-                                ? hasAnswered
-                                  ? isCorrect
-                                    ? isLightMode
-                                      ? 'bg-green-50 border-green-400 text-green-900'
-                                      : 'bg-green-500/20 border-green-400 text-green-300'
-                                    : isLightMode
-                                    ? 'bg-red-50 border-red-400 text-red-900'
-                                    : 'bg-red-500/20 border-red-400 text-red-300'
-                                  : isLightMode
-                                  ? 'bg-blue-50 border-blue-400 text-blue-900'
-                                  : 'bg-blue-500/20 border-blue-400 text-blue-300'
-                                : isLightMode
-                                ? 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
-                                : 'bg-slate-700/20 border-slate-600 text-slate-300 hover:border-slate-500'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center font-semibold ${
-                                isSelected
-                                  ? hasAnswered
-                                    ? isCorrect
-                                      ? isLightMode
-                                        ? 'bg-green-400 border-green-400 text-white'
-                                        : 'bg-green-500 border-green-500 text-white'
-                                      : isLightMode
-                                      ? 'bg-red-400 border-red-400 text-white'
-                                      : 'bg-red-500 border-red-500 text-white'
-                                    : isLightMode
-                                    ? 'bg-blue-400 border-blue-400 text-white'
-                                    : 'bg-blue-500 border-blue-500 text-white'
-                                  : isLightMode
-                                  ? 'border-slate-400'
-                                  : 'border-slate-500'
-                              }`}>
-                                {isSelected && hasAnswered && isCorrect ? '✓' : String.fromCharCode(65 + idx)}
-                              </span>
-                              <span>{option}</span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Feedback and Solution Button */}
-                    {answers[question.id] !== undefined && (
-                      <div className="space-y-3">
-                        <div className={`p-3 rounded-lg text-sm font-semibold ${
-                          answers[question.id] === question.correctAnswer
+                    return (
+                      <button
+                        key={topic}
+                        onClick={() => setSelectedEnglishTopic(topic)}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition ${
+                          isSelected
                             ? isLightMode
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-green-500/20 text-green-300'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500'
                             : isLightMode
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-red-500/20 text-red-300'
-                        }`}>
-                          {answers[question.id] === question.correctAnswer
-                            ? '✓ Correct!'
-                            : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
+                            ? 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+                            : 'bg-slate-700/20 text-slate-300 hover:bg-slate-700/30 border border-slate-600'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-sm">{topic}</span>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                            isSelected
+                              ? isLightMode
+                                ? 'bg-amber-200 text-amber-800'
+                                : 'bg-amber-600 text-white'
+                              : isLightMode
+                              ? 'bg-slate-200 text-slate-600'
+                              : 'bg-slate-600 text-slate-300'
+                          }`}>
+                            {topicQCount}
+                          </span>
                         </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-                        {/* Solution Toggle */}
-                        <button
-                          onClick={() => toggleSolution(question.id)}
-                          className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
+              {/* Questions Content */}
+              <div className="flex-1">
+                {(() => {
+                  const topicQuestions = practiceQuestions.filter(q => q.subject === 'english' && q.topic === selectedEnglishTopic);
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-6">
+                        <h3 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedEnglishTopic}
+                        </h3>
+                        <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                          isLightMode
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-amber-500/20 text-amber-300'
+                        }`}>
+                          {topicQuestions.length} question{topicQuestions.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+
+                      {topicQuestions.map((question) => (
+                        <div
+                          key={question.id}
+                          className={`rounded-2xl border p-6 ${
                             isLightMode
-                              ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-                              : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                              ? 'bg-white border-slate-200 shadow-md'
+                              : 'bg-slate-800/50 border-slate-700 shadow-md'
                           }`}
                         >
-                          {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
-                        </button>
+                          {/* Question */}
+                          <h4 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                            {question.question}
+                          </h4>
 
-                        {/* Solution and Explanation */}
-                        {showSolution[question.id] && (
-                          <div className={`p-4 rounded-lg space-y-3 ${
-                            isLightMode
-                              ? 'bg-purple-50 border border-purple-200'
-                              : 'bg-purple-500/10 border border-purple-700'
-                          }`}>
-                            <div>
-                              <h5 className={`font-bold mb-2 ${
-                                isLightMode ? 'text-purple-900' : 'text-purple-200'
-                              }`}>
-                                📝 Solution:
-                              </h5>
-                              <p className={`text-sm ${
-                                isLightMode ? 'text-purple-800' : 'text-purple-100'
-                              }`}>
-                                {question.solution}
-                              </p>
-                            </div>
-                            <div>
-                              <h5 className={`font-bold mb-2 ${
-                                isLightMode ? 'text-purple-900' : 'text-purple-200'
-                              }`}>
-                                💡 Explanation:
-                              </h5>
-                              <p className={`text-sm leading-relaxed ${
-                                isLightMode ? 'text-purple-800' : 'text-purple-100'
-                              }`}>
-                                {question.explanation}
-                              </p>
-                            </div>
+                          {/* Answer Options */}
+                          <div className="space-y-2 mb-4">
+                            {question.options.map((option, idx) => {
+                              const isSelected = answers[question.id] === idx;
+                              const isCorrect = idx === question.correctAnswer;
+                              const hasAnswered = answers[question.id] !== undefined;
+
+                              return (
+                                <button
+                                  key={idx}
+                                  onClick={() => handleAnswerSelect(question.id, idx)}
+                                  className={`w-full text-left p-3 rounded-lg border-2 transition ${
+                                    isSelected
+                                      ? hasAnswered
+                                        ? isCorrect
+                                          ? isLightMode
+                                            ? 'bg-green-50 border-green-400 text-green-900'
+                                            : 'bg-green-500/20 border-green-400 text-green-300'
+                                          : isLightMode
+                                          ? 'bg-red-50 border-red-400 text-red-900'
+                                          : 'bg-red-500/20 border-red-400 text-red-300'
+                                        : isLightMode
+                                        ? 'bg-blue-50 border-blue-400 text-blue-900'
+                                        : 'bg-blue-500/20 border-blue-400 text-blue-300'
+                                      : isLightMode
+                                      ? 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                                      : 'bg-slate-700/20 border-slate-600 text-slate-300 hover:border-slate-500'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center font-semibold ${
+                                      isSelected
+                                        ? hasAnswered
+                                          ? isCorrect
+                                            ? isLightMode
+                                              ? 'bg-green-400 border-green-400 text-white'
+                                              : 'bg-green-500 border-green-500 text-white'
+                                            : isLightMode
+                                            ? 'bg-red-400 border-red-400 text-white'
+                                            : 'bg-red-500 border-red-500 text-white'
+                                          : isLightMode
+                                          ? 'bg-blue-400 border-blue-400 text-white'
+                                          : 'bg-blue-500 border-blue-500 text-white'
+                                        : isLightMode
+                                        ? 'border-slate-400'
+                                        : 'border-slate-500'
+                                    }`}>
+                                      {isSelected && hasAnswered && isCorrect ? '✓' : String.fromCharCode(65 + idx)}
+                                    </span>
+                                    <span>{option}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+
+                          {/* Feedback and Solution Button */}
+                          {answers[question.id] !== undefined && (
+                            <div className="space-y-3">
+                              <div className={`p-3 rounded-lg text-sm font-semibold ${
+                                answers[question.id] === question.correctAnswer
+                                  ? isLightMode
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-green-500/20 text-green-300'
+                                  : isLightMode
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-red-500/20 text-red-300'
+                              }`}>
+                                {answers[question.id] === question.correctAnswer
+                                  ? '✓ Correct!'
+                                  : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
+                              </div>
+
+                              {/* Solution Toggle */}
+                              <button
+                                onClick={() => toggleSolution(question.id)}
+                                className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
+                                  isLightMode
+                                    ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                                }`}
+                              >
+                                {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
+                              </button>
+
+                              {/* Solution and Explanation */}
+                              {showSolution[question.id] && (
+                                <div className={`p-4 rounded-lg space-y-3 ${
+                                  isLightMode
+                                    ? 'bg-amber-50 border border-amber-200'
+                                    : 'bg-amber-500/10 border border-amber-700'
+                                }`}>
+                                  <div>
+                                    <h5 className={`font-bold mb-2 ${
+                                      isLightMode ? 'text-amber-900' : 'text-amber-200'
+                                    }`}>
+                                      📝 Solution:
+                                    </h5>
+                                    <p className={`text-sm ${
+                                      isLightMode ? 'text-amber-800' : 'text-amber-100'
+                                    }`}>
+                                      {question.solution}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <h5 className={`font-bold mb-2 ${
+                                      isLightMode ? 'text-amber-900' : 'text-amber-200'
+                                    }`}>
+                                      💡 Explanation:
+                                    </h5>
+                                    <p className={`text-sm leading-relaxed ${
+                                      isLightMode ? 'text-amber-800' : 'text-amber-100'
+                                    }`}>
+                                      {question.explanation}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           )}
         </>
