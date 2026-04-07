@@ -116,13 +116,6 @@ export function LearningMaterialsPage() {
       path: '/materials/video-lessons'
     },
     {
-      id: 'question-bank',
-      icon: '🔍',
-      title: 'Question Bank',
-      description: 'Thousands of practice questions organized by topic and difficulty',
-      path: '/materials/question-bank'
-    },
-    {
       id: 'progress-tracker',
       icon: '📊',
       title: 'Progress Tracker',
