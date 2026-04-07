@@ -208,6 +208,19 @@ class MCQDetector:
         if not lines:
             return '', []
 
+        # PREPROCESSING: Handle multi-column layouts where choices appear on same line
+        # e.g., "A. Option1 C. Option3" -> split into separate "lines"
+        expanded_lines = []
+        for line in lines:
+            # Look for pattern of multiple choices on one line: "A. text C. text" or "B. text D. text"
+            # Split when we find " [A-D]." or " [A-D])" in the middle of a line
+            parts = re.split(r'\s+(?=[A-D][\.\)])', line)
+            if len(parts) > 1:
+                expanded_lines.extend(parts)
+            else:
+                expanded_lines.append(line)
+        lines = expanded_lines
+
         # Try Pattern 1: A. or A) with capital letters (most common)
         # Also handles special markers like ✓, *, etc. before the option
         option_pattern = r'^[\✓\*\s]*([A-D])[\.\)]\s+(.+)$'
