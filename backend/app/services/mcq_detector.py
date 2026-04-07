@@ -183,6 +183,7 @@ class MCQDetector:
         Extract question text and options from a question block.
         Supports: A. B. C. D. / A) B) C) D) / a) b) c) d) / 1) 2) 3) 4) formats
         Also handles checkmarks (✓), asterisks (*), and other special markers before options.
+        Handles multi-column layouts where options may be extracted out of order.
 
         STRICT mode: Rejects blocks with suspicious patterns that indicate
         mixed/scrambled questions (e.g., multiple question numbers, out-of-order choices).
@@ -237,6 +238,9 @@ class MCQDetector:
                 question_text = re.sub(r'\s*\d{1,3}[\.\)]\s*', ' ', question_text).strip()
 
                 if question_text and len(options) >= 2:
+                    # Sort options by label (A, B, C, D) to handle multi-column layouts
+                    # where options might be extracted out of order (e.g., A, C, B, D)
+                    options = sorted(options, key=lambda x: x['label'])
                     return question_text, options
 
         # Try Pattern 2: a) or (a) with lowercase letters (handle mixed case)
@@ -263,6 +267,8 @@ class MCQDetector:
                 question_text = re.sub(r'\s*\d+[\.\)]\s*', ' ', question_text).strip()
 
                 if question_text and len(options) >= 2:
+                    # Sort options by label (A, B, C, D) to handle multi-column layouts
+                    options = sorted(options, key=lambda x: x['label'])
                     return question_text, options
 
         # Try Pattern 3: 1) 2) 3) 4) with numbers
@@ -291,6 +297,8 @@ class MCQDetector:
                 question_text = re.sub(r'\s*\d+[\.\)]\s*', ' ', question_text).strip()
 
                 if question_text and len(options) >= 2:
+                    # Sort options by label (A, B, C, D) to handle multi-column layouts
+                    options = sorted(options, key=lambda x: x['label'])
                     return question_text, options
 
         # Try Pattern 4: Just letters in parentheses with text after (A) text format
@@ -317,6 +325,8 @@ class MCQDetector:
                 question_text = re.sub(r'\s*\d+[\.\)]\s*', ' ', question_text).strip()
 
                 if question_text and len(options) >= 2:
+                    # Sort options by label (A, B, C, D) to handle multi-column layouts
+                    options = sorted(options, key=lambda x: x['label'])
                     return question_text, options
 
         # If no options found, return entire block as question
