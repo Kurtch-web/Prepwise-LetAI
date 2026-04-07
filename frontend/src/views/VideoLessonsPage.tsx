@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { API_BASE } from '../config/backends';
+import { authService } from '../services/authService';
 
 interface Video {
   id: string;
@@ -22,11 +23,101 @@ export default function VideoLessonsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const watchIdRef = useRef<string | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchVideos();
     fetchCategories();
   }, [selectedCategory]);
+
+  // Start watch session when video is selected
+  useEffect(() => {
+    if (!selectedVideo) return;
+
+    const startWatch = async () => {
+      try {
+        const token = authService.getToken();
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json'
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE}/api/videos/${selectedVideo.id}/start-watch`, {
+          method: 'POST',
+          headers,
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          watchIdRef.current = data.watch_id;
+
+          // Start tracking progress every 5 seconds
+          progressIntervalRef.current = setInterval(async () => {
+            if (videoRef.current && watchIdRef.current) {
+              const watchedSeconds = Math.floor(videoRef.current.currentTime);
+              try {
+                await fetch(`${API_BASE}/api/videos/${watchIdRef.current}/update-progress`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...headers
+                  },
+                  body: JSON.stringify({ watched_seconds: watchedSeconds }),
+                  credentials: 'include'
+                });
+              } catch (error) {
+                console.error('Error updating watch progress:', error);
+              }
+            }
+          }, 5000);
+        }
+      } catch (error) {
+        console.error('Error starting watch session:', error);
+      }
+    };
+
+    startWatch();
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, [selectedVideo]);
+
+  // Complete watch session when video is deselected
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current) {
+        const completeWatch = async () => {
+          try {
+            const token = authService.getToken();
+            const headers: HeadersInit = {
+              'Content-Type': 'application/json'
+            };
+            if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            await fetch(`${API_BASE}/api/videos/${watchIdRef.current}/complete`, {
+              method: 'POST',
+              headers,
+              credentials: 'include'
+            });
+          } catch (error) {
+            console.error('Error completing watch session:', error);
+          }
+        };
+
+        completeWatch();
+      }
+    };
+  }, []);
 
   const fetchVideos = async () => {
     setIsLoading(true);
@@ -162,6 +253,7 @@ export default function VideoLessonsPage() {
                 />
               ) : (
                 <video
+                  ref={videoRef}
                   src={`${API_BASE}/api/videos/${selectedVideo.id}/stream`}
                   controls
                   className="player-element"

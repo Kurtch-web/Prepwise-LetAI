@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { API_BASE } from '../config/backends';
+import { authService } from '../services/authService';
 
 interface VideoPlayerModalProps {
   isOpen: boolean;
@@ -18,6 +19,96 @@ export function VideoPlayerModal({ isOpen, video, onClose }: VideoPlayerModalPro
   const isLightMode = theme === 'light';
   const [isLoading, setIsLoading] = useState(true);
   const [isBuffering, setIsBuffering] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const watchIdRef = useRef<string | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Start watch session when modal opens
+  useEffect(() => {
+    if (!isOpen || !video) return;
+
+    const startWatch = async () => {
+      try {
+        const token = authService.getToken();
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json'
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE}/api/videos/${video.id}/start-watch`, {
+          method: 'POST',
+          headers,
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          watchIdRef.current = data.watch_id;
+
+          // Start tracking progress every 5 seconds
+          progressIntervalRef.current = setInterval(async () => {
+            if (videoRef.current && watchIdRef.current) {
+              const watchedSeconds = Math.floor(videoRef.current.currentTime);
+              try {
+                await fetch(`${API_BASE}/api/videos/${watchIdRef.current}/update-progress`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...headers
+                  },
+                  body: JSON.stringify({ watched_seconds: watchedSeconds }),
+                  credentials: 'include'
+                });
+              } catch (error) {
+                console.error('Error updating watch progress:', error);
+              }
+            }
+          }, 5000);
+        }
+      } catch (error) {
+        console.error('Error starting watch session:', error);
+      }
+    };
+
+    startWatch();
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, [isOpen, video]);
+
+  // Complete watch session when modal closes
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current) {
+        const completeWatch = async () => {
+          try {
+            const token = authService.getToken();
+            const headers: HeadersInit = {
+              'Content-Type': 'application/json'
+            };
+            if (token) {
+              headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            await fetch(`${API_BASE}/api/videos/${watchIdRef.current}/complete`, {
+              method: 'POST',
+              headers,
+              credentials: 'include'
+            });
+          } catch (error) {
+            console.error('Error completing watch session:', error);
+          }
+        };
+
+        completeWatch();
+      }
+    };
+  }, []);
 
   if (!isOpen || !video) return null;
 
@@ -84,6 +175,7 @@ export function VideoPlayerModal({ isOpen, video, onClose }: VideoPlayerModalPro
             ) : (
               <>
                 <video
+                  ref={videoRef}
                   className="absolute top-0 left-0 w-full h-full"
                   controls
                   autoPlay
