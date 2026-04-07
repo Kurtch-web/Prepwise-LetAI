@@ -6,6 +6,8 @@ export function QuestionsDisplay() {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
 
+  const getCategoryLabel = (category: string) => category === 'Filipino' ? 'English' : category;
+
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +100,7 @@ export function QuestionsDisplay() {
             >
               <option value="all">All Categories</option>
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
               ))}
             </select>
           </div>
@@ -215,7 +217,7 @@ export function QuestionsDisplay() {
                               ? 'bg-slate-200 text-slate-700'
                               : 'bg-slate-700 text-slate-300'
                           }`}>
-                            {question.category}
+                            {getCategoryLabel(question.category)}
                           </span>
                         </div>
                         <h4 className={`font-semibold text-lg mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>

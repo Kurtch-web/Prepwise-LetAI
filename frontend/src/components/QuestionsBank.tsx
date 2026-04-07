@@ -534,7 +534,7 @@ export function QuestionsBank() {
                               ? 'bg-slate-200 text-slate-700'
                               : 'bg-slate-700 text-slate-300'
                           }`}>
-                            {question.category}
+                            {getCategoryLabel(question.category)}
                           </span>
                         </div>
                         <p className={`font-semibold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
