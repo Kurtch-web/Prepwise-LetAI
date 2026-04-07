@@ -25,7 +25,7 @@ export default function VideoLessonsPage() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const watchIdRef = useRef<string | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetchVideos();
