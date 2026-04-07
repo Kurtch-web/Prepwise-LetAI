@@ -135,14 +135,6 @@ class MCQDetector:
         # Remove footer/header text that breaks detection
         text = re.sub(r'Get\s+more\s+Free\s+LET\s+Reviewers.*\n', '\n', text, flags=re.IGNORECASE)
 
-        # Remove "Answer Keys:" sections and answer key pages
-        # This handles sections like:
-        # "Answer Keys:" or "Answer Key" followed by numbered answers (1. A, 2. B, etc.)
-        text = re.sub(r'\n\s*Answer\s+Keys?[\s:]*\n(?:\s*\d{1,3}\s*[\.\)]\s*[A-D]\s*\n)+', '\n', text, flags=re.IGNORECASE)
-        # Also remove standalone answer key lines that appear in sequences (multiple consecutive answer lines)
-        # Match patterns like "1.  A" or "1)  B" or "1. B" with optional spaces
-        text = re.sub(r'(?:^|\n)\s*(\d{1,3})\s*[\.\)]\s*([A-D])\s*(?=\n\s*\d{1,3}\s*[\.\)]\s*[A-D])', r'\n', text, flags=re.MULTILINE)
-
         # Main pattern: split by question numbers
         # More flexible: matches question numbers with optional leading whitespace/special chars
         # Matches: "N." "N)" "N." (after punctuation) etc.
@@ -369,6 +361,69 @@ class MCQDetector:
         # Default: if no answer found, return None (will need manual marking)
         return None
 
+    @staticmethod
+    def extract_answer_keys(text: str) -> Dict[int, str]:
+        """
+        Extract answer keys from the end of the document.
+        Looks for patterns like:
+        - "ANSWER KEY" section
+        - "1. A 2. B 3. C 4. D 5. A"
+        - "1) A  2) B  3) C"
+        - "1-A, 2-B, 3-C"
+
+        Returns: Dict mapping question number to answer letter
+        """
+        answer_keys = {}
+
+        # Find the answer key section (usually at the end or marked with "ANSWER" or "KEY")
+        # Look for common answer key section headers
+        answer_section = None
+        patterns = [
+            r'(?:ANSWER\s+KEY|Answer\s+Key|ANSWERS?|KEY)[\s:]*\n(.*?)(?=\n\n|$)',
+            r'(?:Solutions?|Correct\s+Answers?|Answer\s+Sheet)[\s:]*\n(.*?)(?=\n\n|$)',
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if match:
+                answer_section = match.group(1)
+                break
+
+        # If no answer section found, use the last 20% of the text (answers often at end)
+        if not answer_section:
+            lines = text.split('\n')
+            answer_section = '\n'.join(lines[int(len(lines) * 0.8):])
+
+        # Try to extract answer patterns
+        # Pattern 1: "1. A" or "1) A" or "1-A"
+        answer_pattern = r'^\s*(\d{1,3})\s*[\.\)\-:]\s*([A-D])\s*$'
+
+        for line in answer_section.split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+
+            match = re.match(answer_pattern, line)
+            if match:
+                question_num = int(match.group(1))
+                answer_letter = match.group(2).upper()
+                answer_keys[question_num] = answer_letter
+
+        # Pattern 2: Multiple answers on one line "1. A 2. B 3. C" or "1A 2B 3C"
+        if not answer_keys:
+            # Try to find compact answer formats
+            compact_pattern = r'(\d{1,3})\s*[\.\)\-:]?\s*([A-D])'
+            matches = re.findall(compact_pattern, answer_section)
+
+            for match in matches:
+                question_num = int(match[0])
+                answer_letter = match[1].upper()
+                # Only add if this looks like a valid answer (not part of question text)
+                if 1 <= question_num <= 500:  # Reasonable upper limit for questions
+                    answer_keys[question_num] = answer_letter
+
+        return answer_keys
+
     @classmethod
     def detect_mcqs_from_text(
         cls,
@@ -380,9 +435,13 @@ class MCQDetector:
         Returns properly structured questions with minimal processing.
 
         Includes validation to reject malformed or scrambled questions.
+        Also extracts answer keys from the document and matches them to questions.
         """
         # Clean text (preserve structure better)
         text = cls.clean_text(text)
+
+        # Extract answer keys from the document (usually at the end)
+        answer_keys = cls.extract_answer_keys(text)
 
         # Detect question blocks
         blocks = cls.detect_mcq_blocks(text)
@@ -426,13 +485,19 @@ class MCQDetector:
                 })
                 continue
 
-            # Try to detect correct answer
+            # Try to detect correct answer from inline markers first
             correct_answer = cls.detect_correct_answer(block, options)
             needs_review = correct_answer is None
 
-            # If no correct answer detected, default to first option (will be flagged for review)
+            # If no inline answer found, try to use extracted answer keys
+            if not correct_answer and block_idx in answer_keys:
+                correct_answer = answer_keys[block_idx]
+                needs_review = False  # Found in answer key section
+
+            # If still no answer found, default to first option (will be flagged for review)
             if not correct_answer and options:
                 correct_answer = options[0]['label']
+                needs_review = True  # Mark for review since answer wasn't found
 
             # Build MCQ object - clean format without prefixes
             mcq = {
