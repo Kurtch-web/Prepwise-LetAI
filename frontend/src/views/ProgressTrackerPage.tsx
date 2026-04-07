@@ -650,8 +650,20 @@ function AnalyticsTab({ isLightMode }: { isLightMode: boolean }) {
     return <div className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>Loading...</div>;
   }
 
-  const watchTimeHours = Math.floor(analyticsData?.totalWatchTimeSeconds || 0 / 3600);
-  const watchTimeMinutes = Math.floor(((analyticsData?.totalWatchTimeSeconds || 0) % 3600) / 60);
+  const formatWatchTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+
+    const parts = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+
+    return parts.join(' ');
+  };
+
+  const watchTimeDisplay = formatWatchTime(analyticsData?.totalWatchTimeSeconds || 0);
 
   return (
     <div className="space-y-6">
@@ -683,7 +695,7 @@ function AnalyticsTab({ isLightMode }: { isLightMode: boolean }) {
             Watch Time
           </p>
           <p className={`text-3xl font-bold mt-2 ${isLightMode ? 'text-green-900' : 'text-green-200'}`}>
-            {watchTimeHours}h {watchTimeMinutes}m
+            {watchTimeDisplay}
           </p>
         </div>
 
