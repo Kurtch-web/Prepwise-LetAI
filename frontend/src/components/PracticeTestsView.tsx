@@ -124,87 +124,6 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
     return filipinoQuestions.length > 0 ? Math.round((correct / filipinoQuestions.length) * 100) : 0;
   };
 
-  // Show materials tab even if no tests are taken
-  if (sortedTestTypes.length === 0 && activeTab === 'test-taken') {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            📝 Practice Tests
-          </h2>
-          <button
-            onClick={onBack}
-            className={`px-4 py-2 rounded-lg font-semibold transition ${
-              isLightMode
-                ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-                : 'bg-slate-800 text-white hover:bg-slate-700'
-            }`}
-          >
-            ← Back
-          </button>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="flex gap-2 border-b" style={{
-          borderColor: isLightMode ? '#e2e8f0' : 'rgba(255, 255, 255, 0.1)'
-        }}>
-          <button
-            onClick={() => setActiveTab('test-taken')}
-            className={`px-6 py-3 font-semibold text-lg transition-all ${
-              activeTab === 'test-taken'
-                ? isLightMode
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-emerald-400 border-b-2 border-emerald-400'
-                : isLightMode
-                ? 'text-slate-600 hover:text-slate-900'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Tests Taken
-          </button>
-          <button
-            onClick={() => setActiveTab('materials')}
-            className={`px-6 py-3 font-semibold text-lg transition-all ${
-              activeTab === 'materials'
-                ? isLightMode
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-emerald-400 border-b-2 border-emerald-400'
-                : isLightMode
-                ? 'text-slate-600 hover:text-slate-900'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Materials
-          </button>
-        </div>
-
-        <div className={`rounded-2xl border p-12 text-center ${
-          isLightMode
-            ? 'border-slate-200 bg-white shadow-lg'
-            : 'border-slate-700 bg-slate-800/50 shadow-lg'
-        }`}>
-          <div className="mb-6 text-6xl">📝</div>
-          <h2 className={`text-3xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            No completed tests yet
-          </h2>
-          <p className={`text-lg max-w-2xl mx-auto mb-6 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-            Take a test to see it here as a practice test for retakes.
-          </p>
-          <button
-            onClick={() => setActiveTab('materials')}
-            className={`px-6 py-2 rounded-lg font-semibold transition ${
-              isLightMode
-                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                : 'bg-emerald-600 text-white hover:bg-emerald-700'
-            }`}
-          >
-            Try Practice Materials →
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -264,8 +183,32 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
             Retake your completed tests for practice. Only you can see your practice attempts.
           </p>
 
-          {/* Test Type Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {sortedTestTypes.length === 0 ? (
+            <div className={`rounded-2xl border p-12 text-center ${
+              isLightMode
+                ? 'border-slate-200 bg-white shadow-lg'
+                : 'border-slate-700 bg-slate-800/50 shadow-lg'
+            }`}>
+              <div className="mb-6 text-6xl">📝</div>
+              <h2 className={`text-3xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                No completed tests yet
+              </h2>
+              <p className={`text-lg max-w-2xl mx-auto mb-6 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                Take a test to see it here as a practice test for retakes.
+              </p>
+              <button
+                onClick={() => setActiveTab('materials')}
+                className={`px-6 py-2 rounded-lg font-semibold transition ${
+                  isLightMode
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                }`}
+              >
+                Try Practice Materials →
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {sortedTestTypes.map((testType) => {
               const info = testTypeInfo[testType] || { emoji: '📝', label: testType };
               const testsOfType = groupedByTestType[testType] || [];
@@ -315,8 +258,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
               );
             })}
           </div>
-
-          {/* Modal for selecting which test to retake */}
+          )}
           {showModal && selectedTestType && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
               <div className={`rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto ${
