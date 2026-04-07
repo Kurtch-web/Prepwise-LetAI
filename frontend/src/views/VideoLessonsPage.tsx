@@ -61,13 +61,9 @@ export default function VideoLessonsPage() {
             if (videoRef.current && watchIdRef.current) {
               const watchedSeconds = Math.floor(videoRef.current.currentTime);
               try {
-                await fetch(`${API_BASE}/api/videos/${watchIdRef.current}/update-progress`, {
+                await fetch(`${API_BASE}/api/videos/${watchIdRef.current}/update-progress?watched_seconds=${watchedSeconds}`, {
                   method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    ...headers
-                  },
-                  body: JSON.stringify({ watched_seconds: watchedSeconds }),
+                  headers,
                   credentials: 'include'
                 });
               } catch (error) {
