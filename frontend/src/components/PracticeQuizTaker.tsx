@@ -613,6 +613,81 @@ export default function PracticeQuizTaker({ quizId, onBack, onComplete }: Practi
           color: #333;
         }
 
+        .review-choices {
+          margin-top: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .choice-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          padding: 10px;
+          border: 1px solid #e5e7eb;
+          border-radius: 4px;
+          background-color: #f9fafb;
+          font-size: 13px;
+        }
+
+        .choice-letter {
+          font-weight: 600;
+          min-width: 24px;
+          color: #666;
+        }
+
+        .choice-text {
+          flex: 1;
+          color: #333;
+        }
+
+        .choice-mark {
+          font-weight: 500;
+          font-size: 12px;
+          margin-left: auto;
+          white-space: nowrap;
+        }
+
+        .choice-item.selected-correct {
+          background-color: #dcfce7;
+          border-color: #16a34a;
+        }
+
+        .choice-item.selected-correct .choice-letter {
+          color: #16a34a;
+        }
+
+        .choice-item.selected-correct .choice-mark {
+          color: #16a34a;
+        }
+
+        .choice-item.selected-incorrect {
+          background-color: #fee;
+          border-color: #dc2626;
+        }
+
+        .choice-item.selected-incorrect .choice-letter {
+          color: #dc2626;
+        }
+
+        .choice-item.selected-incorrect .choice-mark {
+          color: #dc2626;
+        }
+
+        .choice-item.correct-only {
+          background-color: #dcfce7;
+          border-color: #16a34a;
+        }
+
+        .choice-item.correct-only .choice-letter {
+          color: #16a34a;
+        }
+
+        .choice-item.correct-only .choice-mark {
+          color: #16a34a;
+        }
+
         .review-answers {
           margin-top: 8px;
           font-size: 13px;
