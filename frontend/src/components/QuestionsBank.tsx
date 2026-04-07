@@ -47,6 +47,8 @@ export function QuestionsBank() {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
+  const getCategoryLabel = (category: string) => category === 'Filipino' ? 'English' : category;
+
   // Edit state
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [editFormData, setEditFormData] = useState({
@@ -646,7 +648,7 @@ export function QuestionsBank() {
                 } focus:outline-none`}
               >
                 {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
                 ))}
               </select>
             </div>
@@ -774,7 +776,7 @@ export function QuestionsBank() {
             <p className={`text-sm font-semibold ${
               isLightMode ? 'text-blue-900' : 'text-blue-300'
             }`}>
-              📌 Questions will be saved under: <span className={`font-bold ${isLightMode ? 'text-blue-700' : 'text-blue-200'}`}>{pdfCategory}</span>
+              📌 Questions will be saved under: <span className={`font-bold ${isLightMode ? 'text-blue-700' : 'text-blue-200'}`}>{getCategoryLabel(pdfCategory)}</span>
             </p>
           </div>
 
@@ -809,7 +811,7 @@ export function QuestionsBank() {
               } focus:outline-none`}
             >
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
               ))}
             </select>
           </div>
@@ -911,7 +913,7 @@ export function QuestionsBank() {
             <p className={`text-sm font-semibold ${
               isLightMode ? 'text-emerald-900' : 'text-emerald-300'
             }`}>
-              ✓ Category: <span className={`font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-200'}`}>{pdfCategory}</span> • Folder: <span className={`font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-200'}`}>{pdfBatchName || '(not set)'}</span>
+              ✓ Category: <span className={`font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-200'}`}>{getCategoryLabel(pdfCategory)}</span> • Folder: <span className={`font-bold ${isLightMode ? 'text-emerald-700' : 'text-emerald-200'}`}>{pdfBatchName || '(not set)'}</span>
             </p>
           </div>
 
@@ -966,7 +968,7 @@ export function QuestionsBank() {
                           ? 'bg-emerald-100 text-emerald-700'
                           : 'bg-emerald-900/30 text-emerald-300'
                       }`}>
-                        📁 {pdfCategory}
+                        📁 {getCategoryLabel(pdfCategory)}
                       </span>
                     </div>
                     <p className={`font-semibold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
@@ -1095,7 +1097,7 @@ export function QuestionsBank() {
               } focus:outline-none`}
             >
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
               ))}
             </select>
           </div>
