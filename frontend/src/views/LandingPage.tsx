@@ -44,34 +44,34 @@ export function LandingPage() {
 
   const features = [
     {
-      icon: '🎯',
+      icon: '→',
       title: 'Evidence-Based Learning',
-      description: 'Comprehensive content aligned with PRC standards and modern pedagogical approaches for effective learning outcomes'
+      description: 'Content aligned with PRC standards and modern pedagogical approaches for effective preparation'
     },
     {
-      icon: '📊',
+      icon: '◆',
       title: 'Adaptive Learning Paths',
-      description: 'Intelligent assessment systems that identify knowledge gaps and customize study recommendations in real-time'
+      description: 'Intelligent systems that identify knowledge gaps and customize study recommendations in real-time'
     },
     {
-      icon: '🤝',
+      icon: '◈',
       title: 'Community Support',
-      description: 'Collaborative environment where aspiring educators connect, share insights, and support each other on their journey'
+      description: 'Collaborative environment where educators connect, share insights, and support each other'
     },
     {
-      icon: '✨',
+      icon: '+',
       title: 'Quality Assurance',
-      description: 'Rigorous content review and continuous improvement based on student feedback and examination success metrics'
+      description: 'Rigorous content review and continuous improvement based on student feedback'
     },
     {
-      icon: '🌍',
+      icon: '◉',
       title: 'Accessible Education',
-      description: 'Low-bandwidth optimized platform ensuring all aspiring teachers have equal access to quality preparation materials'
+      description: 'Optimized platform ensuring all aspiring teachers have equal access to quality materials'
     },
     {
-      icon: '📈',
+      icon: '▲',
       title: 'Performance Analytics',
-      description: 'Detailed progress tracking and insights to monitor improvement and build confidence towards examination day'
+      description: 'Real-time progress tracking and insights to monitor improvement and build confidence'
     }
   ];
 
@@ -125,24 +125,24 @@ export function LandingPage() {
           ? 'bg-white/80 border-b border-slate-200'
           : 'bg-slate-900/80 border-b border-slate-800'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center">
-          <div className={`text-xl sm:text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            🎓 EduHub
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex justify-between items-center">
+          <div className={`text-lg sm:text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+            EduHub
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={toggleTheme}
-              className={`px-3 sm:px-4 py-2 rounded-lg transition-colors duration-300 text-lg sm:text-base ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded text-sm transition-colors duration-300 ${
                 isLightMode
                   ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
                   : 'bg-slate-800 text-white hover:bg-slate-700'
               }`}
             >
-              {isLightMode ? '🌙' : '☀️'}
+              {isLightMode ? '◐' : '◑'}
             </button>
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-4 sm:px-6 py-2 text-sm sm:text-base rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/40 transition-all duration-300"
+              className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/40 transition-all duration-300"
             >
               Get Started
             </button>
@@ -154,7 +154,7 @@ export function LandingPage() {
       <section
         id="hero"
         ref={(el) => { if (el) sectionRefs.current.hero = el; }}
-        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-16 sm:py-24 md:py-32 min-h-screen flex items-center ${
+        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 min-h-[90vh] flex items-center ${
           isLightMode
             ? 'bg-white'
             : 'bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950'
@@ -163,73 +163,71 @@ export function LandingPage() {
         {/* Parallax background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
-            className={`absolute -top-40 -right-40 w-80 h-80 sm:w-96 sm:h-96 ${
+            className={`absolute -top-32 -right-32 w-64 h-64 sm:w-80 sm:h-80 ${
               isLightMode ? 'bg-blue-200/30' : 'bg-blue-600/15'
             } rounded-full blur-3xl animate-blob`}
             style={{ transform: `translateY(${scrollY * 0.3}px)` }}
           />
           <div
-            className={`absolute -bottom-40 -left-40 w-80 h-80 sm:w-96 sm:h-96 ${
+            className={`absolute -bottom-32 -left-32 w-64 h-64 sm:w-80 sm:h-80 ${
               isLightMode ? 'bg-indigo-200/30' : 'bg-indigo-700/15'
             } rounded-full blur-3xl animate-blob animation-delay-2000`}
             style={{ transform: `translateY(${scrollY * -0.2}px)` }}
           />
           <div
-            className={`absolute top-1/2 left-1/2 w-96 h-96 ${
+            className={`absolute top-1/2 left-1/2 w-80 h-80 ${
               isLightMode ? 'bg-purple-200/20' : 'bg-purple-600/10'
             } rounded-full blur-3xl animate-blob animation-delay-4000`}
             style={{ transform: `translate(calc(-50% + ${scrollY * 0.1}px), -50%)` }}
           />
         </div>
 
-        <div className="max-w-5xl mx-auto text-center relative z-10 w-full">
-          <div className="mb-6 inline-block animate-fade-in">
-            <span className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-500 ${
+        <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
+          <div className="mb-4 inline-block animate-fade-in">
+            <span className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-500 ${
               isLightMode
                 ? 'bg-blue-100 text-blue-700'
                 : 'bg-blue-500/20 text-blue-300'
             }`}>
-              ✨ Empowering Aspiring Educators
+              Empowering Aspiring Educators
             </span>
           </div>
 
-          <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight animate-fade-in-delay-1 ${
+          <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight animate-fade-in-delay-1 ${
             isLightMode ? 'text-slate-900' : 'text-white'
           }`}>
-            Quality Teacher
-            <br className="hidden sm:block" />
-            Preparation,
+            Quality Teacher Preparation,
             <br />
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-600 bg-clip-text text-transparent">
               Accessible to All
             </span>
           </h1>
 
-          <p className={`text-lg sm:text-xl md:text-2xl mb-8 max-w-2xl mx-auto leading-relaxed animate-fade-in-delay-2 ${
+          <p className={`text-base sm:text-lg mb-6 max-w-2xl mx-auto leading-relaxed animate-fade-in-delay-2 ${
             isLightMode ? 'text-slate-600' : 'text-slate-300'
           }`}>
-            A comprehensive platform dedicated to helping aspiring teachers succeed in their licensure examination and build confident, effective teaching careers.
+            Comprehensive platform helping aspiring teachers succeed in licensure examinations and build confident, effective teaching careers.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-in-delay-3">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6 animate-fade-in-delay-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-base sm:text-lg hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
+              className="px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm sm:text-base hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
             >
               Start Your Journey →
             </button>
             <button
-              className={`px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all duration-300 border-2 ${
+              className={`px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-all duration-300 border-2 ${
                 isLightMode
                   ? 'border-slate-300 text-slate-900 hover:bg-slate-100'
                   : 'border-slate-700 text-white hover:bg-slate-800'
               }`}
             >
-              Learn Our Story
+              Learn More
             </button>
           </div>
 
-          <div className={`text-xs sm:text-sm animate-fade-in-delay-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+          <div className={`text-xs animate-fade-in-delay-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
             ✓ Free access • ✓ Comprehensive resources • ✓ Expert guidance
           </div>
         </div>
@@ -239,40 +237,40 @@ export function LandingPage() {
       <section
         id="mission"
         ref={(el) => { if (el) sectionRefs.current.mission = el; }}
-        className={`relative px-4 sm:px-6 lg:px-8 py-16 sm:py-24 ${
+        className={`relative px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
           isLightMode ? 'bg-slate-50' : 'bg-slate-900'
         }`}
       >
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 transition-all duration-500 ${
+          <div className="text-center mb-12">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 transition-all duration-500 ${
               visibleSections.has('mission') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Our Mission
+              Our Core Values
             </h2>
-            <p className={`text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed transition-all duration-500 delay-100 ${
+            <p className={`text-sm sm:text-base max-w-2xl mx-auto leading-relaxed transition-all duration-500 delay-100 ${
               visibleSections.has('mission') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>
-              We are dedicated to removing barriers in teacher education by providing accessible, high-quality preparation resources that empower aspiring educators to achieve their full potential and make meaningful contributions to society.
+              We remove barriers in teacher education by providing accessible, high-quality resources that empower aspiring educators
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+          <div className="grid md:grid-cols-2 gap-4 lg:gap-5">
             {values.map((value, idx) => (
               <div
                 key={idx}
-                className={`p-6 sm:p-8 rounded-2xl border transition-all duration-500 hover:shadow-lg hover:-translate-y-2 cursor-pointer ${
+                className={`p-5 sm:p-6 rounded-xl border transition-all duration-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${
                   isLightMode
                     ? 'bg-white border-slate-200 hover:shadow-slate-300/40'
                     : 'bg-slate-800/50 border-slate-700 hover:shadow-slate-900/40'
                 } ${visibleSections.has('mission') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 mb-4" />
-                <h3 className={`text-2xl font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 mb-3" />
+                <h3 className={`text-lg sm:text-xl font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   {value.title}
                 </h3>
-                <p className={`text-base sm:text-lg leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                <p className={`text-sm sm:text-base leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                   {value.description}
                 </p>
               </div>
@@ -285,43 +283,43 @@ export function LandingPage() {
       <section
         id="building-blocks"
         ref={(el) => { if (el) sectionRefs.current['building-blocks'] = el; }}
-        className={`relative px-4 sm:px-6 lg:px-8 py-16 sm:py-24 ${
+        className={`relative px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
           isLightMode ? 'bg-white' : 'bg-slate-950'
         }`}
       >
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 transition-all duration-500 ${
+          <div className="text-center mb-12">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 transition-all duration-500 ${
               visibleSections.has('building-blocks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              How We Built It
+              Our Platform Features
             </h2>
-            <p className={`text-lg sm:text-xl max-w-3xl mx-auto transition-all duration-500 delay-100 ${
+            <p className={`text-sm sm:text-base max-w-2xl mx-auto transition-all duration-500 delay-100 ${
               visibleSections.has('building-blocks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>
-              Every aspect of our platform is thoughtfully designed with educators in mind
+              Thoughtfully designed with educators in mind
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+          <div className="grid md:grid-cols-2 gap-4 lg:gap-5">
             {buildingBlocks.map((block, idx) => (
               <div
                 key={idx}
-                className={`flex gap-4 sm:gap-6 p-6 sm:p-8 rounded-2xl border transition-all duration-500 hover:shadow-lg ${
+                className={`flex gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl border transition-all duration-500 hover:shadow-lg ${
                   isLightMode
                     ? 'bg-slate-50 border-slate-200 hover:shadow-slate-300/40'
                     : 'bg-slate-900/50 border-slate-800 hover:shadow-slate-900/40 hover:bg-slate-900/70'
                 } ${visibleSections.has('building-blocks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                 style={{ transitionDelay: `${idx * 100}ms` }}
               >
-                <div className={`flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center font-bold text-lg sm:text-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white`}>
+                <div className={`flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center font-bold text-base sm:text-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white`}>
                   {block.number}
                 </div>
                 <div>
-                  <h3 className={`text-lg sm:text-xl font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  <h3 className={`text-base sm:text-lg font-bold mb-1 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                     {block.title}
                   </h3>
-                  <p className={`text-sm sm:text-base ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  <p className={`text-xs sm:text-sm leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                     {block.description}
                   </p>
                 </div>
@@ -335,44 +333,44 @@ export function LandingPage() {
       <section
         id="features"
         ref={(el) => { if (el) sectionRefs.current.features = el; }}
-        className={`px-4 sm:px-6 lg:px-8 py-16 sm:py-24 ${
+        className={`px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
           isLightMode
             ? 'bg-slate-50'
             : 'bg-gradient-to-b from-slate-900 to-slate-950'
         }`}
       >
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className={`text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 transition-all duration-500 ${
+          <div className="text-center mb-12">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 transition-all duration-500 ${
               visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Why Choose Us
+              Why Choose EduHub
             </h2>
-            <p className={`text-lg sm:text-xl max-w-2xl mx-auto transition-all duration-500 delay-100 ${
+            <p className={`text-sm sm:text-base max-w-2xl mx-auto transition-all duration-500 delay-100 ${
               visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
               A platform built by educators, for educators
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
             {features.map((feature, idx) => (
               <div
                 key={idx}
-                className={`group rounded-2xl p-6 sm:p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-lg cursor-pointer border backdrop-blur-sm ${
+                className={`group rounded-lg p-5 sm:p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg cursor-pointer border backdrop-blur-sm ${
                   isLightMode
                     ? 'bg-white border-slate-200 hover:shadow-lg hover:shadow-slate-300/40'
                     : 'bg-slate-800/30 border-slate-700 hover:shadow-lg hover:shadow-slate-900/40 hover:bg-slate-800/50'
                 } ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                 style={{ transitionDelay: `${idx * 50}ms` }}
               >
-                <div className="text-5xl sm:text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="text-3xl sm:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300 w-8">
                   {feature.icon}
                 </div>
-                <h3 className={`text-lg sm:text-xl font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <h3 className={`text-base sm:text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   {feature.title}
                 </h3>
-                <p className={`leading-relaxed text-sm sm:text-base ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                <p className={`leading-relaxed text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                   {feature.description}
                 </p>
               </div>
@@ -385,41 +383,60 @@ export function LandingPage() {
       <section
         id="why-built"
         ref={(el) => { if (el) sectionRefs.current['why-built'] = el; }}
-        className={`px-4 sm:px-6 lg:px-8 py-16 sm:py-24 ${
+        className={`px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
           isLightMode ? 'bg-white' : 'bg-slate-900'
         }`}
       >
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className={`text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4 transition-all duration-500 ${
+          <div className="text-center mb-10">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
               visibleSections.has('why-built') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Why We Built This
             </h2>
           </div>
 
-          <div className={`rounded-2xl p-6 sm:p-10 border transition-all duration-500 ${
-            isLightMode
-              ? 'bg-slate-50 border-slate-200'
-              : 'bg-slate-800/50 border-slate-700'
+          <div className={`space-y-4 transition-all duration-500 ${
+            isLightMode ? '' : ''
           } ${visibleSections.has('why-built') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <p className={`text-base sm:text-lg leading-relaxed mb-6 ${
-              isLightMode ? 'text-slate-700' : 'text-slate-300'
+            <div className={`rounded-lg p-5 sm:p-6 border ${
+              isLightMode
+                ? 'bg-slate-50 border-slate-200'
+                : 'bg-slate-800/50 border-slate-700'
             }`}>
-              Thousands of aspiring teachers struggle with fragmented resources, outdated materials, and lack of structured guidance in preparing for their licensure examination. We recognized that many deserving educators face barriers not because of lack of ability, but because of lack of access to quality preparation.
-            </p>
+              <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>The Problem</h3>
+              <p className={`text-sm sm:text-base leading-relaxed ${
+                isLightMode ? 'text-slate-700' : 'text-slate-300'
+              }`}>
+                Thousands of aspiring teachers face fragmented resources, outdated materials, and lack of structured guidance. Many deserving educators encounter barriers not from lack of ability, but from lack of access to quality preparation materials and expert guidance.
+              </p>
+            </div>
 
-            <p className={`text-lg sm:text-xl leading-relaxed mb-6 font-semibold ${
-              isLightMode ? 'text-slate-900' : 'text-white'
+            <div className={`rounded-lg p-5 sm:p-6 border ${
+              isLightMode
+                ? 'bg-blue-50 border-blue-200'
+                : 'bg-blue-900/20 border-blue-700/30'
             }`}>
-              We built this platform to democratize teacher preparation—to ensure that every aspiring educator, regardless of location or economic background, has access to comprehensive, expert-aligned resources and community support needed to succeed.
-            </p>
+              <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-blue-900' : 'text-blue-200'}`}>Our Solution</h3>
+              <p className={`text-sm sm:text-base leading-relaxed ${
+                isLightMode ? 'text-blue-800' : 'text-blue-100'
+              }`}>
+                EduHub democratizes teacher preparation by providing comprehensive, expert-aligned resources accessible to every aspiring educator. Regardless of location or economic background, our platform offers the tools, guidance, and community support needed to succeed.
+              </p>
+            </div>
 
-            <p className={`text-base sm:text-lg leading-relaxed ${
-              isLightMode ? 'text-slate-700' : 'text-slate-300'
+            <div className={`rounded-lg p-5 sm:p-6 border ${
+              isLightMode
+                ? 'bg-indigo-50 border-indigo-200'
+                : 'bg-indigo-900/20 border-indigo-700/30'
             }`}>
-              Our commitment is to continuously improve and evolve based on the real experiences and outcomes of the educators we serve. Together, we're building a stronger, more inclusive teaching profession.
-            </p>
+              <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-indigo-900' : 'text-indigo-200'}`}>Our Commitment</h3>
+              <p className={`text-sm sm:text-base leading-relaxed ${
+                isLightMode ? 'text-indigo-800' : 'text-indigo-100'
+              }`}>
+                We continuously improve and evolve based on real educator experiences and examination outcomes. Together, we're building a stronger, more inclusive teaching profession with higher success rates.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -428,7 +445,7 @@ export function LandingPage() {
       <section
         id="cta"
         ref={(el) => { if (el) sectionRefs.current.cta = el; }}
-        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-16 sm:py-24 ${
+        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ${
           isLightMode
             ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600'
             : 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700'
@@ -437,29 +454,29 @@ export function LandingPage() {
         {/* Animated background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
-            className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-blob"
+            className="absolute -top-32 -right-32 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-blob"
             style={{ transform: `translateY(${scrollY * 0.1}px)` }}
           />
           <div
-            className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-blob animation-delay-2000"
+            className="absolute -bottom-32 -left-32 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-blob animation-delay-2000"
             style={{ transform: `translateY(${scrollY * -0.15}px)` }}
           />
         </div>
 
-        <div className="max-w-3xl mx-auto text-center relative z-10">
-          <h2 className={`text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 transition-all duration-500 ${
+        <div className="max-w-2xl mx-auto text-center relative z-10">
+          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3 transition-all duration-500 ${
             visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
-            Ready to Begin Your Journey?
+            Ready to Begin?
           </h2>
-          <p className={`text-base sm:text-lg md:text-xl text-white/90 mb-8 transition-all duration-500 delay-100 ${
+          <p className={`text-sm sm:text-base text-white/90 mb-5 transition-all duration-500 delay-100 ${
             visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
-            Join a growing community of aspiring educators committed to excellence and professional growth.
+            Join thousands of educators preparing for success with comprehensive resources and community support.
           </p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl bg-white text-indigo-600 font-bold text-base sm:text-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-delay-3"
+            className="px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg bg-white text-indigo-600 font-bold text-sm sm:text-base hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-delay-3"
           >
             Start Free Today →
           </button>
@@ -467,46 +484,46 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className={`px-4 sm:px-6 lg:px-8 py-12 sm:py-16 border-t ${
+      <footer className={`px-4 sm:px-6 lg:px-8 py-8 sm:py-10 border-t ${
         isLightMode
           ? 'bg-slate-50 border-slate-200'
           : 'bg-slate-950 border-slate-800'
       }`}>
         <div className="max-w-6xl mx-auto">
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
             <div>
-              <div className={`text-lg sm:text-xl font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                🎓 EduHub
+              <div className={`text-base sm:text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                EduHub
               </div>
-              <p className={`text-xs sm:text-sm leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                Empowering aspiring educators with quality preparation and community support.
+              <p className={`text-xs leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                Empowering educators with quality preparation and community support.
               </p>
             </div>
             <div>
-              <h4 className={`font-bold mb-4 text-sm sm:text-base ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                Platform
+              <h4 className={`font-bold mb-3 text-xs sm:text-sm ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                PLATFORM
               </h4>
-              <ul className={`space-y-2 text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              <ul className={`space-y-1.5 text-xs ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                 <li><a href="#features" className="hover:text-blue-500 transition">Features</a></li>
                 <li><a href="#mission" className="hover:text-blue-500 transition">Mission</a></li>
-                <li><a href="#building-blocks" className="hover:text-blue-500 transition">How We Built It</a></li>
+                <li><a href="#building-blocks" className="hover:text-blue-500 transition">Platform</a></li>
               </ul>
             </div>
             <div>
-              <h4 className={`font-bold mb-4 text-sm sm:text-base ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                Resources
+              <h4 className={`font-bold mb-3 text-xs sm:text-sm ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                RESOURCES
               </h4>
-              <ul className={`space-y-2 text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              <ul className={`space-y-1.5 text-xs ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                 <li><a href="#" className="hover:text-blue-500 transition">Blog</a></li>
                 <li><a href="#" className="hover:text-blue-500 transition">FAQ</a></li>
                 <li><a href="#" className="hover:text-blue-500 transition">Contact</a></li>
               </ul>
             </div>
             <div>
-              <h4 className={`font-bold mb-4 text-sm sm:text-base ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                Legal
+              <h4 className={`font-bold mb-3 text-xs sm:text-sm ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                LEGAL
               </h4>
-              <ul className={`space-y-2 text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              <ul className={`space-y-1.5 text-xs ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                 <li><a href="#" className="hover:text-blue-500 transition">Privacy</a></li>
                 <li><a href="#" className="hover:text-blue-500 transition">Terms</a></li>
                 <li><button onClick={() => setShowContactSupport(true)} className="hover:text-blue-500 transition cursor-pointer">Support</button></li>
@@ -514,10 +531,10 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className={`text-center text-xs sm:text-sm py-6 border-t ${
+          <div className={`text-center text-xs py-4 border-t ${
             isLightMode ? 'border-slate-200 text-slate-600' : 'border-slate-800 text-slate-400'
           }`}>
-            <p>© 2024 EduHub. Committed to empowering educators. All rights reserved.</p>
+            <p>© 2024 EduHub. Empowering educators. All rights reserved.</p>
           </div>
         </div>
       </footer>
@@ -525,47 +542,47 @@ export function LandingPage() {
       {/* Contact Support Modal */}
       {showContactSupport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
-          <div className={`rounded-2xl p-6 sm:p-8 max-w-md w-full border transition-all duration-300 animate-scale-in ${
+          <div className={`rounded-xl p-5 sm:p-6 max-w-sm w-full border transition-all duration-300 animate-scale-in ${
             isLightMode
               ? 'bg-white border-slate-200'
               : 'bg-slate-900 border-slate-700'
           }`}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className={`text-lg sm:text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className={`text-base sm:text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 Contact Support
               </h3>
               <button
                 onClick={() => setShowContactSupport(false)}
-                className={`text-xl sm:text-2xl transition hover:scale-110 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+                className={`text-lg transition hover:scale-110 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div className={`p-4 sm:p-5 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+            <div className="space-y-3">
+              <div className={`p-3 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
+                <p className={`text-xs font-semibold mb-0.5 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                   Phone
                 </p>
-                <p className={`text-base sm:text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <p className={`text-sm font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   0987654231
                 </p>
               </div>
 
-              <div className={`p-4 sm:p-5 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              <div className={`p-3 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
+                <p className={`text-xs font-semibold mb-0.5 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                   Hotline
                 </p>
-                <p className={`text-base sm:text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <p className={`text-sm font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   456 5732
                 </p>
               </div>
 
-              <div className={`p-4 sm:p-5 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              <div className={`p-3 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
+                <p className={`text-xs font-semibold mb-0.5 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                   Email
                 </p>
-                <p className={`text-base sm:text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                <p className={`text-sm font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   admin.cvsu.edu.ph
                 </p>
               </div>
@@ -573,7 +590,7 @@ export function LandingPage() {
 
             <button
               onClick={() => setShowContactSupport(false)}
-              className="w-full mt-6 px-4 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-sm sm:text-base hover:shadow-lg hover:shadow-blue-500/40 transition-all"
+              className="w-full mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-xs sm:text-sm hover:shadow-lg hover:shadow-blue-500/40 transition-all"
             >
               Close
             </button>
