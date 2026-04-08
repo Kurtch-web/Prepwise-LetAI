@@ -1095,7 +1095,7 @@ export function QuestionsBank() {
   // Manual Creation View
   if (view === 'create-manual') {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="w-full max-w-6xl mx-auto space-y-6">
         <button
           onClick={() => setView('list')}
           className={`px-4 py-2 rounded-lg font-semibold transition ${
@@ -1107,14 +1107,15 @@ export function QuestionsBank() {
           ← Back
         </button>
 
-        <div className={`rounded-2xl border p-8 space-y-6 ${
-          isLightMode
-            ? 'border-slate-200 bg-white'
-            : 'border-slate-700 bg-slate-900/40'
-        }`}>
-          <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            ➕ Create Question
-          </h2>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)] items-start">
+          <div className={`rounded-2xl border p-8 space-y-6 ${
+            isLightMode
+              ? 'border-slate-200 bg-white'
+              : 'border-slate-700 bg-slate-900/40'
+          }`}>
+            <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+              ➕ Create Question
+            </h2>
 
           {error && (
             <div className={`rounded-2xl border p-4 ${
@@ -1230,55 +1231,6 @@ export function QuestionsBank() {
             </div>
           </div>
 
-          {queuedManualQuestions.length > 0 && (
-            <div className={`rounded-2xl border p-4 space-y-3 ${
-              isLightMode
-                ? 'border-emerald-200 bg-emerald-50'
-                : 'border-emerald-800 bg-emerald-900/20'
-            }`}>
-              <div className="flex items-center justify-between gap-3">
-                <p className={`font-semibold ${isLightMode ? 'text-emerald-900' : 'text-emerald-200'}`}>
-                  {queuedManualQuestions.length} question{queuedManualQuestions.length !== 1 ? 's' : ''} ready to create
-                </p>
-                <span className={`text-sm ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
-                  Folder: {queuedManualQuestions[0]?.batchName}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {queuedManualQuestions.map((question, index) => (
-                  <div
-                    key={`${question.batchName}-${index}`}
-                    className={`flex items-start justify-between gap-3 rounded-xl border px-4 py-3 ${
-                      isLightMode
-                        ? 'border-emerald-100 bg-white'
-                        : 'border-emerald-900/40 bg-slate-900/30'
-                    }`}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                        {index + 1}. {question.text}
-                      </p>
-                      <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                        {getCategoryLabel(question.category)} • {question.choices.length} choices • Correct answer: {question.correctAnswer}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveQueuedManualQuestion(index)}
-                      type="button"
-                      className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold transition ${
-                        isLightMode
-                          ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                          : 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
-                      }`}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div className="flex gap-3 flex-wrap">
             <button
               onClick={handleAddManualQuestion}
@@ -1315,6 +1267,65 @@ export function QuestionsBank() {
             </button>
           </div>
         </div>
+
+        <div className={`rounded-2xl border p-6 flex flex-col min-h-0 ${
+          isLightMode
+            ? 'border-emerald-200 bg-emerald-50'
+            : 'border-emerald-800 bg-emerald-900/20'
+        }`}>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <p className={`font-semibold ${isLightMode ? 'text-emerald-900' : 'text-emerald-200'}`}>
+              {queuedManualQuestions.length} question{queuedManualQuestions.length !== 1 ? 's' : ''} ready to create
+            </p>
+            <span className={`text-sm ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
+              Folder: {queuedManualQuestions[0]?.batchName || '—'}
+            </span>
+          </div>
+
+          {queuedManualQuestions.length > 0 ? (
+            <div className="space-y-2 overflow-y-auto pr-1 flex-1 min-h-0">
+              {queuedManualQuestions.map((question, index) => (
+                <div
+                  key={`${question.batchName}-${index}`}
+                  className={`flex items-start justify-between gap-3 rounded-xl border px-4 py-3 ${
+                    isLightMode
+                      ? 'border-emerald-100 bg-white'
+                      : 'border-emerald-900/40 bg-slate-900/30'
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      {index + 1}. {question.text}
+                    </p>
+                    <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                      {getCategoryLabel(question.category)} • {question.choices.length} choices • Correct answer: {question.correctAnswer}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveQueuedManualQuestion(index)}
+                    type="button"
+                    className={`flex-shrink-0 px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                      isLightMode
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                        : 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
+                    }`}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={`flex flex-1 items-center justify-center rounded-xl border border-dashed px-4 py-8 text-sm ${
+              isLightMode
+                ? 'border-emerald-200 text-emerald-700 bg-white/50'
+                : 'border-emerald-800 text-emerald-300 bg-slate-900/20'
+            }`}>
+              Your queued questions will appear here.
+            </div>
+          )}
+        </div>
+      </div>
       </div>
     );
   }
