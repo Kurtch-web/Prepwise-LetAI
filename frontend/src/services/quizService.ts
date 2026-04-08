@@ -222,6 +222,28 @@ const quizService = {
       method: 'DELETE'
     });
   },
+
+  async getQuizDetails(quizId: string): Promise<QuizDetails> {
+    return request<QuizDetails>(`/api/quizzes/details/${quizId}`, {
+      method: 'GET'
+    });
+  },
+
+  async updateQuiz(quizId: string, title: string, description: string | null, questions: Array<{
+    question_text: string;
+    choices: string[];
+    correct_answer: string;
+  }>, timeLimitMinutes: number | null) {
+    return request(`/api/quizzes/update/${quizId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        title,
+        description,
+        questions,
+        time_limit_minutes: timeLimitMinutes,
+      })
+    });
+  },
 };
 
 export default quizService;

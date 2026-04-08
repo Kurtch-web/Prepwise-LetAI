@@ -9,6 +9,7 @@ import { LeaderboardModal } from '../components/LeaderboardModal';
 import { AssessmentSurvey } from '../components/AssessmentSurvey';
 import { AssessmentTemplatesList } from '../components/AssessmentTemplatesList';
 import { AddQuestionFromBankModal } from '../components/AddQuestionFromBankModal';
+import { EditQuizModal } from '../components/EditQuizModal';
 import { api, type UserProfile } from '../services/api';
 import quizService from '../services/quizService';
 import { useTheme } from '../providers/ThemeProvider';
@@ -60,6 +61,7 @@ export function AdminPortalPage() {
   const [assessmentTemplatesSummary, setAssessmentTemplatesSummary] = useState<any[]>([]);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
+  const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
 
   // Fetch users with profiles
   const fetchUsers = async () => {
@@ -778,6 +780,16 @@ export function AdminPortalPage() {
                                     </div>
                                     <div className="space-y-2">
                                       <button
+                                        onClick={() => setEditingQuizId(quiz.id)}
+                                        className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                                          isLightMode
+                                            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                            : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                        }`}
+                                      >
+                                        ✏️ Edit
+                                      </button>
+                                      <button
                                         onClick={() => loadLeaderboard(quiz)}
                                         className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition ${
                                           isLightMode
@@ -1134,6 +1146,16 @@ export function AdminPortalPage() {
                               </div>
                               <div className="space-y-2">
                                 <button
+                                  onClick={() => setEditingQuizId(quiz.id)}
+                                  className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                                    isLightMode
+                                      ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                  }`}
+                                >
+                                  ✏️ Edit
+                                </button>
+                                <button
                                   onClick={() => loadLeaderboard(quiz)}
                                   className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition ${
                                     isLightMode
@@ -1192,6 +1214,23 @@ export function AdminPortalPage() {
         onClose={() => setShowAddQuestionModal(false)}
         onAddQuestions={handleAddQuestionsFromBank}
       />
+
+      {editingQuizId && (
+        <EditQuizModal
+          isOpen={!!editingQuizId}
+          quizId={editingQuizId}
+          onClose={() => setEditingQuizId(null)}
+          onSuccess={() => {
+            setEditingQuizId(null);
+            loadAdminQuizzes(
+              materialsTab === 'diagnostic-test' ? 'diagnostic-test' :
+              materialsTab === 'drills' ? 'drills' :
+              materialsTab === 'short-quiz' ? 'short-quiz' :
+              'preboard'
+            );
+          }}
+        />
+      )}
 
       {showAssessmentSurvey && (
         <AssessmentSurvey
