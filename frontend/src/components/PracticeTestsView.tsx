@@ -32,6 +32,8 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
   const [selectedMathTopic, setSelectedMathTopic] = useState<string>('Arithmetic and Number Theory');
   const [selectedEnglishTopic, setSelectedEnglishTopic] = useState<string>('English for Specific Purposes');
   const [showTopicsSidebar, setShowTopicsSidebar] = useState(false);
+  const [selectedTime, setSelectedTime] = useState<number | null>(null);
+  const [selectedSession, setSelectedSession] = useState<PracticeTestSession | null>(null);
 
   const testTypeInfo: Record<string, { emoji: string; label: string }> = {
     'diagnostic-test': { emoji: '🔍', label: 'Diagnostic Test' },
@@ -481,10 +483,10 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
           )}
           {showModal && selectedTestType && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-              <div className={`rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto ${
+              <div className={`rounded-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col ${
                 isLightMode ? 'bg-white' : 'bg-slate-800'
               }`}>
-                <div className={`sticky top-0 border-b p-6 flex items-center justify-between ${
+                <div className={`border-b p-6 flex items-center justify-between ${
                   isLightMode
                     ? 'bg-white border-slate-200'
                     : 'bg-slate-800 border-slate-700'
@@ -496,50 +498,121 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                     {testTypeInfo[selectedTestType]?.label}
                   </h3>
                   <button
-                    onClick={() => setShowModal(false)}
+                    onClick={() => {
+                      setShowModal(false);
+                      setSelectedTime(null);
+                    }}
                     className={`text-2xl font-bold ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
                   >
                     ✕
                   </button>
                 </div>
 
-                <div className="p-6 space-y-3">
-                  {(groupedByTestType[selectedTestType] || []).map((session) => (
-                    <button
-                      key={session.id}
-                      onClick={() => {
-                        // Pass the first (original) session with all its data
-                        const originalSession = session.sessions[0];
-                        onSelectQuiz?.(session.originalQuizId, session.quizTitle, selectedTestType, originalSession);
-                        setShowModal(false);
-                      }}
-                      className={`w-full rounded-lg border p-4 text-left transition-all ${
-                        isLightMode
-                          ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-emerald-400'
-                          : 'bg-slate-700/30 border-slate-600 hover:bg-slate-700/50 hover:border-emerald-400'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className={`font-bold text-lg ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                            {session.quizTitle}
-                          </p>
-                          <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                            {session.attempts === 0
-                              ? 'Ready to practice'
-                              : `${session.attempts} attempt${session.attempts !== 1 ? 's' : ''} • Best: ${session.bestScore.toFixed(0)}%`}
-                          </p>
+                <div className="flex-1 overflow-y-auto flex">
+                  {/* Left side - Test list */}
+                  <div className="flex-1 border-r p-6 space-y-3" style={{
+                    borderColor: isLightMode ? '#e2e8f0' : 'rgba(255, 255, 255, 0.1)'
+                  }}>
+                    {(groupedByTestType[selectedTestType] || []).map((session) => (
+                      <button
+                        key={session.id}
+                        onClick={() => {
+                          setSelectedSession(session);
+                          setSelectedTime(null);
+                        }}
+                        className={`w-full rounded-lg border p-4 text-left transition-all ${
+                          selectedSession?.id === session.id
+                            ? isLightMode
+                              ? 'bg-emerald-50 border-emerald-400 shadow-md'
+                              : 'bg-emerald-500/20 border-emerald-400 shadow-md'
+                            : isLightMode
+                            ? 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-emerald-400'
+                            : 'bg-slate-700/30 border-slate-600 hover:bg-slate-700/50 hover:border-emerald-400'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className={`font-bold text-lg ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                              {session.quizTitle}
+                            </p>
+                            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                              {session.attempts === 0
+                                ? 'Ready to practice'
+                                : `${session.attempts} attempt${session.attempts !== 1 ? 's' : ''} • Best: ${session.bestScore.toFixed(0)}%`}
+                            </p>
+                          </div>
+                          {selectedSession?.id === session.id && (
+                            <span className="text-2xl">✓</span>
+                          )}
                         </div>
-                        <div className={`px-4 py-2 rounded-lg font-semibold transition ${
-                          isLightMode
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-emerald-500/20 text-emerald-300'
-                        }`}>
-                          Practice →
-                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Right side - Time selection */}
+                  {selectedSession ? (
+                    <div className="w-64 flex-shrink-0 p-6 flex flex-col gap-4 bg-gradient-to-b" style={{
+                      backgroundColor: isLightMode ? '#f8fafc' : 'rgba(15, 23, 42, 0.5)'
+                    }}>
+                      <div>
+                        <h4 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          ⏱️ Select Time
+                        </h4>
+                        <p className={`text-xs mb-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                          Choose your practice duration
+                        </p>
                       </div>
-                    </button>
-                  ))}
+
+                      <div className="space-y-3 flex-1">
+                        {[10, 15, 25, 30, 60].map((minutes) => (
+                          <button
+                            key={minutes}
+                            onClick={() => setSelectedTime(minutes)}
+                            className={`w-full px-4 py-3 rounded-lg font-semibold text-center transition-all border-2 ${
+                              selectedTime === minutes
+                                ? isLightMode
+                                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-lg'
+                                  : 'bg-emerald-600 text-white border-emerald-600 shadow-lg'
+                                : isLightMode
+                                ? 'bg-white border-slate-200 text-slate-900 hover:border-emerald-400'
+                                : 'bg-slate-700/50 border-slate-600 text-white hover:border-emerald-400'
+                            }`}
+                          >
+                            <div className="text-xl font-bold">{minutes}</div>
+                            <div className="text-xs opacity-75">minutes</div>
+                          </button>
+                        ))}
+                      </div>
+
+                      {selectedTime && (
+                        <button
+                          onClick={() => {
+                            const originalSession = selectedSession.sessions[0];
+                            onSelectQuiz?.(selectedSession.originalQuizId, selectedSession.quizTitle, selectedTestType || 'diagnostic-test', originalSession);
+                            setShowModal(false);
+                            setSelectedTime(null);
+                            setSelectedSession(null);
+                          }}
+                          className={`w-full px-4 py-3 rounded-lg font-bold text-center transition-all mt-4 ${
+                            isLightMode
+                              ? 'bg-blue-600 text-white hover:bg-blue-700'
+                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                          }`}
+                        >
+                          Start Practice →
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-64 flex-shrink-0 p-6 flex flex-col gap-4 justify-center items-center bg-gradient-to-b" style={{
+                      backgroundColor: isLightMode ? '#f8fafc' : 'rgba(15, 23, 42, 0.5)'
+                    }}>
+                      <div className="text-4xl">⏱️</div>
+                      <p className={`text-center font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                        Select a test to begin
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
