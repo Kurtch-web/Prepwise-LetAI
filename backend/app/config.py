@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / 'data'
 USERS_FILE = DATA_DIR / 'users.json'
 
-SESSION_TTL_MINUTES = int(os.getenv('SESSION_TTL_MINUTES', '60'))
+SESSION_TTL_MINUTES = int(os.getenv('SESSION_TTL_MINUTES', '360'))
 
 # Support multiple FRONTEND_ORIGIN values (comma-separated for production)
 # Examples:
