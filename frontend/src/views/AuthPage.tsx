@@ -1334,38 +1334,85 @@ export function AuthPage() {
 
       {/* Support Contact Modal */}
       <Modal
-        title="Contact Support"
+        title="Support & Resources"
         isOpen={showSupportModal}
         onClose={() => setShowSupportModal(false)}
       >
-        <div className="space-y-6">
+        <div className="space-y-8">
+          {/* Platform Support Section */}
           <div>
-            <h3 className="font-bold mb-2">Hotline</h3>
-            <p className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              {hotlineNumber}
-            </p>
-            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              Available Monday - Friday, 9AM - 5PM
-            </p>
+            <h3 className={`text-lg font-bold mb-4 pb-3 border-b ${isLightMode ? 'text-emerald-700 border-emerald-200' : 'text-emerald-300 border-emerald-800'}`}>
+              📞 Platform Support
+            </h3>
+            <div className="space-y-4">
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-emerald-50 border border-emerald-200' : 'bg-emerald-900/20 border border-emerald-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-emerald-600' : 'text-emerald-400'}`}>MAIN HOTLINE</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>1-800-PREPWISE</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Mon-Fri, 9AM-5PM</p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-blue-50 border border-blue-200' : 'bg-blue-900/20 border border-blue-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-blue-600' : 'text-blue-400'}`}>EMAIL SUPPORT</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>support@prepwise.edu.ph</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Response within 24 hours</p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-purple-50 border border-purple-200' : 'bg-purple-900/20 border border-purple-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-purple-600' : 'text-purple-400'}`}>LIVE CHAT</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Available on Dashboard</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Real-time assistance</p>
+              </div>
+            </div>
           </div>
 
+          {/* Crisis & Abuse Support Section */}
           <div>
-            <h3 className="font-bold mb-2">Email</h3>
-            <p className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              support@letreviewhub.edu
+            <h3 className={`text-lg font-bold mb-4 pb-3 border-b ${isLightMode ? 'text-red-700 border-red-200' : 'text-red-300 border-red-800'}`}>
+              🆘 Crisis & Abuse Support
+            </h3>
+            <p className={`text-sm mb-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              If you or someone you know needs help, please reach out to these resources:
             </p>
-            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              Response time: Within 24 hours
-            </p>
+            <div className="space-y-3">
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-red-50 border border-red-200' : 'bg-red-900/20 border border-red-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-red-600' : 'text-red-400'}`}>🏠 DOMESTIC ABUSE HOTLINE</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>1-800-799-7233 (SAFE)</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>National Domestic Violence Hotline - 24/7</p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-orange-50 border border-orange-200' : 'bg-orange-900/20 border border-orange-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-orange-600' : 'text-orange-400'}`}>🏫 SCHOOL ABUSE & BULLYING</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>1-800-4-A-CHILD (1-800-422-4453)</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Childhelp National Child Abuse Hotline - 24/7</p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-cyan-50 border border-cyan-200' : 'bg-cyan-900/20 border border-cyan-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-cyan-600' : 'text-cyan-400'}`}>🧠 MENTAL HEALTH & SUICIDE PREVENTION</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>988 (Suicide & Crisis Lifeline)</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Call or text 988 - Available 24/7</p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-pink-50 border border-pink-200' : 'bg-pink-900/20 border border-pink-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-pink-600' : 'text-pink-400'}`}>⚖️ SEXUAL ASSAULT & HARASSMENT</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>1-800-656-HOPE (4673)</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>RAINN National Sexual Assault Hotline - 24/7</p>
+              </div>
+
+              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-indigo-50 border border-indigo-200' : 'bg-indigo-900/20 border border-indigo-800'}`}>
+                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-indigo-600' : 'text-indigo-400'}`}>💊 SUBSTANCE ABUSE & ADDICTION</p>
+                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>1-800-662-4357 (SAMHSA)</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Substance Abuse & Mental Health Services - 24/7</p>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <h3 className="font-bold mb-2">Phone</h3>
-            <p className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              +1 (555) 123-4567
+          {/* Important Note */}
+          <div className={`p-4 rounded-lg border-l-4 ${isLightMode ? 'bg-yellow-50 border-l-yellow-500 border border-yellow-200' : 'bg-yellow-900/20 border-l-yellow-500 border border-yellow-800'}`}>
+            <p className={`text-sm font-semibold mb-2 ${isLightMode ? 'text-yellow-800' : 'text-yellow-200'}`}>
+              ⚠️ In Case of Emergency
             </p>
-            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              Available 24/7 for urgent matters
+            <p className={`text-sm ${isLightMode ? 'text-yellow-700' : 'text-yellow-300'}`}>
+              If you are in immediate danger, please call 911 or your local emergency services. These hotlines are confidential and free.
             </p>
           </div>
         </div>

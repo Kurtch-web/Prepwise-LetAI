@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../providers/ThemeProvider';
 
@@ -6,679 +6,592 @@ export function LandingPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const isLightMode = theme === 'light';
+
   const [scrollY, setScrollY] = useState(0);
-  const [showContactSupport, setShowContactSupport] = useState(false);
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
-  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const [isLearnMoreModalOpen, setIsLearnMoreModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('how-it-helps'); // Initialize activeTab with 'how-it-helps'
 
+  // Navbar state on scroll + Intersection Observer for reveal animations
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
     };
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
-    const observer = new IntersectionObserver((entries) => {
-      const newVisible = new Set(visibleSections);
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          newVisible.add(entry.target.id);
-        } else {
-          newVisible.delete(entry.target.id);
-        }
-      });
-      setVisibleSections(newVisible);
-    }, observerOptions);
+    // Intersection Observer for scroll-triggered animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set([...prev, entry.target.id]));
+          } else {
+            setVisibleSections((prev) => {
+              const newSet = new Set(prev);
+              newSet.delete(entry.target.id);
+              return newSet;
+            });
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+    );
 
-    Object.values(sectionRefs.current).forEach(el => {
+    // Observe all sections with animation
+    ['highlights', 'core-values', 'features-section', 'why-prepwise', 'cta'].forEach((id) => {
+      const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
 
-    return () => observer.disconnect();
-  }, [visibleSections]);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
+  }, []);
+
+  const isVisible = (id: string) => visibleSections.has(id);
+
+  const highlights = [
+    {
+      title: 'School-ready resources',
+      desc: 'Structured review materials designed for educator preparation.'
+    },
+    {
+      title: 'Teacher-focused content',
+      desc: 'Coverage for core LET domains with practical study guidance.'
+    },
+    {
+      title: 'Flexible study workflow',
+      desc: 'Use quizzes, flashcards, and video lessons at your own pace.'
+    }
+  ];
 
   const features = [
     {
-      icon: '→',
-      title: 'Evidence-Based Learning',
-      description: 'Content aligned with PRC standards and modern pedagogical approaches for effective preparation'
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 3a7 7 0 0 0-7 7v1a7 7 0 0 0 14 0v-1a7 7 0 0 0-7-7Z"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <path
+            d="M8 21h8"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M9 10h.01M12 10h.01M15 10h.01"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </svg>
+      ),
+      title: 'AI-Powered Learning',
+      desc: 'Get detailed explanations and insights for every question, empowering you to learn from your mistakes and improve your understanding.',
+      badgeClassName: 'bg-gradient-to-br from-emerald-500 to-green-500'
     },
     {
-      icon: '◆',
-      title: 'Adaptive Learning Paths',
-      description: 'Intelligent systems that identify knowledge gaps and customize study recommendations in real-time'
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 6a2 2 0 0 1 2-2h9l5 5v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <path d="M14 4v6h6" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+          <path d="M8 13h8M8 16h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      ),
+      title: 'Diagnostic Assessments',
+      desc: 'Pinpoint weak areas early and focus your review time where it matters.',
+      badgeClassName: 'bg-gradient-to-br from-emerald-500 to-teal-500'
     },
     {
-      icon: '◈',
-      title: 'Community Support',
-      description: 'Collaborative environment where educators connect, share insights, and support each other'
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 3a7 7 0 0 0-7 7v1a7 7 0 0 0 14 0v-1a7 7 0 0 0-7-7Z"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <path
+            d="M8 21h8"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M9 10h.01M12 10h.01M15 10h.01"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </svg>
+      ),
+      title: 'Spaced Repetition',
+      desc: 'Build long-term recall with a smart flashcard schedule tailored to you.',
+      badgeClassName: 'bg-gradient-to-br from-teal-500 to-emerald-500'
     },
     {
-      icon: '+',
-      title: 'Quality Assurance',
-      description: 'Rigorous content review and continuous improvement based on student feedback'
-    },
-    {
-      icon: '◉',
-      title: 'Accessible Education',
-      description: 'Optimized platform ensuring all aspiring teachers have equal access to quality materials'
-    },
-    {
-      icon: '▲',
-      title: 'Performance Analytics',
-      description: 'Real-time progress tracking and insights to monitor improvement and build confidence'
-    }
-  ];
-
-  const values = [
-    {
-      title: 'Empowerment',
-      description: 'We believe every aspiring teacher deserves access to quality preparation resources regardless of background or location'
-    },
-    {
-      title: 'Excellence',
-      description: 'We maintain the highest standards of educational content and continuously improve our platform based on real outcomes'
-    },
-    {
-      title: 'Collaboration',
-      description: 'We foster a supportive community where educators learn together and contribute to each other\'s success'
-    },
-    {
-      title: 'Innovation',
-      description: 'We leverage technology to make teacher preparation more efficient, effective, and accessible for all learners'
-    }
-  ];
-
-  const buildingBlocks = [
-    {
-      number: '01',
-      title: 'Comprehensive Content',
-      description: 'Curated by education experts and aligned with the latest PRC standards and curriculum frameworks'
-    },
-    {
-      number: '02',
-      title: 'Intelligent Assessment',
-      description: 'Advanced analytics identify learning patterns and recommend personalized study strategies for optimal preparation'
-    },
-    {
-      number: '03',
-      title: 'Supportive Community',
-      description: 'Connect with peers, share experiences, and benefit from collective knowledge of aspiring educators'
-    },
-    {
-      number: '04',
-      title: 'Progress Tracking',
-      description: 'Real-time insights into your performance help you focus efforts where they matter most'
+      icon: (
+        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M7 8a5 5 0 1 1 10 0c0 2-1 3-2 4s-2 2-2 4"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path d="M12 19h.01" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+        </svg>
+      ),
+      title: 'Question Bank',
+      desc: 'PRC-aligned items organized by topic for systematic mastery.',
+      badgeClassName: 'bg-gradient-to-br from-green-500 to-emerald-600'
     }
   ];
 
   return (
-    <div className={`${isLightMode ? 'bg-slate-50' : 'bg-slate-950'} transition-colors duration-200 overflow-x-hidden`}>
-      {/* Navigation */}
-      <nav className={`sticky top-0 z-50 backdrop-blur-md ${
-        isLightMode
-          ? 'bg-white/80 border-b border-slate-200'
-          : 'bg-slate-900/80 border-b border-slate-800'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex justify-between items-center">
-          <div className={`text-lg sm:text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            EduHub
-          </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={toggleTheme}
-              className={`px-2.5 sm:px-3 py-1.5 rounded text-sm transition-colors duration-300 ${
-                isLightMode
-                  ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
-                  : 'bg-slate-800 text-white hover:bg-slate-700'
-              }`}
-            >
-              {isLightMode ? '◐' : '◑'}
-            </button>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/40 transition-all duration-300"
-            >
-              Get Started
-            </button>
+    <div className={`${isLightMode ? 'bg-gradient-to-b from-emerald-50/60 via-teal-50/40 to-green-50/50' : 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950'} min-h-screen overflow-x-hidden`}>
+      {/* Parallax Navbar */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrollY > 20 ? `backdrop-blur-xl border-b ${isLightMode ? 'bg-emerald-50/85 border-emerald-200/60' : 'bg-slate-950/70 border-slate-800/60'}` : 'bg-transparent'}`}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center gap-3">
+              <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center border ${isLightMode ? 'bg-emerald-50/80 border-emerald-200 shadow-sm' : 'bg-slate-900/50 border-emerald-500/30'}`}>
+                <span className="absolute w-4 h-4 rounded-full bg-emerald-400/90 -left-1 top-1" />
+                <span className="absolute w-3 h-3 rounded-full bg-green-500/80 right-1 bottom-1" />
+                <svg className={`w-5 h-5 relative z-10 ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12h5l2-4 3 8 2-4h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <span className={`text-2xl lg:text-3xl font-display font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                PrepWise
+              </span>
+            </div>
+            <div className="flex items-center gap-3 lg:gap-4">
+              <a href="#features" className="hidden sm:inline text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">Features</a>
+              <a href="#timeline" className="hidden sm:inline text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">Why PrepWise</a>
+              <button
+                className={`px-6 py-3 rounded-2xl font-semibold text-base transition-all duration-200 ${
+                  isLightMode
+                    ? 'bg-slate-900 text-white hover:bg-slate-800'
+                    : 'bg-white text-slate-900 hover:bg-slate-200'
+                }`}
+                onClick={() => navigate('/dashboard')}
+              >
+                Get started
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section with Parallax */}
-      <section
-        id="hero"
-        ref={(el) => { if (el) sectionRefs.current.hero = el; }}
-        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10 flex items-center ${
-          isLightMode
-            ? 'bg-white'
-            : 'bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950'
-        }`}
-        style={{ minHeight: 'calc(100vh - 56px)' }}
-      >
-        {/* Parallax background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className={`absolute -top-32 -right-32 w-64 h-64 sm:w-80 sm:h-80 ${
-              isLightMode ? 'bg-blue-200/30' : 'bg-blue-600/15'
-            } rounded-full blur-3xl animate-blob`}
-            style={{ transform: `translateY(${scrollY * 0.3}px)` }}
-          />
-          <div
-            className={`absolute -bottom-32 -left-32 w-64 h-64 sm:w-80 sm:h-80 ${
-              isLightMode ? 'bg-indigo-200/30' : 'bg-indigo-700/15'
-            } rounded-full blur-3xl animate-blob animation-delay-2000`}
-            style={{ transform: `translateY(${scrollY * -0.2}px)` }}
-          />
-          <div
-            className={`absolute top-1/2 left-1/2 w-80 h-80 ${
-              isLightMode ? 'bg-purple-200/20' : 'bg-purple-600/10'
-            } rounded-full blur-3xl animate-blob animation-delay-4000`}
-            style={{ transform: `translate(calc(-50% + ${scrollY * 0.1}px), -50%)` }}
-          />
+      {/* Hero Section - Animated Gradient + Floating Elements */}
+      <section className="relative pt-24 pb-20 overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 parallax-bg" style={{ transform: `translateY(${scrollY * 0.15}px)` }}>
+          <div className={`absolute inset-0 ${isLightMode ? 'bg-[radial-gradient(circle_at_20%_10%,rgba(16,185,129,0.10),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(34,197,94,0.10),transparent_45%)]' : 'bg-[radial-gradient(circle_at_20%_10%,rgba(16,185,129,0.18),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(34,197,94,0.16),transparent_45%)]'}`} />
+          <div className="absolute -top-10 left-6 w-32 h-32 rounded-full bg-emerald-200/50 dark:bg-emerald-500/10 blur-2xl" />
+          <div className="absolute top-24 right-10 w-24 h-24 rounded-full bg-green-200/60 dark:bg-green-500/10 blur-2xl" />
+          <div className="absolute bottom-8 left-1/3 w-40 h-40 rounded-full bg-teal-200/40 dark:bg-teal-500/10 blur-2xl" />
         </div>
 
-        <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
-          <div className="mb-2.5 inline-block animate-fade-in">
-            <span className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-500 ${
-              isLightMode
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-blue-500/20 text-blue-300'
-            }`}>
-              Empowering Aspiring Educators
-            </span>
-          </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-14 items-center">
+            <div className="lg:col-span-6 text-center lg:text-left">
+              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-md shadow-sm mb-7 animate-fade-in-up ${isLightMode ? 'border-emerald-200/70 bg-emerald-50/70' : 'border-slate-700/60 bg-slate-900/40'}`}>
+                <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">Empowering aspiring educators</span>
+              </div>
+              <h1 className={`font-display text-4xl md:text-5xl lg:text-6xl leading-[1.05] font-black mb-5 animate-fade-in-up ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Quality Teacher Preparation,
+                <span className="block bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">Accessible to All</span>
+              </h1>
+              <p className={`text-base md:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8 animate-slide-left ${isLightMode ? 'text-slate-800' : 'text-slate-300'}`}>
+                Free school platform helping aspiring teachers succeed in licensure examinations and build confidence for their teaching careers.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start items-stretch sm:items-center mb-8 animate-fade-in-up">
+                <button
+                  className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold text-lg rounded-2xl shadow-lg hover:from-emerald-600 hover:to-green-600 transition-colors"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  Start Your Journey
+                </button>
+                <button
+                  className={`px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 border ${
+                    isLightMode
+                      ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-900 hover:bg-emerald-50'
+                      : 'bg-slate-950/40 border-slate-800 text-white hover:bg-slate-950/60'
+                  }`}
+                  onClick={() => setIsLearnMoreModalOpen(true)}
+                >
+                  Learn More
+                </button>
+              </div>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600/80" />
+                  Free for schools
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-600/80" />
+                  Comprehensive resources
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400/80" />
+                  Expert guidance
+                </span>
+              </div>
+            </div>
 
-          <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-3 leading-tight animate-fade-in-delay-1 ${
-            isLightMode ? 'text-slate-900' : 'text-white'
-          }`}>
-            Quality Teacher Preparation,
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-600 bg-clip-text text-transparent">
-              Accessible to All
-            </span>
-          </h1>
+            <div className="lg:col-span-6">
+              <div className={`relative overflow-hidden rounded-4xl p-7 md:p-8 shadow-2xl border backdrop-blur-xl ${isLightMode ? 'border-emerald-100/80 bg-emerald-50/70' : 'border-slate-800/60 bg-slate-950/40'}`}>
+                <div className="absolute -top-8 -right-10 w-48 h-48 rounded-full bg-emerald-500/10 blur-2xl" />
+                <div className="absolute -bottom-12 left-10 w-56 h-56 rounded-full bg-green-500/10 blur-2xl" />
 
-          <p className={`text-sm sm:text-base mb-4 max-w-2xl mx-auto leading-relaxed animate-fade-in-delay-2 ${
-            isLightMode ? 'text-slate-600' : 'text-slate-300'
-          }`}>
-            Comprehensive platform helping aspiring teachers succeed in licensure examinations and build confident, effective teaching careers.
-          </p>
+                <div className="relative">
+                  <div className="flex items-center justify-between gap-4 mb-8">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Study preview</p>
+                      <p className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Your dashboard</p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${isLightMode ? 'bg-emerald-50 text-emerald-700' : 'bg-emerald-500/15 text-emerald-50'}`}>Quick start</span>
+                  </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4 animate-fade-in-delay-3">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm sm:text-base hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
-            >
-              Start Your Journey →
-            </button>
-            <button
-              className={`px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg font-bold text-sm sm:text-base transition-all duration-300 border-2 ${
-                isLightMode
-                  ? 'border-slate-300 text-slate-900 hover:bg-slate-100'
-                  : 'border-slate-700 text-white hover:bg-slate-800'
-              }`}
-            >
-              Learn More
-            </button>
-          </div>
+                  <div className="space-y-4">
+                    {[{ label: 'Today’s lesson', value: 'Professional Education' }, { label: 'Next activity', value: 'Practice quiz' }, { label: 'Video lesson', value: 'Classroom Management Essentials' }].map((row, idx) => (
+                      <div key={row.label} className={`rounded-3xl p-5 border transition-all duration-300 hover:-translate-y-0.5 animate-fade-in-up ${isLightMode ? 'bg-emerald-50/60 border-emerald-100/80 hover:bg-emerald-50/90' : 'bg-slate-950/30 border-slate-800/60 hover:bg-slate-900/50'}`} style={{animationDelay: `${idx * 0.08}s`}}>
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-400">{row.label}</p>
+                        <p className={`mt-1 text-base font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{row.value}</p>
+                      </div>
+                    ))}
+                  </div>
 
-          <div className={`text-xs animate-fade-in-delay-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-            ✓ Free access • ✓ Comprehensive resources • ✓ Expert guidance
+                  <div className="mt-8 grid grid-cols-3 gap-3">
+                    {['Quizzes', 'Flashcards', 'Video'].map((pill, idx) => (
+                      <div key={pill} className={`text-center py-2 rounded-2xl text-xs font-bold border transition-all duration-300 hover:-translate-y-0.5 animate-fade-in-up ${isLightMode ? 'bg-emerald-50/80 border-emerald-100/80 text-emerald-900 hover:bg-emerald-50' : 'bg-slate-950/30 border-slate-800/60 text-slate-200 hover:bg-slate-900/50'}`} style={{animationDelay: `${0.2 + idx * 0.08}s`}}>
+                        {pill}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Mission Section */}
-      <section
-        id="mission"
-        ref={(el) => { if (el) sectionRefs.current.mission = el; }}
-        className={`relative px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
-          isLightMode ? 'bg-slate-50' : 'bg-slate-900'
-        }`}
-      >
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
-              visibleSections.has('mission') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+      {/* School Highlights - Staggered Floating Cards */}
+      <section id="highlights" className="relative py-20 overflow-hidden">
+        {/* Parallax floating blobs */}
+        <div className="absolute inset-0 pointer-events-none" style={{ transform: `translateY(${scrollY * 0.1}px)` }}>
+          <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-emerald-200/30 dark:bg-emerald-500/10 blur-3xl" />
+          <div className="absolute bottom-20 right-20 w-48 h-48 rounded-full bg-teal-200/30 dark:bg-teal-500/10 blur-3xl" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row gap-6 items-stretch">
+            {highlights.map((item, i) => (
+              <div key={i} 
+                className={`flex-1 rounded-3xl p-8 border transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] scroll-reveal ${isVisible('highlights') ? 'visible' : ''} ${isLightMode ? 'bg-emerald-50/70 border-emerald-200/80 shadow-lg hover:shadow-xl' : 'bg-slate-950/50 border-slate-700/60 hover:bg-slate-900/60'} stagger-${i + 1}`}>
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${isLightMode ? 'bg-gradient-to-br from-emerald-400 to-green-500 text-white' : 'bg-gradient-to-br from-emerald-500 to-green-600 text-white'}`}>
+                  <span className="text-2xl font-bold">{i + 1}</span>
+                </div>
+                <p className={`text-xl font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{item.title}</p>
+                <p className={`text-base leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Core Values - Diagonal Overlapping Layout */}
+      <section id="core-values" className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" style={{ transform: `translateY(${scrollY * -0.08}px)` }}>
+          <div className="absolute top-1/2 left-0 w-96 h-96 rounded-full bg-green-200/20 dark:bg-green-500/10 blur-3xl -translate-y-1/2" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+          <div className={`text-center mb-16 scroll-reveal-scale ${isVisible('core-values') ? 'visible' : ''}`}>
+            <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 ${isLightMode ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-900/30 text-emerald-300'}`}>What We Stand For</span>
+            <h2 className={`font-display text-4xl md:text-5xl font-black ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Our Core Values
             </h2>
-            <p className={`text-sm sm:text-base max-w-2xl mx-auto leading-relaxed transition-all duration-500 delay-100 ${
-              visibleSections.has('mission') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            } ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>
-              We remove barriers in teacher education by providing accessible, high-quality resources that empower aspiring educators
+            <p className={`mt-4 text-base md:text-lg max-w-2xl mx-auto ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              A learning platform designed to support aspiring educators with clarity, consistency, and care.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 lg:gap-5">
-            {values.map((value, idx) => (
-              <div
-                key={idx}
-                className={`p-5 sm:p-6 rounded-xl border transition-all duration-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${
-                  isLightMode
-                    ? 'bg-white border-slate-200 hover:shadow-slate-300/40'
-                    : 'bg-slate-800/50 border-slate-700 hover:shadow-slate-900/40'
-                } ${visibleSections.has('mission') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                style={{ transitionDelay: `${idx * 100}ms` }}
-              >
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 mb-3" />
-                <h3 className={`text-lg sm:text-xl font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                  {value.title}
-                </h3>
-                <p className={`text-sm sm:text-base leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  {value.description}
-                </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { title: 'Empowerment', desc: 'Enabling learners with resources and guidance.', icon: 'M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5' },
+              { title: 'Excellence', desc: 'Clear content and consistent practice routines.', icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' },
+              { title: 'Collaboration', desc: 'Community-supported learning and sharing.', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75' },
+              { title: 'Innovation', desc: 'Modern tools that simplify review workflows.', icon: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-13h2v6h-2zm0 8h2v2h-2' }
+            ].map((card, i) => (
+              <div key={card.title} 
+                className={`relative group rounded-3xl p-8 border transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl scroll-reveal ${isVisible('core-values') ? 'visible' : ''} ${isLightMode ? 'bg-white/80 border-emerald-100/80 shadow-lg' : 'bg-slate-950/60 border-slate-700/60'} stagger-${i + 1}`}
+                style={{ transform: `translateY(${i % 2 === 0 ? -8 : 8}px)` }}>
+                <div className={`absolute -top-4 -right-4 w-16 h-16 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:rotate-12 ${isLightMode ? 'bg-gradient-to-br from-emerald-400 to-green-500 text-white shadow-lg' : 'bg-gradient-to-br from-emerald-500 to-green-600 text-white'}`}>
+                  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d={card.icon} />
+                  </svg>
+                </div>
+                <div className="pt-8">
+                  <p className={`text-xl font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{card.title}</p>
+                  <p className={`text-base leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>{card.desc}</p>
+                </div>
+                <div className={`absolute bottom-0 left-0 right-0 h-1 rounded-b-3xl transition-all duration-500 group-hover:h-2 ${isLightMode ? 'bg-gradient-to-r from-emerald-400 to-green-500' : 'bg-gradient-to-r from-emerald-500 to-green-600'}`} />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How We Built It Section */}
-      <section
-        id="building-blocks"
-        ref={(el) => { if (el) sectionRefs.current['building-blocks'] = el; }}
-        className={`relative px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
-          isLightMode ? 'bg-white' : 'bg-slate-950'
-        }`}
-      >
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
-              visibleSections.has('building-blocks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Our Platform Features
-            </h2>
-            <p className={`text-sm sm:text-base max-w-2xl mx-auto transition-all duration-500 delay-100 ${
-              visibleSections.has('building-blocks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            } ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>
-              Thoughtfully designed with educators in mind
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4 lg:gap-5">
-            {buildingBlocks.map((block, idx) => (
-              <div
-                key={idx}
-                className={`flex gap-3 sm:gap-4 p-5 sm:p-6 rounded-xl border transition-all duration-500 hover:shadow-lg ${
-                  isLightMode
-                    ? 'bg-slate-50 border-slate-200 hover:shadow-slate-300/40'
-                    : 'bg-slate-900/50 border-slate-800 hover:shadow-slate-900/40 hover:bg-slate-900/70'
-                } ${visibleSections.has('building-blocks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                style={{ transitionDelay: `${idx * 100}ms` }}
-              >
-                <div className={`flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-lg flex items-center justify-center font-bold text-base sm:text-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white`}>
-                  {block.number}
-                </div>
-                <div>
-                  <h3 className={`text-base sm:text-lg font-bold mb-1 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                    {block.title}
-                  </h3>
-                  <p className={`text-xs sm:text-sm leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                    {block.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Features - Alternating Zigzag Layout */}
+      <section id="features-section" className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-emerald-100/40 dark:from-emerald-900/10 to-transparent" />
         </div>
-      </section>
-
-      {/* Features Section */}
-      <section
-        id="features"
-        ref={(el) => { if (el) sectionRefs.current.features = el; }}
-        className={`px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
-          isLightMode
-            ? 'bg-slate-50'
-            : 'bg-gradient-to-b from-slate-900 to-slate-950'
-        }`}
-      >
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
-              visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Why Choose EduHub
-            </h2>
-            <p className={`text-sm sm:text-base max-w-2xl mx-auto transition-all duration-500 delay-100 ${
-              visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            } ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              A platform built by educators, for educators
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+          <div className={`flex items-end justify-between mb-16 scroll-reveal-scale ${isVisible('features-section') ? 'visible' : ''}`}>
+            <div>
+              <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 ${isLightMode ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-900/30 text-emerald-300'}`}>Platform</span>
+              <h2 className={`font-display text-4xl md:text-5xl font-black leading-tight ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Our Platform Features
+              </h2>
+            </div>
+            <p className={`hidden md:block text-lg max-w-md ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              Comprehensive platform helping aspiring teachers succeed.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+          <div className="space-y-8">
             {features.map((feature, idx) => (
-              <div
-                key={idx}
-                className={`group rounded-lg p-5 sm:p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg cursor-pointer border backdrop-blur-sm ${
-                  isLightMode
-                    ? 'bg-white border-slate-200 hover:shadow-lg hover:shadow-slate-300/40'
-                    : 'bg-slate-800/30 border-slate-700 hover:shadow-lg hover:shadow-slate-900/40 hover:bg-slate-800/50'
-                } ${visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                style={{ transitionDelay: `${idx * 50}ms` }}
-              >
-                <div className="text-3xl sm:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300 w-8">
-                  {feature.icon}
+              <div key={feature.title} 
+                className={`flex flex-col ${idx % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 group scroll-reveal ${isVisible('features-section') ? 'visible' : ''} ${idx % 2 === 0 ? 'scroll-reveal-left' : 'scroll-reveal-right'} stagger-${idx + 1}`}>
+                <div className={`flex-1 w-full rounded-3xl p-8 border transition-all duration-500 hover:shadow-2xl ${isLightMode ? 'bg-white/90 border-emerald-100/80 shadow-lg' : 'bg-slate-950/50 border-slate-700/60'}`}>
+                  <div className="flex items-start gap-6">
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-white flex-shrink-0 ${feature.badgeClassName}`}>
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h3 className={`text-xl font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{feature.title}</h3>
+                      <p className={`text-base leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>{feature.desc}</p>
+                    </div>
+                  </div>
                 </div>
-                <h3 className={`text-base sm:text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                  {feature.title}
-                </h3>
-                <p className={`leading-relaxed text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  {feature.description}
-                </p>
+                <div className={`w-full md:w-48 h-32 rounded-2xl border flex items-center justify-center transition-all duration-500 group-hover:scale-105 ${isLightMode ? 'bg-emerald-50/50 border-emerald-200/60' : 'bg-slate-900/30 border-slate-700/40'}`}>
+                  <div className={`w-12 h-12 ${isLightMode ? 'text-emerald-600' : 'text-emerald-400'}`}>
+                    {feature.icon}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why It Was Built Section */}
-      <section
-        id="why-built"
-        ref={(el) => { if (el) sectionRefs.current['why-built'] = el; }}
-        className={`px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
-          isLightMode ? 'bg-white' : 'bg-slate-900'
-        }`}
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-7">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-2 transition-all duration-500 ${
-              visibleSections.has('why-built') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              Why We Built This
-            </h2>
-          </div>
-
-          <div className={`space-y-4 transition-all duration-500 ${
-            isLightMode ? '' : ''
-          } ${visibleSections.has('why-built') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className={`rounded-lg p-5 sm:p-6 border ${
-              isLightMode
-                ? 'bg-slate-50 border-slate-200'
-                : 'bg-slate-800/50 border-slate-700'
-            }`}>
-              <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>The Problem</h3>
-              <p className={`text-sm sm:text-base leading-relaxed ${
-                isLightMode ? 'text-slate-700' : 'text-slate-300'
-              }`}>
-                Thousands of aspiring teachers face fragmented resources, outdated materials, and lack of structured guidance. Many deserving educators encounter barriers not from lack of ability, but from lack of access to quality preparation materials and expert guidance.
+      {/* Why Choose PrepWise - Masonry with Parallax */}
+      <section id="why-prepwise" className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-teal-200/20 dark:bg-teal-500/10 blur-3xl" style={{ transform: `translateY(${scrollY * 0.15}px)` }} />
+          <div className="absolute bottom-40 right-10 w-64 h-64 rounded-full bg-green-200/20 dark:bg-green-500/10 blur-3xl" style={{ transform: `translateY(${scrollY * -0.1}px)` }} />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-16 items-start">
+            {/* Left sticky header */}
+            <div className={`lg:w-1/3 lg:sticky lg:top-32 scroll-reveal ${isVisible('why-prepwise') ? 'visible' : ''}`}>
+              <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold mb-4 ${isLightMode ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-900/30 text-emerald-300'}`}>Why Us</span>
+              <h2 className={`font-display text-4xl md:text-5xl font-black mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                Why Choose PrepWise
+              </h2>
+              <p className={`text-base md:text-lg mb-8 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                A modern review platform designed around clarity and consistency.
               </p>
+              <div className={`hidden lg:block w-full h-px ${isLightMode ? 'bg-gradient-to-r from-emerald-300 to-transparent' : 'bg-gradient-to-r from-emerald-700 to-transparent'}`} />
             </div>
 
-            <div className={`rounded-lg p-5 sm:p-6 border ${
-              isLightMode
-                ? 'bg-blue-50 border-blue-200'
-                : 'bg-blue-900/20 border-blue-700/30'
-            }`}>
-              <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-blue-900' : 'text-blue-200'}`}>Our Solution</h3>
-              <p className={`text-sm sm:text-base leading-relaxed ${
-                isLightMode ? 'text-blue-800' : 'text-blue-100'
-              }`}>
-                EduHub democratizes teacher preparation by providing comprehensive, expert-aligned resources accessible to every aspiring educator. Regardless of location or economic background, our platform offers the tools, guidance, and community support needed to succeed.
-              </p>
-            </div>
-
-            <div className={`rounded-lg p-5 sm:p-6 border ${
-              isLightMode
-                ? 'bg-indigo-50 border-indigo-200'
-                : 'bg-indigo-900/20 border-indigo-700/30'
-            }`}>
-              <h3 className={`text-lg font-bold mb-2 ${isLightMode ? 'text-indigo-900' : 'text-indigo-200'}`}>Our Commitment</h3>
-              <p className={`text-sm sm:text-base leading-relaxed ${
-                isLightMode ? 'text-indigo-800' : 'text-indigo-100'
-              }`}>
-                We continuously improve and evolve based on real educator experiences and examination outcomes. Together, we're building a stronger, more inclusive teaching profession with higher success rates.
-              </p>
+            {/* Right scrolling cards - Masonry style */}
+            <div className="lg:w-2/3 grid sm:grid-cols-2 gap-6">
+              {[
+                { title: 'Evidence-based learning', desc: 'Practice with purpose using focused and repeatable routines.', color: 'from-emerald-400 to-teal-500' },
+                { title: 'Adaptive learning paths', desc: 'Stay organized with topic-based review and saved items.', color: 'from-green-400 to-emerald-500' },
+                { title: 'Community support', desc: 'Supportive learning environment with guided materials.', color: 'from-teal-400 to-green-500' },
+                { title: 'Quality assurance', desc: 'Questions and content designed to match exam preparation needs.', color: 'from-emerald-500 to-green-600' },
+                { title: 'Accessible education', desc: 'Designed for learners on any device, anywhere.', color: 'from-green-500 to-teal-500' },
+                { title: 'Performance insights', desc: 'Track what you\'ve practiced and what to review next.', color: 'from-teal-500 to-emerald-500' }
+              ].map((item, i) => (
+                <div key={item.title} 
+                  className={`group relative rounded-3xl p-6 border transition-all duration-500 hover:-translate-y-2 hover:shadow-xl scroll-reveal ${isVisible('why-prepwise') ? 'visible' : ''} ${isLightMode ? 'bg-white/80 border-emerald-100/80 shadow-lg' : 'bg-slate-950/50 border-slate-700/60'} stagger-${i + 1}`}
+                  style={{ 
+                    transform: isVisible('why-prepwise') ? `translateY(${i % 2 === 0 ? 0 : 24}px)` : undefined,
+                    marginTop: i < 2 ? 0 : undefined
+                  }}>
+                  <div className={`absolute top-0 left-6 w-12 h-1 rounded-b-lg bg-gradient-to-r ${item.color}`} />
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} text-white flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M5 12l5 5L20 6" />
+                    </svg>
+                  </div>
+                  <p className={`text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{item.title}</p>
+                  <p className={`text-sm leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section
-        id="cta"
-        ref={(el) => { if (el) sectionRefs.current.cta = el; }}
-        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8 ${
-          isLightMode
-            ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600'
-            : 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700'
-        }`}
-      >
-        {/* Animated background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute -top-32 -right-32 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-blob"
-            style={{ transform: `translateY(${scrollY * 0.1}px)` }}
-          />
-          <div
-            className="absolute -bottom-32 -left-32 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-blob animation-delay-2000"
-            style={{ transform: `translateY(${scrollY * -0.15}px)` }}
-          />
-        </div>
-
-        <div className="max-w-2xl mx-auto text-center relative z-10">
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 transition-all duration-500 ${
-            visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}>
-            Ready to Begin?
-          </h2>
-          <p className={`text-xs sm:text-sm text-white/90 mb-4 transition-all duration-500 delay-100 ${
-            visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}>
-            Join thousands of educators preparing for success with comprehensive resources and community support.
-          </p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg bg-white text-indigo-600 font-bold text-sm sm:text-base hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-delay-3"
-          >
-            Start Free Today →
-          </button>
+      <section id="cta" className="py-16 relative">
+        <div className={`absolute inset-0 ${isLightMode ? 'bg-gradient-to-r from-emerald-100/50 via-emerald-50/70 to-green-100/50' : 'bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800'}`}></div>
+        <div className="relative max-w-4xl mx-auto px-6 lg:px-8 text-center">
+          <div className={`p-10 md:p-12 rounded-4xl backdrop-blur-2xl border scroll-reveal-scale ${isVisible('cta') ? 'visible' : ''} ${isLightMode ? 'bg-emerald-50/70 border-emerald-100/80 shadow-xl' : 'bg-slate-950/30 border-slate-700/40'}`}>
+            <h2 className={`font-display text-4xl md:text-5xl font-black mb-4 ${isLightMode ? 'text-slate-900' : 'text-white drop-shadow-2xl'}`}>
+              Ready to Ace Your LET?
+            </h2>
+            <p className={`text-lg md:text-xl mb-8 max-w-2xl mx-auto ${isLightMode ? 'text-slate-600' : 'text-slate-200 font-light drop-shadow-lg'}`}>
+              Start a structured review routine today.
+            </p>
+            <div className="flex flex-col lg:flex-row gap-4 justify-center">
+              <button 
+                className={`px-10 py-4 font-bold text-lg rounded-3xl shadow-lg transition-all duration-300 hover:scale-105 ${isLightMode ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-white text-slate-900 hover:bg-slate-200'}`}
+                onClick={() => navigate('/dashboard')}
+              >
+                Start now
+              </button>
+              <button
+                className={`px-10 py-4 border font-bold text-lg rounded-3xl transition-all duration-300 hover:scale-105 ${isLightMode ? 'border-emerald-200/80 bg-emerald-50/70 text-emerald-900 hover:bg-emerald-50' : 'border-white/40 bg-transparent text-white hover:bg-white/10'}`}
+                onClick={() => navigate('/signup')}
+              >
+                Create account
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className={`px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-t ${
-        isLightMode
-          ? 'bg-slate-50 border-slate-200'
-          : 'bg-slate-950 border-slate-800'
-      }`}>
-        <div className="max-w-6xl mx-auto">
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5 mb-5">
+      <footer className={`${isLightMode ? 'bg-emerald-50/70 text-slate-900 border-t border-emerald-100/80' : 'bg-gradient-to-r from-slate-900 to-slate-800 text-white'} py-14 relative overflow-hidden`}>
+        <div className={`absolute inset-0 ${isLightMode ? 'opacity-40' : 'opacity-20'}`}>
+          <div className={`absolute top-20 left-10 w-40 h-40 rounded-full blur-3xl animate-float ${isLightMode ? 'bg-emerald-100' : 'bg-white/10'}`}></div>
+          <div className={`absolute bottom-20 right-20 w-32 h-32 rounded-full blur-2xl animate-float ${isLightMode ? 'bg-emerald-200/60' : 'bg-emerald-500/15'}`} style={{animationDelay: '1s'}}></div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div>
-              <div className={`text-base sm:text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                EduHub
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-500 rounded-3xl flex items-center justify-center shadow-2xl">
+                  <span className="text-2xl font-display font-bold">E</span>
+                </div>
+                <span className="text-3xl font-display font-bold">PrepWise</span>
               </div>
-              <p className={`text-xs leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                Empowering educators with quality preparation and community support.
+              <p className={`${isLightMode ? 'text-slate-600' : 'text-slate-400'} leading-relaxed mb-8 max-w-md`}>
+                PRC-aligned LET preparation platform. Built to support aspiring educators with structured practice.
               </p>
+              <div className="flex space-x-4">
+                <a href="#" className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-110 ${isLightMode ? 'bg-emerald-100/70 hover:bg-emerald-200/70 text-emerald-700' : 'bg-slate-800/50 hover:bg-slate-700 text-slate-300'}`} aria-label="Facebook">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M14 8h3V5h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4V9c0-.6.4-1 1-1Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </a>
+                <a href="#" className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-110 ${isLightMode ? 'bg-emerald-100/70 hover:bg-emerald-200/70 text-emerald-700' : 'bg-slate-800/50 hover:bg-slate-700 text-slate-300'}`} aria-label="Mobile App">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="2" />
+                    <path d="M11 18h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                </a>
+                <a href="#" className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:scale-110 ${isLightMode ? 'bg-emerald-100/70 hover:bg-emerald-200/70 text-emerald-700' : 'bg-slate-800/50 hover:bg-slate-700 text-slate-300'}`} aria-label="Email">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 6h16v12H4V6Z" stroke="currentColor" strokeWidth="2" />
+                    <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                  </svg>
+                </a>
+              </div>
             </div>
             <div>
-              <h4 className={`font-bold mb-3 text-xs sm:text-sm ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                PLATFORM
-              </h4>
-              <ul className={`space-y-1.5 text-xs ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                <li><a href="#features" className="hover:text-blue-500 transition">Features</a></li>
-                <li><a href="#mission" className="hover:text-blue-500 transition">Mission</a></li>
-                <li><a href="#building-blocks" className="hover:text-blue-500 transition">Platform</a></li>
+              <h4 className="font-display text-2xl font-bold mb-8">Platform</h4>
+              <ul className={`space-y-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">Practice Quizzes</a></li>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">Diagnostic Tests</a></li>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">Flashcards</a></li>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">Question Bank</a></li>
               </ul>
             </div>
             <div>
-              <h4 className={`font-bold mb-3 text-xs sm:text-sm ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                RESOURCES
-              </h4>
-              <ul className={`space-y-1.5 text-xs ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                <li><a href="#" className="hover:text-blue-500 transition">Blog</a></li>
-                <li><a href="#" className="hover:text-blue-500 transition">FAQ</a></li>
-                <li><a href="#" className="hover:text-blue-500 transition">Contact</a></li>
+              <h4 className="font-display text-2xl font-bold mb-8">Company</h4>
+              <ul className={`space-y-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">Contact</a></li>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-emerald-500 transition-colors">Privacy</a></li>
               </ul>
             </div>
             <div>
-              <h4 className={`font-bold mb-3 text-xs sm:text-sm ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                LEGAL
-              </h4>
-              <ul className={`space-y-1.5 text-xs ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                <li><a href="#" className="hover:text-blue-500 transition">Privacy</a></li>
-                <li><a href="#" className="hover:text-blue-500 transition">Terms</a></li>
-                <li><button onClick={() => setShowContactSupport(true)} className="hover:text-blue-500 transition cursor-pointer">Support</button></li>
-              </ul>
+              <h4 className="font-display text-2xl font-bold mb-8">Newsletter</h4>
+              <p className={`${isLightMode ? 'text-slate-600' : 'text-slate-400'} mb-6`}>Get exam updates and review tips</p>
+              <div className="flex">
+                <input className={`flex-1 px-6 py-4 rounded-l-2xl focus:outline-none focus:border-emerald-400 placeholder-slate-500 ${isLightMode ? 'bg-emerald-50/80 border border-emerald-200/80 text-slate-900' : 'bg-slate-800/50 border border-slate-700/50 text-white'}`} placeholder="your.email@cvsu.edu.ph" />
+                <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-r-2xl hover:from-emerald-600 hover:to-green-600 transition-all shadow-lg">
+                  Subscribe
+                </button>
+              </div>
             </div>
           </div>
-
-          <div className={`text-center text-xs py-3 border-t ${
-            isLightMode ? 'border-slate-200 text-slate-600' : 'border-slate-800 text-slate-400'
-          }`}>
-            <p>© 2024 EduHub. Empowering educators. All rights reserved.</p>
+          <div className={`border-t ${isLightMode ? 'border-emerald-200/60 text-slate-500' : 'border-slate-800 text-slate-500'} pt-8 text-center text-base`}>
+            2026 PrepWise. Empowering future educators. All rights reserved.
           </div>
         </div>
       </footer>
 
-      {/* Contact Support Modal */}
-      {showContactSupport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in">
-          <div className={`rounded-xl p-5 sm:p-6 max-w-sm w-full border transition-all duration-300 animate-scale-in ${
-            isLightMode
-              ? 'bg-white border-slate-200'
-              : 'bg-slate-900 border-slate-700'
-          }`}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className={`text-base sm:text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                Contact Support
-              </h3>
-              <button
-                onClick={() => setShowContactSupport(false)}
-                className={`text-lg transition hover:scale-110 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
-              >
-                ✕
-              </button>
+      {/* Learn More Modal */}
+      {isLearnMoreModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setIsLearnMoreModalOpen(false)}>
+          <div className={`rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col ${isLightMode ? 'bg-white' : 'bg-slate-800'}`} onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className={`flex items-center justify-between p-6 border-b ${isLightMode ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200' : 'bg-gradient-to-r from-emerald-900/20 to-green-900/20 border-emerald-800'}`}>
+              <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>How PrepWise Helps You Succeed</h2>
+              <button onClick={() => setIsLearnMoreModalOpen(false)} className={`text-3xl leading-none ${isLightMode ? 'text-slate-500 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}>×</button>
             </div>
 
-            <div className="space-y-3">
-              <div className={`p-3 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                <p className={`text-xs font-semibold mb-0.5 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  Phone
-                </p>
-                <p className={`text-sm font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                  0987654231
-                </p>
-              </div>
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-8">
+              <div className="space-y-6">
+                <div className={`p-6 rounded-xl border ${isLightMode ? 'bg-emerald-50 border-emerald-200' : 'bg-emerald-900/20 border-emerald-800'}`}>
+                  <h3 className={`text-xl font-bold mb-3 ${isLightMode ? 'text-emerald-900' : 'text-emerald-100'}`}>🎯 Personalized Learning Paths</h3>
+                  <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>Our AI-powered system adapts to your learning style and pace. Get customized quizzes, practice tests, and study recommendations based on your weak areas.</p>
+                </div>
 
-              <div className={`p-3 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                <p className={`text-xs font-semibold mb-0.5 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  Hotline
-                </p>
-                <p className={`text-sm font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                  456 5732
-                </p>
-              </div>
+                <div className={`p-6 rounded-xl border ${isLightMode ? 'bg-blue-50 border-blue-200' : 'bg-blue-900/20 border-blue-800'}`}>
+                  <h3 className={`text-xl font-bold mb-3 ${isLightMode ? 'text-blue-900' : 'text-blue-100'}`}>📊 Real-Time Progress Tracking</h3>
+                  <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>Monitor your improvement with detailed analytics. See which topics you've mastered and which need more focus. Track your performance trends over time.</p>
+                </div>
 
-              <div className={`p-3 rounded-lg transition-all hover:shadow-md ${isLightMode ? 'bg-slate-100 hover:bg-slate-200' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                <p className={`text-xs font-semibold mb-0.5 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  Email
-                </p>
-                <p className={`text-sm font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                  admin.cvsu.edu.ph
-                </p>
+                <div className={`p-6 rounded-xl border ${isLightMode ? 'bg-purple-50 border-purple-200' : 'bg-purple-900/20 border-purple-800'}`}>
+                  <h3 className={`text-xl font-bold mb-3 ${isLightMode ? 'text-purple-900' : 'text-purple-100'}`}>🎓 PRC-Aligned Content</h3>
+                  <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>All materials are aligned with the latest PRC LET standards. Practice with questions that match the actual exam format and difficulty level.</p>
+                </div>
+
+                <div className={`p-6 rounded-xl border ${isLightMode ? 'bg-orange-50 border-orange-200' : 'bg-orange-900/20 border-orange-800'}`}>
+                  <h3 className={`text-xl font-bold mb-3 ${isLightMode ? 'text-orange-900' : 'text-orange-100'}`}>🎬 Video Lessons & Explanations</h3>
+                  <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>Learn from expert instructors through comprehensive video lessons. Each topic includes clear explanations and worked examples to deepen your understanding.</p>
+                </div>
+
+                <div className={`p-6 rounded-xl border ${isLightMode ? 'bg-pink-50 border-pink-200' : 'bg-pink-900/20 border-pink-800'}`}>
+                  <h3 className={`text-xl font-bold mb-3 ${isLightMode ? 'text-pink-900' : 'text-pink-100'}`}>💪 Spaced Repetition System</h3>
+                  <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>Our smart flashcard system uses spaced repetition to maximize retention. Review material at optimal intervals to build long-term memory.</p>
+                </div>
               </div>
             </div>
-
-            <button
-              onClick={() => setShowContactSupport(false)}
-              className="w-full mt-4 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold text-xs sm:text-sm hover:shadow-lg hover:shadow-blue-500/40 transition-all"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}
 
-      {/* Animation styles */}
-      <style>{`
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-        }
-
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes scale-in {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out forwards;
-        }
-
-        .animate-fade-in-delay-1 {
-          animation: fade-in 0.6s ease-out 0.2s forwards;
-          opacity: 0;
-        }
-
-        .animate-fade-in-delay-2 {
-          animation: fade-in 0.6s ease-out 0.4s forwards;
-          opacity: 0;
-        }
-
-        .animate-fade-in-delay-3 {
-          animation: fade-in 0.6s ease-out 0.6s forwards;
-          opacity: 0;
-        }
-
-        .animate-fade-in-delay-4 {
-          animation: fade-in 0.6s ease-out 0.8s forwards;
-          opacity: 0;
-        }
-
-        .animate-scale-in {
-          animation: scale-in 0.3s ease-out forwards;
-        }
-
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-
-        @media (max-width: 640px) {
-          .animate-fade-in-delay-1,
-          .animate-fade-in-delay-2,
-          .animate-fade-in-delay-3,
-          .animate-fade-in-delay-4 {
-            animation-delay: 0s;
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 }

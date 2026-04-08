@@ -35,6 +35,137 @@
   }
 }
 
+/* Landing Page Professional Animations */
+@layer components {
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  .animate-slide-left {
+    animation: slideInLeft 0.6s ease-out;
+  }
+
+  .animate-typewriter {
+    animation: typewriter 3s steps(40) infinite;
+  }
+
+  /* Scroll-triggered reveal animations */
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .scroll-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .scroll-reveal-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .scroll-reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-reveal-right {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .scroll-reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-reveal-scale {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+
+  .scroll-reveal-scale.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Staggered delays for children */
+  .stagger-1 { transition-delay: 0.1s; }
+  .stagger-2 { transition-delay: 0.2s; }
+  .stagger-3 { transition-delay: 0.3s; }
+  .stagger-4 { transition-delay: 0.4s; }
+  .stagger-5 { transition-delay: 0.5s; }
+  .stagger-6 { transition-delay: 0.6s; }
+
+  .animate-glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite alternate;
+  }
+
+  /* Glassmorphism Cards */
+  .glass-card {
+    @apply bg-white/10 dark:bg-slate-800/30 backdrop-blur-xl border border-white/20;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+
+  .glass-card:hover {
+    @apply scale-[1.02] border-white/40;
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Hero Floating Elements */
+  .floating-book {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .floating-cap {
+    animation: float 6s ease-in-out infinite 1s;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  /* Counter Animation */
+  .counter {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, theme('colors.edu.500'), theme('colors.review.500'));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Timeline Connectors */
+  .timeline-connector {
+    @apply absolute top-0 left-0 w-px h-full bg-gradient-to-b from-review-500 to-gold-500;
+  }
+
+  /* Parallax Background */
+  .parallax-bg {
+    will-change: transform;
+  }
+
+  /* Custom Scrollbar for Hero */
+  .hero-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .hero-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+  }
+
+  .hero-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, theme('colors.review.500'), theme('colors.gold.500'));
+    border-radius: 3px;
+  }
+}
+
 @media (max-width: 640px) {
   body {
     background: linear-gradient(160deg, #0f172a, #1e293b);
