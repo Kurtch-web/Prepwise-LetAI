@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
 import { AdminPortalPage } from '../views/AdminPortalPage';
@@ -308,7 +309,12 @@ export function AppShell() {
   const isLanding = location.pathname === '/';
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
-  if (isLanding) return <LandingPage />;
+  if (isLanding) return (
+    <>
+      <LandingPage />
+      <SpeedInsights />
+    </>
+  );
   if (isAuthPage || location.pathname === '/reset-password') {
     return (
       <div className={`min-h-screen`}>
@@ -317,9 +323,15 @@ export function AppShell() {
           <Route path="/signup" element={<AuthPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Routes>
+        <SpeedInsights />
       </div>
     );
   }
 
-  return <MainLayout />;
+  return (
+    <>
+      <MainLayout />
+      <SpeedInsights />
+    </>
+  );
 }
