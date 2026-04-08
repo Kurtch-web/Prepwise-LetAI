@@ -600,6 +600,106 @@ async def restore_quiz(
     return {"status": "success", "message": "Quiz restored"}
 
 
+@router.get("/details/{quiz_id}")
+async def get_quiz_details(
+    quiz_id: str,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get quiz details including all questions (admin only)."""
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can view quiz details")
+
+    quiz_result = await db.execute(
+        select(Quiz)
+        .where(Quiz.id == quiz_id)
+        .options(selectinload(Quiz.questions))
+    )
+    quiz = quiz_result.scalars().first()
+
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
+
+    if quiz.creator_id != current_user.id and current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
+
+    return {
+        "id": quiz.id,
+        "title": quiz.title,
+        "description": quiz.description,
+        "time_limit_minutes": quiz.time_limit_minutes,
+        "total_questions": len(quiz.questions),
+        "questions": [
+            {
+                "id": q.id,
+                "question_text": q.question_text,
+                "choices": q.choices,
+                "correct_answer": q.correct_answer,
+                "order": q.order
+            }
+            for q in sorted(quiz.questions, key=lambda q: q.order)
+        ]
+    }
+
+
+@router.put("/update/{quiz_id}")
+async def update_quiz(
+    quiz_id: str,
+    quiz_data: QuizCreateSchema,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update a quiz and its questions (admin only)."""
+    if current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can update quizzes")
+
+    quiz_result = await db.execute(
+        select(Quiz)
+        .where(Quiz.id == quiz_id)
+        .options(selectinload(Quiz.questions))
+    )
+    quiz = quiz_result.scalars().first()
+
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
+
+    if quiz.creator_id != current_user.id and current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
+
+    # Update quiz basic info
+    quiz.title = quiz_data.title
+    quiz.description = quiz_data.description
+    quiz.time_limit_minutes = quiz_data.time_limit_minutes
+
+    # Delete existing questions
+    for question in quiz.questions:
+        await db.delete(question)
+
+    # Add new questions
+    for idx, question_data in enumerate(quiz_data.questions):
+        question = QuizQuestion(
+            quiz_id=quiz.id,
+            question_text=question_data.question_text,
+            choices=question_data.choices,
+            correct_answer=question_data.correct_answer,
+            order=idx
+        )
+        db.add(question)
+
+    await db.commit()
+    await db.refresh(quiz)
+
+    return {
+        "id": quiz.id,
+        "title": quiz.title,
+        "access_code": quiz.access_code,
+        "time_limit_minutes": quiz.time_limit_minutes,
+        "total_questions": len(quiz_data.questions),
+        "updated_at": quiz.updated_at,
+        "message": "Quiz updated successfully"
+    }
+
+
 @router.delete("/delete/{quiz_id}")
 async def delete_quiz(
     quiz_id: str,
