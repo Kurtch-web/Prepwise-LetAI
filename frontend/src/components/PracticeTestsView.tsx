@@ -1102,16 +1102,30 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                     ? 'bg-indigo-50 border border-indigo-200'
                                     : 'bg-indigo-500/10 border border-indigo-700'
                                 }`}>
-                                  <h5 className={`font-bold mb-2 ${
-                                    isLightMode ? 'text-indigo-900' : 'text-indigo-200'
-                                  }`}>
-                                    ✨ AI Analysis:
-                                  </h5>
-                                  <p className={`text-sm leading-relaxed ${
-                                    isLightMode ? 'text-indigo-800' : 'text-indigo-100'
-                                  }`}>
-                                    {aiAnalysis[question.id]}
-                                  </p>
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1">
+                                      <h5 className={`font-bold mb-2 ${
+                                        isLightMode ? 'text-indigo-900' : 'text-indigo-200'
+                                      }`}>
+                                        ✨ AI Analysis:
+                                      </h5>
+                                      <p className={`text-sm leading-relaxed ${
+                                        isLightMode ? 'text-indigo-800' : 'text-indigo-100'
+                                      }`}>
+                                        {aiAnalysis[question.id]}
+                                      </p>
+                                    </div>
+                                    <button
+                                      onClick={() => setAiAnalysis({ ...aiAnalysis, [question.id]: null })}
+                                      className={`flex-shrink-0 px-3 py-1 rounded text-xs font-semibold transition ${
+                                        isLightMode
+                                          ? 'bg-indigo-200 text-indigo-700 hover:bg-indigo-300'
+                                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                      }`}
+                                    >
+                                      Clear
+                                    </button>
+                                  </div>
                                 </div>
                               )}
 
@@ -1384,16 +1398,30 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                     ? 'bg-indigo-50 border border-indigo-200'
                                     : 'bg-indigo-500/10 border border-indigo-700'
                                 }`}>
-                                  <h5 className={`font-bold mb-2 ${
-                                    isLightMode ? 'text-indigo-900' : 'text-indigo-200'
-                                  }`}>
-                                    ✨ AI Analysis:
-                                  </h5>
-                                  <p className={`text-sm leading-relaxed ${
-                                    isLightMode ? 'text-indigo-800' : 'text-indigo-100'
-                                  }`}>
-                                    {aiAnalysis[question.id]}
-                                  </p>
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1">
+                                      <h5 className={`font-bold mb-2 ${
+                                        isLightMode ? 'text-indigo-900' : 'text-indigo-200'
+                                      }`}>
+                                        ✨ AI Analysis:
+                                      </h5>
+                                      <p className={`text-sm leading-relaxed ${
+                                        isLightMode ? 'text-indigo-800' : 'text-indigo-100'
+                                      }`}>
+                                        {aiAnalysis[question.id]}
+                                      </p>
+                                    </div>
+                                    <button
+                                      onClick={() => setAiAnalysis({ ...aiAnalysis, [question.id]: null })}
+                                      className={`flex-shrink-0 px-3 py-1 rounded text-xs font-semibold transition ${
+                                        isLightMode
+                                          ? 'bg-indigo-200 text-indigo-700 hover:bg-indigo-300'
+                                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                      }`}
+                                    >
+                                      Clear
+                                    </button>
+                                  </div>
                                 </div>
                               )}
 
@@ -1664,16 +1692,30 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                     ? 'bg-indigo-50 border border-indigo-200'
                                     : 'bg-indigo-500/10 border border-indigo-700'
                                 }`}>
-                                  <h5 className={`font-bold mb-2 ${
-                                    isLightMode ? 'text-indigo-900' : 'text-indigo-200'
-                                  }`}>
-                                    ✨ AI Analysis:
-                                  </h5>
-                                  <p className={`text-sm leading-relaxed ${
-                                    isLightMode ? 'text-indigo-800' : 'text-indigo-100'
-                                  }`}>
-                                    {aiAnalysis[question.id]}
-                                  </p>
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1">
+                                      <h5 className={`font-bold mb-2 ${
+                                        isLightMode ? 'text-indigo-900' : 'text-indigo-200'
+                                      }`}>
+                                        ✨ AI Analysis:
+                                      </h5>
+                                      <p className={`text-sm leading-relaxed ${
+                                        isLightMode ? 'text-indigo-800' : 'text-indigo-100'
+                                      }`}>
+                                        {aiAnalysis[question.id]}
+                                      </p>
+                                    </div>
+                                    <button
+                                      onClick={() => setAiAnalysis({ ...aiAnalysis, [question.id]: null })}
+                                      className={`flex-shrink-0 px-3 py-1 rounded text-xs font-semibold transition ${
+                                        isLightMode
+                                          ? 'bg-indigo-200 text-indigo-700 hover:bg-indigo-300'
+                                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                      }`}
+                                    >
+                                      Clear
+                                    </button>
+                                  </div>
                                 </div>
                               )}
 
