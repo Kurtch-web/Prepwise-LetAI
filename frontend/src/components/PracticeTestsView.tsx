@@ -28,9 +28,10 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
   const [activeTab, setActiveTab] = useState<'test-taken' | 'materials'>('test-taken');
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showSolution, setShowSolution] = useState<Record<string, boolean>>({});
-  const [materialsSubject, setMaterialsSubject] = useState<'math' | 'english'>('math');
+  const [materialsSubject, setMaterialsSubject] = useState<'math' | 'english' | 'situational'>('math');
   const [selectedMathTopic, setSelectedMathTopic] = useState<string>('Arithmetic and Number Theory');
   const [selectedEnglishTopic, setSelectedEnglishTopic] = useState<string>('English for Specific Purposes');
+  const [selectedSituationalTopic, setSelectedSituationalTopic] = useState<string>('Classroom Management');
   const [showTopicsSidebar, setShowTopicsSidebar] = useState(false);
   const [selectedTime, setSelectedTime] = useState<number | null>(null);
   const [selectedSession, setSelectedSession] = useState<PracticeTestSession | null>(null);
@@ -59,6 +60,14 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
     'Theoretical Foundations of Language and Literature',
     'Literary Criticism',
     'Campus Journalism'
+  ];
+
+  const situationalTopics = [
+    'Classroom Management',
+    'Student Motivation and Engagement',
+    'Conflict Resolution',
+    'Inclusive Education',
+    'Assessment and Feedback'
   ];
 
   const practiceQuestions: PracticeQuestion[] = [
@@ -273,6 +282,111 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
       correctAnswer: 1,
       solution: 'Responsible journalism requires careful fact-checking, verification of sources, and accuracy to maintain credibility and avoid spreading misinformation.',
       explanation: 'Campus journalists must follow ethical standards including verifying facts, protecting sources, and avoiding bias to maintain journalistic integrity.'
+    },
+    // Classroom Management
+    {
+      id: 'situational-1',
+      subject: 'english',
+      topic: 'Classroom Management',
+      question: 'A student is consistently disruptive during lessons, talking out of turn and distracting others. What is the best first step to address this behavior?',
+      options: ['Send the student to the principal immediately', 'Have a private conversation with the student to understand the root cause', 'Ignore the behavior and hope it stops', 'Punish the student publicly in front of the class'],
+      correctAnswer: 1,
+      solution: 'The best approach is to have a private, respectful conversation with the student. This allows you to understand why they are being disruptive (boredom, personal issues, learning difficulties) and work together on solutions.',
+      explanation: 'Effective classroom management starts with understanding student behavior. Private conversations show respect and help identify underlying causes. This builds trust and is more likely to result in positive behavior change than punishment.'
+    },
+    {
+      id: 'situational-2',
+      subject: 'english',
+      topic: 'Classroom Management',
+      question: 'You notice that a few students are not participating in group activities. How should you handle this?',
+      options: ['Force them to participate', 'Assign them different tasks that match their interests and abilities', 'Let them sit alone without participating', 'Give them a failing grade for non-participation'],
+      correctAnswer: 1,
+      solution: 'Assign different tasks that match their interests and abilities. Some students may be shy, have learning differences, or prefer different types of activities. Differentiation ensures all students can contribute meaningfully.',
+      explanation: 'Inclusive classroom management recognizes that students have different learning styles and comfort levels. Providing alternative ways to participate ensures engagement and builds confidence.'
+    },
+    // Student Motivation and Engagement
+    {
+      id: 'situational-3',
+      subject: 'english',
+      topic: 'Student Motivation and Engagement',
+      question: 'A student who was previously engaged is now showing signs of disengagement and declining grades. What should you do?',
+      options: ['Assume they are lazy and reduce their workload', 'Schedule a meeting with the student and possibly their parents to discuss concerns', 'Focus only on the other students', 'Wait and see if they improve on their own'],
+      correctAnswer: 1,
+      solution: 'Schedule a meeting with the student and possibly their parents. Changes in engagement often signal underlying issues (personal problems, health issues, learning struggles). Open communication helps identify and address these causes.',
+      explanation: 'Early intervention is key. By having a conversation, you show the student you care and can identify support strategies. This might involve academic help, counseling, or adjustments to teaching methods.'
+    },
+    {
+      id: 'situational-4',
+      subject: 'english',
+      topic: 'Student Motivation and Engagement',
+      question: 'How can you maintain student motivation in a challenging subject?',
+      options: ['Make the subject easier by removing difficult content', 'Connect the subject to real-world applications and student interests', 'Use only traditional lecture methods', 'Focus only on high-achieving students'],
+      correctAnswer: 1,
+      solution: 'Connect the subject to real-world applications and student interests. When students see relevance and understand how learning applies to their lives, motivation increases significantly.',
+      explanation: 'Motivation comes from relevance and engagement. Using varied teaching methods, real-world examples, and connecting to student interests makes learning meaningful and increases effort and persistence.'
+    },
+    // Conflict Resolution
+    {
+      id: 'situational-5',
+      subject: 'english',
+      topic: 'Conflict Resolution',
+      question: 'Two students are in conflict and refuse to work together on a group project. What is the best approach?',
+      options: ['Separate them and assign them to different groups', 'Mediate a discussion where both students can express their concerns', 'Assign them to work together anyway to force resolution', 'Give them both a failing grade'],
+      correctAnswer: 1,
+      solution: 'Mediate a discussion where both students can express their concerns. This teaches conflict resolution skills and helps students understand each other\'s perspectives. Facilitated dialogue often leads to genuine resolution.',
+      explanation: 'Conflict resolution is a valuable life skill. By mediating respectfully, you help students develop communication and empathy skills while addressing the immediate issue.'
+    },
+    {
+      id: 'situational-6',
+      subject: 'english',
+      topic: 'Conflict Resolution',
+      question: 'A student accuses you of being unfair in grading. How should you respond?',
+      options: ['Dismiss their concern and defend your grade', 'Review their work objectively and explain your grading criteria', 'Change the grade to avoid conflict', 'Tell them to accept it and move on'],
+      correctAnswer: 1,
+      solution: 'Review their work objectively and explain your grading criteria. This shows you take their concern seriously and are willing to discuss it. If an error was made, correct it. If not, clear explanation helps them understand.',
+      explanation: 'Responding professionally to criticism builds trust and models good conflict resolution. Students learn that concerns can be addressed respectfully and that teachers are fair and open to dialogue.'
+    },
+    // Inclusive Education
+    {
+      id: 'situational-7',
+      subject: 'english',
+      topic: 'Inclusive Education',
+      question: 'You have a student with a learning disability in your class. What is the most inclusive approach?',
+      options: ['Isolate them from other students', 'Provide accommodations and modifications while keeping them in the regular classroom', 'Tell them the class is too difficult for them', 'Ignore their disability and treat them like all other students'],
+      correctAnswer: 1,
+      solution: 'Provide accommodations and modifications while keeping them in the regular classroom. This might include extended time, modified assignments, or assistive technology. Inclusion means providing support within the mainstream classroom.',
+      explanation: 'Inclusive education ensures all students have access to quality instruction and belong in the classroom community. Accommodations level the playing field without isolating students.'
+    },
+    {
+      id: 'situational-8',
+      subject: 'english',
+      topic: 'Inclusive Education',
+      question: 'How can you ensure that all students feel included and valued in your classroom?',
+      options: ['Treat all students exactly the same', 'Use diverse examples and materials that reflect different cultures and backgrounds', 'Focus only on the majority group', 'Avoid discussing differences'],
+      correctAnswer: 1,
+      solution: 'Use diverse examples and materials that reflect different cultures and backgrounds. This validates all students\' identities and shows that different perspectives are valued and important.',
+      explanation: 'Inclusive classrooms celebrate diversity. When students see themselves represented in curriculum and feel their backgrounds are respected, they are more engaged and feel a sense of belonging.'
+    },
+    // Assessment and Feedback
+    {
+      id: 'situational-9',
+      subject: 'english',
+      topic: 'Assessment and Feedback',
+      question: 'A student receives a low grade on an assignment. What kind of feedback would be most helpful?',
+      options: ['Just a grade with no explanation', 'Specific feedback on what was done well and what needs improvement, with suggestions for next steps', 'Criticism without any positive comments', 'Comparison to other students\' work'],
+      correctAnswer: 1,
+      solution: 'Provide specific feedback on strengths and areas for improvement with actionable suggestions. This type of feedback is constructive, motivating, and helps students understand how to improve.',
+      explanation: 'Effective feedback is specific, balanced, and actionable. It helps students understand their progress and what they need to do to improve, rather than just telling them they failed.'
+    },
+    {
+      id: 'situational-10',
+      subject: 'english',
+      topic: 'Assessment and Feedback',
+      question: 'How often should you assess student learning?',
+      options: ['Only through final exams', 'Continuously through various methods (quizzes, observations, projects, discussions)', 'Never assess until the end of the year', 'Only when students ask to be assessed'],
+      correctAnswer: 1,
+      solution: 'Assess continuously through various methods. Ongoing assessment provides information about student progress, helps identify struggling students early, and allows for timely adjustments to instruction.',
+      explanation: 'Continuous assessment is essential for effective teaching. It helps you understand what students know, identify misconceptions, and adjust your teaching to meet their needs.'
     }
   ];
 
@@ -664,6 +778,23 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
               }`}
             >
               📖 English
+            </button>
+            <button
+              onClick={() => {
+                setMaterialsSubject('situational');
+                setShowTopicsSidebar(false);
+              }}
+              className={`px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all whitespace-nowrap ${
+                materialsSubject === 'situational'
+                  ? isLightMode
+                    ? 'text-purple-600 border-b-2 border-purple-600'
+                    : 'text-purple-400 border-b-2 border-purple-400'
+                  : isLightMode
+                  ? 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🎯 Situational Questions
             </button>
           </div>
 
@@ -1109,6 +1240,236 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                     </h5>
                                     <p className={`text-sm leading-relaxed ${
                                       isLightMode ? 'text-amber-800' : 'text-amber-100'
+                                    }`}>
+                                      {question.explanation}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+              </div>
+            </div>
+          )}
+
+          {/* Situational Questions Section */}
+          {materialsSubject === 'situational' && (
+            <div>
+              {/* Mobile Topics Toggle Button */}
+              <button
+                onClick={() => setShowTopicsSidebar(!showTopicsSidebar)}
+                className={`md:hidden w-full mb-4 px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+                  isLightMode
+                    ? 'bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100'
+                    : 'bg-purple-500/20 text-purple-300 border border-purple-500 hover:bg-purple-500/30'
+                }`}
+              >
+                <span>{showTopicsSidebar ? '▼' : '▶'} {showTopicsSidebar ? 'Hide' : 'Show'} Topics</span>
+              </button>
+
+              <div className="flex flex-col md:flex-row gap-6">
+              {/* Topics Sidebar */}
+              <div className={`w-full md:w-64 flex-shrink-0 rounded-2xl border p-4 h-fit md:sticky md:top-20 transition-all ${
+                  showTopicsSidebar ? 'block' : 'hidden md:block'
+                } ${
+                isLightMode
+                  ? 'bg-white border-slate-200 shadow-md'
+                  : 'bg-slate-800/50 border-slate-700 shadow-md'
+              }`}>
+                <h3 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  📚 Topics
+                </h3>
+                <div className="space-y-2">
+                  {situationalTopics.map((topic) => {
+                    const topicQCount = practiceQuestions.filter(q => q.subject === 'english' && q.topic === topic).length;
+                    const isSelected = selectedSituationalTopic === topic;
+
+                    return (
+                      <button
+                        key={topic}
+                        onClick={() => setSelectedSituationalTopic(topic)}
+                        className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition text-sm sm:text-base ${
+                          isSelected
+                            ? isLightMode
+                              ? 'bg-purple-100 text-purple-900 border border-purple-300'
+                              : 'bg-purple-500/20 text-purple-300 border border-purple-500'
+                            : isLightMode
+                            ? 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+                            : 'bg-slate-700/20 text-slate-300 hover:bg-slate-700/30 border border-slate-600'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-xs sm:text-sm">{topic}</span>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                            isSelected
+                              ? isLightMode
+                                ? 'bg-purple-200 text-purple-800'
+                                : 'bg-purple-600 text-white'
+                              : isLightMode
+                              ? 'bg-slate-200 text-slate-600'
+                              : 'bg-slate-600 text-slate-300'
+                          }`}>
+                            {topicQCount}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Questions Content */}
+              <div className="flex-1">
+                {(() => {
+                  const topicQuestions = practiceQuestions.filter(q => q.subject === 'english' && q.topic === selectedSituationalTopic);
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-6">
+                        <h3 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          {selectedSituationalTopic}
+                        </h3>
+                        <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                          isLightMode
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-purple-500/20 text-purple-300'
+                        }`}>
+                          {topicQuestions.length} question{topicQuestions.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+
+                      {topicQuestions.map((question) => (
+                        <div
+                          key={question.id}
+                          className={`rounded-2xl border p-4 sm:p-6 ${
+                            isLightMode
+                              ? 'bg-white border-slate-200 shadow-md'
+                              : 'bg-slate-800/50 border-slate-700 shadow-md'
+                          }`}
+                        >
+                          {/* Question */}
+                          <h4 className={`text-base sm:text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                            {question.question}
+                          </h4>
+
+                          {/* Answer Options */}
+                          <div className="space-y-2 mb-4">
+                            {question.options.map((option, idx) => {
+                              const isSelected = answers[question.id] === idx;
+                              const isCorrect = idx === question.correctAnswer;
+                              const hasAnswered = answers[question.id] !== undefined;
+
+                              return (
+                                <button
+                                  key={idx}
+                                  onClick={() => handleAnswerSelect(question.id, idx)}
+                                  className={`w-full text-left p-2 sm:p-3 rounded-lg border-2 text-sm sm:text-base transition ${
+                                    isSelected
+                                      ? hasAnswered
+                                        ? isCorrect
+                                          ? isLightMode
+                                            ? 'bg-green-50 border-green-400 text-green-900'
+                                            : 'bg-green-500/20 border-green-400 text-green-300'
+                                          : isLightMode
+                                          ? 'bg-red-50 border-red-400 text-red-900'
+                                          : 'bg-red-500/20 border-red-400 text-red-300'
+                                        : isLightMode
+                                        ? 'bg-purple-50 border-purple-400 text-purple-900'
+                                        : 'bg-purple-500/20 border-purple-400 text-purple-300'
+                                      : isLightMode
+                                      ? 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                                      : 'bg-slate-700/20 border-slate-600 text-slate-300 hover:border-slate-500'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center font-semibold ${
+                                      isSelected
+                                        ? hasAnswered
+                                          ? isCorrect
+                                            ? isLightMode
+                                              ? 'bg-green-400 border-green-400 text-white'
+                                              : 'bg-green-500 border-green-500 text-white'
+                                            : isLightMode
+                                            ? 'bg-red-400 border-red-400 text-white'
+                                            : 'bg-red-500 border-red-500 text-white'
+                                          : isLightMode
+                                          ? 'bg-purple-400 border-purple-400 text-white'
+                                          : 'bg-purple-500 border-purple-500 text-white'
+                                        : isLightMode
+                                        ? 'border-slate-400'
+                                        : 'border-slate-500'
+                                    }`}>
+                                      {isSelected && hasAnswered && isCorrect ? '✓' : String.fromCharCode(65 + idx)}
+                                    </span>
+                                    <span className="text-xs sm:text-sm">{option}</span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* Feedback and Solution Button */}
+                          {answers[question.id] !== undefined && (
+                            <div className="space-y-3">
+                              <div className={`p-3 rounded-lg text-sm font-semibold ${
+                                answers[question.id] === question.correctAnswer
+                                  ? isLightMode
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-green-500/20 text-green-300'
+                                  : isLightMode
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-red-500/20 text-red-300'
+                              }`}>
+                                {answers[question.id] === question.correctAnswer
+                                  ? '✓ Correct!'
+                                  : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
+                              </div>
+
+                              {/* Solution Toggle */}
+                              <button
+                                onClick={() => toggleSolution(question.id)}
+                                className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
+                                  isLightMode
+                                    ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                                }`}
+                              >
+                                {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
+                              </button>
+
+                              {/* Solution and Explanation */}
+                              {showSolution[question.id] && (
+                                <div className={`p-4 rounded-lg space-y-3 ${
+                                  isLightMode
+                                    ? 'bg-purple-50 border border-purple-200'
+                                    : 'bg-purple-500/10 border border-purple-700'
+                                }`}>
+                                  <div>
+                                    <h5 className={`font-bold mb-2 ${
+                                      isLightMode ? 'text-purple-900' : 'text-purple-200'
+                                    }`}>
+                                      📝 Solution:
+                                    </h5>
+                                    <p className={`text-sm leading-relaxed ${
+                                      isLightMode ? 'text-purple-800' : 'text-purple-100'
+                                    }`}>
+                                      {question.solution}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <h5 className={`font-bold mb-2 ${
+                                      isLightMode ? 'text-purple-900' : 'text-purple-200'
+                                    }`}>
+                                      💡 Explanation:
+                                    </h5>
+                                    <p className={`text-sm leading-relaxed ${
+                                      isLightMode ? 'text-purple-800' : 'text-purple-100'
                                     }`}>
                                       {question.explanation}
                                     </p>
