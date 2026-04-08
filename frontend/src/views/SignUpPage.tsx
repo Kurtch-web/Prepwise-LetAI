@@ -442,101 +442,172 @@ export function SignUpPage() {
       </div>
 
       {/* Terms Modal */}
-      <Modal 
-        title="Terms of Service" 
-        isOpen={showTermsModal} 
+      <Modal
+        title="Terms of Service"
+        isOpen={showTermsModal}
         onClose={() => setShowTermsModal(false)}
       >
         <div className="space-y-4">
           <div>
-            <h3 className="font-bold mb-2">1. Use License</h3>
+            <h3 className="font-bold mb-2">1. Acceptance of Terms</h3>
             <p className="text-justify">
-              Permission is granted to temporarily download one copy of the materials (information or software) on LET Review Hub for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
-            </p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-justify">
-              <li>Modifying or copying the materials</li>
-              <li>Using the materials for any commercial purpose or for any public display</li>
-              <li>Attempting to decompile or reverse engineer any software contained on the site</li>
-              <li>Removing any copyright or other proprietary notations from the materials</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold mb-2">2. Disclaimer</h3>
-            <p className="text-justify">
-              The materials on LET Review Hub are provided on an 'as is' basis. We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+              By creating an account, accessing the platform, or using any of the learning materials, quizzes, AI diagnostics, analytics, or related features of PREPWISE LET AI, you agree to be bound by these Terms of Service and any future updates we publish. If you do not agree, you may not use the service.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">3. Limitations</h3>
+            <h3 className="font-bold mb-2">2. User Eligibility</h3>
             <p className="text-justify">
-              In no event shall LET Review Hub or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on the site.
+              PREPWISE LET AI is intended for LET takers, education students, review center participants, and other individuals who are lawfully using the platform for board exam preparation and study support. You represent that any information you submit is true, current, and belongs to you or that you have permission to provide it.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">4. Accuracy of Materials</h3>
+            <h3 className="font-bold mb-2">3. Account Responsibility</h3>
             <p className="text-justify">
-              The materials appearing on LET Review Hub could include technical, typographical, or photographic errors. We do not warrant that any of the materials on the site are accurate, complete, or current.
+              You are responsible for maintaining the confidentiality of your login credentials, including your password and any verification codes, and for all activity that occurs under your account. You must immediately notify us if you suspect unauthorized access, account takeover, or misuse of your account.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">5. Modifications</h3>
+            <h3 className="font-bold mb-2">4. Educational Purpose and AI Disclaimer</h3>
             <p className="text-justify">
-              LET Review Hub may revise these terms of service for the site at any time without notice. By using this site, you are agreeing to be bound by the then current version of these terms of service.
+              The platform provides review materials, practice questions, learning materials, and AI-assisted diagnostics for educational support only. The AI diagnostics, recommendations, scoring estimates, and study insights are not a guarantee that a user will pass the actual LET examination. Results may vary depending on the user’s preparation, performance, and other factors. The platform does not replace formal instruction, official PRC materials, professional judgment, or independent study.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">5. Permitted Use</h3>
+            <p className="text-justify">
+              You may use the service for personal, lawful, and educational purposes only. You may view, read, practice, and review content made available by the platform, but you may not reproduce, distribute, publicly display, sell, sublicense, or exploit the materials except as explicitly allowed by law or by us in writing.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">6. Prohibited Conduct</h3>
+            <p className="text-justify">
+              You agree that you will not hack, probe, scan, or bypass security controls; scrape, harvest, or collect data from the platform; attempt to reverse engineer the service; upload malware or harmful code; impersonate another person; use the AI to generate illegal, abusive, harassing, defamatory, hateful, or infringing content; or use the service in any way that violates law, regulation, school policy, or the rights of others.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">7. User Content and Responsibility</h3>
+            <p className="text-justify">
+              If you submit answers, notes, messages, reports, or other content, you remain responsible for that content. You grant us the limited right to process such content to operate, improve, secure, and support the platform. You must not submit information that you are not allowed to share, including another person’s sensitive information without authorization.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">8. Suspension and Termination</h3>
+            <p className="text-justify">
+              We may suspend, restrict, or permanently terminate access to any account or content at any time if we believe a user violated these Terms, endangered the platform, abused the AI features, misused data, or engaged in conduct that could harm other users, the service, or our legal and security obligations.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">9. Availability and Changes</h3>
+            <p className="text-justify">
+              We may change, update, suspend, or discontinue any part of the platform at any time, with or without notice. We may also revise these Terms from time to time. Continued use after changes means you accept the updated Terms.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">10. Governing Law</h3>
+            <p className="text-justify">
+              These Terms are governed by and interpreted under the laws of the Republic of the Philippines. Any dispute arising from or related to the use of the platform will be resolved under Philippine law, subject to any mandatory legal process that may apply.
             </p>
           </div>
         </div>
       </Modal>
 
       {/* Privacy Policy Modal */}
-      <Modal 
-        title="Privacy Policy" 
-        isOpen={showPrivacyModal} 
+      <Modal
+        title="Privacy Policy"
+        isOpen={showPrivacyModal}
         onClose={() => setShowPrivacyModal(false)}
       >
         <div className="space-y-4">
           <div>
-            <h3 className="font-bold mb-2">1. Information We Collect</h3>
+            <h3 className="font-bold mb-2">1. Our Commitment to the Safety of the Guest&apos;s Data</h3>
             <p className="text-justify">
-              We collect information you provide directly to us, such as when you create an account, including your name, email address, school ID, and password. We may also collect information about your use of our service, including your review type preference and target exam date.
+              We recognize that student records, learning progress, assessment activity, and account details require strong protection. This Privacy Policy explains how we collect, use, store, share, and protect personal data in connection with PREPWISE LET AI, including information that may be considered Sensitive Personal Information under the Data Privacy Act of 2012 (DPA).
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">2. How We Use Your Information</h3>
+            <h3 className="font-bold mb-2">2. Personal Information Controller</h3>
             <p className="text-justify">
-              We use the information we collect to provide, maintain, and improve our service, to send you technical notices and support messages, and to respond to your comments and questions. We use your information to personalize your experience and provide content relevant to your selected review type.
+              The Personal Information Controller (PIC) is the person or team operating PREPWISE LET AI and determining the purposes and means of processing your information. The PIC is responsible for ensuring that the data you provide is handled lawfully, fairly, and transparently, and that the platform only processes what is necessary to deliver educational services, maintain accounts, and improve the learning experience.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">3. Data Security</h3>
+            <h3 className="font-bold mb-2">3. Information We Collect</h3>
             <p className="text-justify">
-              We implement appropriate technical and organizational measures designed to protect personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the Internet or electronic storage is completely secure.
+              We collect the information you provide directly when you register, update your profile, use review features, submit answers, upload videos or files, or contact support. This may include your name, email address, username, password, school or course details, study preferences, assessment history, exam preparation data, and other account-related information. We may also collect usage data such as device information, IP address, timestamps, pages visited, quiz attempts, and activity logs to keep the service secure and functional.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">4. Information Sharing</h3>
+            <h3 className="font-bold mb-2">4. Sensitive Personal Information</h3>
             <p className="text-justify">
-              We do not sell, trade, or rent your personal identification information to others. We may share aggregated demographic information with our business partners, but this cannot be used to identify you personally.
+              Because the platform is designed for students and LET review users, some of the information we process may qualify as Sensitive Personal Information or closely related educational data. We only collect and process this information when it is necessary to provide the service and when there is a valid legal basis, including user consent, fulfillment of a user request, legitimate educational purposes, or other grounds allowed by the DPA and applicable regulations. We do not process sensitive data beyond what is needed to operate the platform.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">5. Your Rights</h3>
+            <h3 className="font-bold mb-2">5. How We Use Information</h3>
             <p className="text-justify">
-              You have the right to access, update, or delete your personal information at any time by logging into your account or contacting us. We will respond to your request within 30 days.
+              We use the information we collect to create and maintain accounts, personalize lessons and quizzes, provide AI diagnostics, track progress, generate reports, prevent abuse, secure the platform, respond to support requests, and improve our services. We may also use data to troubleshoot errors, monitor performance, and ensure that the content and services are delivered correctly across web and mobile browsers.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold mb-2">6. Changes to This Policy</h3>
+            <h3 className="font-bold mb-2">6. Third-Party Service Providers and Data Disclosure</h3>
             <p className="text-justify">
-              We reserve the right to modify this privacy policy at any time. We will notify you of any changes by updating the "Last Updated" date of this Privacy Policy. Your continued use of the service following the posting of revised Privacy Policy means that you accept and agree to the changes.
+              To operate the platform, certain data may be processed by trusted third-party service providers. Our frontend and backend are hosted on Vercel. Our database is stored in Supabase. Video files are stored in R2 Cloud Storage. Video playback and delivery are handled through Bunny CDN. These providers may process data on our behalf strictly to host, store, transmit, cache, or deliver content and to keep the service available. We disclose information to these providers only as necessary for service operation, security, analytics, or legal compliance. Where applicable, we require these providers to protect data using appropriate technical and organizational safeguards.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">7. Data Subject Rights</h3>
+            <p className="text-justify">
+              Under the DPA, you may exercise the following rights, subject to the conditions and exceptions provided by law: the right to be informed, the right to access, the right to object, the right to erasure or blocking, the right to damages, the right to rectify, the right to file a complaint, and the right to data portability. You may contact us to request access to your data, corrections to inaccurate records, deletion where appropriate, or explanations regarding how your information is handled.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">8. Data Retention</h3>
+            <p className="text-justify">
+              We keep personal data only for as long as reasonably necessary to deliver the service, comply with legal obligations, resolve disputes, enforce agreements, and maintain security. Unless a longer retention period is required by law or needed for a legitimate operational reason, we generally retain account data and related learning records for up to one year after the user&apos;s last login or account activity. After that period, data is reviewed for deletion, anonymization, or archival as appropriate.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">9. Data Disposal and Deletion</h3>
+            <p className="text-justify">
+              When data is no longer needed, we dispose of it using permanent deletion methods, including digital shredding, secure database deletion, and removal from active storage systems and connected backups where technically feasible. For stored media and files, we use deletion processes intended to prevent reasonable reconstruction of the data after disposal.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">10. Data Security</h3>
+            <p className="text-justify">
+              We use administrative, technical, and physical safeguards intended to protect data from unauthorized access, loss, misuse, disclosure, alteration, or destruction. These safeguards may include access controls, authentication, encryption in transit where supported, limited internal access, logging, and monitoring. However, no online system is completely secure, so you should also protect your own account credentials and devices.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">11. DPO and Privacy Contact</h3>
+            <p className="text-justify">
+              If you have questions, requests, or concerns about how your data is handled, you may contact our Data Protection Officer or privacy contact at support@letreviewhub.edu. Please include enough detail so we can identify your request and respond appropriately.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-bold mb-2">12. Changes to This Policy</h3>
+            <p className="text-justify">
+              We may update this Privacy Policy from time to time to reflect changes in law, our services, or our data handling practices. When we do, we will update the effective date or otherwise provide notice where appropriate. Continued use of the platform after changes means you acknowledge the updated policy.
             </p>
           </div>
         </div>
