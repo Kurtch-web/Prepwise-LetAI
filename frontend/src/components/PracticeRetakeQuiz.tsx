@@ -8,6 +8,7 @@ interface PracticeRetakeQuizProps {
   quizTitle: string;
   testType: string;
   originalQuizData?: QuizResult; // Quiz data from previous attempt
+  selectedTime?: number | null; // Time limit in minutes selected by user
   onBack: () => void;
   onComplete?: () => void;
 }
@@ -17,6 +18,7 @@ export function PracticeRetakeQuiz({
   quizTitle,
   testType,
   originalQuizData,
+  selectedTime,
   onBack,
   onComplete
 }: PracticeRetakeQuizProps) {
@@ -31,12 +33,30 @@ export function PracticeRetakeQuiz({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     if (originalQuizData) {
       loadQuiz();
     }
   }, [quizId, originalQuizData]);
+
+  // Timer effect
+  useEffect(() => {
+    if (!timeRemaining || timeRemaining <= 0 || showResults) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev && prev <= 1) {
+          submitQuiz();
+          return 0;
+        }
+        return (prev || 0) - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeRemaining, showResults]);
 
   const loadQuiz = async () => {
     setIsLoading(true);
@@ -53,6 +73,12 @@ export function PracticeRetakeQuiz({
       }
 
       setQuiz(fullDetails);
+
+      // Set timer based on selected time or quiz default
+      if (selectedTime) {
+        setTimeRemaining(selectedTime * 60); // Convert minutes to seconds
+      }
+
       setError('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load quiz');
@@ -62,6 +88,12 @@ export function PracticeRetakeQuiz({
     }
   };
 
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleSelectAnswer = (questionId: string, answer: string) => {
     setAnswers({ ...answers, [questionId]: answer });
@@ -265,13 +297,28 @@ export function PracticeRetakeQuiz({
           <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
             📚 {quizTitle}
           </h2>
-          <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-            isLightMode
-              ? 'bg-emerald-100 text-emerald-700'
-              : 'bg-emerald-900/30 text-emerald-300'
-          }`}>
-            Practice Attempt
-          </span>
+          <div className="flex items-center gap-3">
+            {timeRemaining !== null && (
+              <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                timeRemaining < 60
+                  ? isLightMode
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-red-500/20 text-red-300'
+                  : isLightMode
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-blue-500/20 text-blue-300'
+              }`}>
+                ⏱️ {formatTime(timeRemaining)}
+              </span>
+            )}
+            <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+              isLightMode
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-emerald-900/30 text-emerald-300'
+            }`}>
+              Practice Attempt
+            </span>
+          </div>
         </div>
         <div className={`w-full h-2 rounded-full overflow-hidden ${
           isLightMode ? 'bg-slate-200' : 'bg-slate-800'

@@ -3,7 +3,7 @@ import { useTheme } from '../providers/ThemeProvider';
 import { fetchPracticeTestSessions, PracticeTestSession, QuizResult } from '../services/progressService';
 
 interface PracticeTestsViewProps {
-  onSelectQuiz?: (quizId: string, quizTitle: string, testType: string, quizResult?: QuizResult) => void;
+  onSelectQuiz?: (quizId: string, quizTitle: string, testType: string, quizResult?: QuizResult, selectedTime?: number) => void;
   onBack: () => void;
 }
 
@@ -588,7 +588,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                         <button
                           onClick={() => {
                             const originalSession = selectedSession.sessions[0];
-                            onSelectQuiz?.(selectedSession.originalQuizId, selectedSession.quizTitle, selectedTestType || 'diagnostic-test', originalSession);
+                            onSelectQuiz?.(selectedSession.originalQuizId, selectedSession.quizTitle, selectedTestType || 'diagnostic-test', originalSession, selectedTime);
                             setShowModal(false);
                             setSelectedTime(null);
                             setSelectedSession(null);

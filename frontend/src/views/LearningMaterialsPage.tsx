@@ -35,6 +35,7 @@ export function LearningMaterialsPage() {
   const [retakingTestTitle, setRetakingTestTitle] = useState<string | null>(null);
   const [retakingTestType, setRetakingTestType] = useState<string | null>(null);
   const [retakingTestData, setRetakingTestData] = useState<any>(null);
+  const [selectedTestTime, setSelectedTestTime] = useState<number | null>(null);
   const [assessmentTemplates, setAssessmentTemplates] = useState<AssessmentTemplate[]>([]);
   const [userAssessments, setUserAssessments] = useState<any[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
@@ -138,11 +139,13 @@ export function LearningMaterialsPage() {
             quizTitle={retakingTestTitle}
             testType={retakingTestType}
             originalQuizData={retakingTestData}
+            selectedTime={selectedTestTime}
             onBack={() => {
               setRetakingTestId(null);
               setRetakingTestTitle(null);
               setRetakingTestType(null);
               setRetakingTestData(null);
+              setSelectedTestTime(null);
               setShowPracticeTests(true);
             }}
             onComplete={() => {
@@ -150,6 +153,7 @@ export function LearningMaterialsPage() {
               setRetakingTestTitle(null);
               setRetakingTestType(null);
               setRetakingTestData(null);
+              setSelectedTestTime(null);
               setShowPracticeTests(true);
             }}
           />
@@ -183,11 +187,12 @@ export function LearningMaterialsPage() {
       }`}>
         <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
           <PracticeTestsView
-            onSelectQuiz={(quizId, quizTitle, testType, quizResult) => {
+            onSelectQuiz={(quizId, quizTitle, testType, quizResult, selectedTime) => {
               setRetakingTestId(quizId);
               setRetakingTestTitle(quizTitle);
               setRetakingTestType(testType);
               setRetakingTestData(quizResult);
+              setSelectedTestTime(selectedTime || null);
             }}
             onBack={() => {
               setShowPracticeTests(false);
@@ -195,6 +200,7 @@ export function LearningMaterialsPage() {
               setRetakingTestTitle(null);
               setRetakingTestType(null);
               setRetakingTestData(null);
+              setSelectedTestTime(null);
             }}
           />
         </div>
