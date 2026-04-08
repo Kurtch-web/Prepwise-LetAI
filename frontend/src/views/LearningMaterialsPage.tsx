@@ -181,7 +181,7 @@ export function LearningMaterialsPage() {
           ? 'bg-gradient-to-b from-green-50 via-white to-slate-50'
           : 'bg-[#051b15]'
       }`}>
-        <div className="max-w-6xl mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
           <PracticeTestsView
             onSelectQuiz={(quizId, quizTitle, testType, quizResult) => {
               setRetakingTestId(quizId);
@@ -209,7 +209,7 @@ export function LearningMaterialsPage() {
           ? 'bg-gradient-to-b from-green-50 via-white to-slate-50'
           : 'bg-[#051b15]'
       }`}>
-        <div className="max-w-6xl mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
           <button
             onClick={() => setShowPracticeQuizzes(false)}
             className={`mb-6 px-4 py-2 rounded-lg font-semibold transition ${
@@ -232,20 +232,18 @@ export function LearningMaterialsPage() {
         ? 'bg-gradient-to-b from-green-50 via-white to-slate-50'
         : 'bg-[#051b15]'
     }`}>
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
         {/* Header and Tabs */}
         <div className="mb-8">
-          <h1 className={`text-4xl font-black mb-6 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+          <h1 className={`text-3xl sm:text-4xl font-black mb-4 sm:mb-6 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
             📚 Learning Center
           </h1>
 
           {/* Tab Navigation */}
-          <div className="flex gap-2 border-b" style={{
-            borderColor: isLightMode ? '#e2e8f0' : 'rgba(255, 255, 255, 0.1)'
-          }}>
+          <div className={`flex flex-col sm:flex-row gap-2 border-b ${isLightMode ? 'border-slate-200' : 'border-white/10'}`}>
             <button
               onClick={() => setActiveTab('materials')}
-              className={`px-6 py-3 font-semibold text-lg transition-all ${
+              className={`w-full sm:w-auto px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all ${
                 activeTab === 'materials'
                   ? isLightMode
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -259,7 +257,7 @@ export function LearningMaterialsPage() {
             </button>
             <button
               onClick={() => setActiveTab('assessment')}
-              className={`px-6 py-3 font-semibold text-lg transition-all ${
+              className={`w-full sm:w-auto px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all ${
                 activeTab === 'assessment'
                   ? isLightMode
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -273,7 +271,7 @@ export function LearningMaterialsPage() {
             </button>
             <button
               onClick={() => setActiveTab('answered')}
-              className={`px-6 py-3 font-semibold text-lg transition-all ${
+              className={`w-full sm:w-auto px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all ${
                 activeTab === 'answered'
                   ? isLightMode
                     ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -325,7 +323,7 @@ export function LearningMaterialsPage() {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className={`rounded-2xl border p-6 ${
+                <div className={`rounded-2xl border p-5 sm:p-6 ${
                   isLightMode
                     ? 'border-slate-200 bg-white shadow-lg'
                     : 'border-slate-700 bg-slate-800/50 shadow-lg'
@@ -353,7 +351,7 @@ export function LearningMaterialsPage() {
                             : 'border-emerald-500/20 bg-emerald-900/10'
                         }`}
                       >
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <h3 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
@@ -391,7 +389,7 @@ export function LearningMaterialsPage() {
                           </div>
                           <button
                             onClick={() => handleViewAnswers(template)}
-                            className={`px-6 py-3 rounded-lg font-semibold transition ${
+                            className={`w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition ${
                               isLightMode
                                 ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                                 : 'bg-emerald-600 text-white hover:bg-emerald-700'
@@ -421,13 +419,13 @@ export function LearningMaterialsPage() {
                 <div
                   key={material.id}
                   onClick={() => (material as any).onClick ? (material as any).onClick() : navigate((material as any).path)}
-                  className={`rounded-2xl p-6 backdrop-blur-xl border transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${
+                  className={`rounded-2xl p-5 sm:p-6 backdrop-blur-xl border transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${
                     isLightMode
                       ? 'bg-white/95 border-slate-200 shadow-md'
                       : 'bg-slate-800/50 border-slate-700 shadow-lg'
                   }`}
                 >
-                  <div className="text-4xl mb-4">{material.icon}</div>
+                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">{material.icon}</div>
                   <h3 className={`text-xl font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                     {material.title}
                   </h3>
@@ -439,7 +437,7 @@ export function LearningMaterialsPage() {
             </div>
 
             {/* Info Section */}
-            <div className={`mt-12 rounded-2xl p-8 backdrop-blur-xl border ${
+            <div className={`mt-10 sm:mt-12 rounded-2xl p-6 sm:p-8 backdrop-blur-xl border ${
               isLightMode
                 ? 'bg-white/95 border-slate-200 shadow-lg'
                 : 'bg-slate-800/50 border-slate-700 shadow-lg'
@@ -447,7 +445,7 @@ export function LearningMaterialsPage() {
               <h2 className={`text-2xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 ✨ Curated for Your Success
               </h2>
-              <p className={`text-base leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              <p className={`text-sm sm:text-base leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
                 All learning materials are carefully curated and aligned with the latest PRC standards for the LET {user?.reviewType} exam. Each resource is designed to maximize your learning efficiency and boost your confidence before the exam.
               </p>
             </div>
@@ -488,7 +486,7 @@ export function LearningMaterialsPage() {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className={`rounded-2xl border p-6 ${
+                <div className={`rounded-2xl border p-5 sm:p-6 ${
                   isLightMode
                     ? 'border-slate-200 bg-white shadow-lg'
                     : 'border-slate-700 bg-slate-800/50 shadow-lg'
@@ -535,7 +533,7 @@ export function LearningMaterialsPage() {
                             : 'border-slate-700 bg-slate-800/50 hover:border-emerald-400 hover:shadow-lg cursor-pointer'
                         }`}
                       >
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <h3 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>

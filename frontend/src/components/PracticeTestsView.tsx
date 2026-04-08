@@ -31,6 +31,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
   const [materialsSubject, setMaterialsSubject] = useState<'math' | 'english'>('math');
   const [selectedMathTopic, setSelectedMathTopic] = useState<string>('Arithmetic and Number Theory');
   const [selectedEnglishTopic, setSelectedEnglishTopic] = useState<string>('English for Specific Purposes');
+  const [showTopicsSidebar, setShowTopicsSidebar] = useState(false);
 
   const testTypeInfo: Record<string, { emoji: string; label: string }> = {
     'diagnostic-test': { emoji: '🔍', label: 'Diagnostic Test' },
@@ -362,12 +363,12 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
       </div>
 
       {/* Main Tab Navigation */}
-      <div className="flex gap-2 border-b" style={{
+      <div className="flex gap-2 border-b overflow-x-auto" style={{
         borderColor: isLightMode ? '#e2e8f0' : 'rgba(255, 255, 255, 0.1)'
       }}>
         <button
           onClick={() => setActiveTab('test-taken')}
-          className={`px-6 py-3 font-semibold text-lg transition-all ${
+          className={`px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all whitespace-nowrap ${
             activeTab === 'test-taken'
               ? isLightMode
                 ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -381,7 +382,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
         </button>
         <button
           onClick={() => setActiveTab('materials')}
-          className={`px-6 py-3 font-semibold text-lg transition-all ${
+          className={`px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all whitespace-nowrap ${
             activeTab === 'materials'
               ? isLightMode
                 ? 'text-emerald-600 border-b-2 border-emerald-600'
@@ -554,12 +555,15 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
           </p>
 
           {/* Subject Tabs */}
-          <div className="flex gap-2 border-b" style={{
+          <div className="flex gap-2 border-b overflow-x-auto" style={{
             borderColor: isLightMode ? '#e2e8f0' : 'rgba(255, 255, 255, 0.1)'
           }}>
             <button
-              onClick={() => setMaterialsSubject('math')}
-              className={`px-6 py-3 font-semibold text-lg transition-all ${
+              onClick={() => {
+                setMaterialsSubject('math');
+                setShowTopicsSidebar(false);
+              }}
+              className={`px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all whitespace-nowrap ${
                 materialsSubject === 'math'
                   ? isLightMode
                     ? 'text-blue-600 border-b-2 border-blue-600'
@@ -572,8 +576,11 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
               🔢 Mathematics
             </button>
             <button
-              onClick={() => setMaterialsSubject('english')}
-              className={`px-6 py-3 font-semibold text-lg transition-all ${
+              onClick={() => {
+                setMaterialsSubject('english');
+                setShowTopicsSidebar(false);
+              }}
+              className={`px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all whitespace-nowrap ${
                 materialsSubject === 'english'
                   ? isLightMode
                     ? 'text-amber-600 border-b-2 border-amber-600'
@@ -589,9 +596,24 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
 
           {/* Math Section */}
           {materialsSubject === 'math' && (
-            <div className="flex gap-6">
+            <div>
+              {/* Mobile Topics Toggle Button */}
+              <button
+                onClick={() => setShowTopicsSidebar(!showTopicsSidebar)}
+                className={`md:hidden w-full mb-4 px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+                  isLightMode
+                    ? 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+                    : 'bg-blue-500/20 text-blue-300 border border-blue-500 hover:bg-blue-500/30'
+                }`}
+              >
+                <span>{showTopicsSidebar ? '▼' : '▶'} {showTopicsSidebar ? 'Hide' : 'Show'} Topics</span>
+              </button>
+
+              <div className="flex flex-col md:flex-row gap-6">
               {/* Topics Sidebar */}
-              <div className={`w-64 flex-shrink-0 rounded-2xl border p-4 h-fit sticky top-20 ${
+              <div className={`w-full md:w-64 flex-shrink-0 rounded-2xl border p-4 h-fit md:sticky md:top-20 transition-all ${
+                  showTopicsSidebar ? 'block' : 'hidden md:block'
+                } ${
                 isLightMode
                   ? 'bg-white border-slate-200 shadow-md'
                   : 'bg-slate-800/50 border-slate-700 shadow-md'
@@ -608,7 +630,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                       <button
                         key={topic}
                         onClick={() => setSelectedMathTopic(topic)}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition ${
+                        className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition text-sm sm:text-base ${
                           isSelected
                             ? isLightMode
                               ? 'bg-blue-100 text-blue-900 border border-blue-300'
@@ -619,7 +641,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-sm">{topic}</span>
+                          <span className="font-semibold text-xs sm:text-sm">{topic}</span>
                           <span className={`text-xs font-semibold px-2 py-1 rounded ${
                             isSelected
                               ? isLightMode
@@ -661,14 +683,14 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                       {topicQuestions.map((question) => (
                         <div
                           key={question.id}
-                          className={`rounded-2xl border p-6 ${
+                          className={`rounded-2xl border p-4 sm:p-6 ${
                             isLightMode
                               ? 'bg-white border-slate-200 shadow-md'
                               : 'bg-slate-800/50 border-slate-700 shadow-md'
                           }`}
                         >
                           {/* Question */}
-                          <h4 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          <h4 className={`text-base sm:text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                             {question.question}
                           </h4>
 
@@ -683,7 +705,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                 <button
                                   key={idx}
                                   onClick={() => handleAnswerSelect(question.id, idx)}
-                                  className={`w-full text-left p-3 rounded-lg border-2 transition ${
+                                  className={`w-full text-left p-2 sm:p-3 rounded-lg border-2 text-sm sm:text-base transition ${
                                     isSelected
                                       ? hasAnswered
                                         ? isCorrect
@@ -721,7 +743,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                     }`}>
                                       {isSelected && hasAnswered && isCorrect ? '✓' : String.fromCharCode(65 + idx)}
                                     </span>
-                                    <span>{option}</span>
+                                    <span className="text-xs sm:text-sm">{option}</span>
                                   </div>
                                 </button>
                               );
@@ -798,14 +820,30 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                   );
                 })()}
               </div>
+              </div>
             </div>
           )}
 
           {/* English Section */}
           {materialsSubject === 'english' && (
-            <div className="flex gap-6">
+            <div>
+              {/* Mobile Topics Toggle Button */}
+              <button
+                onClick={() => setShowTopicsSidebar(!showTopicsSidebar)}
+                className={`md:hidden w-full mb-4 px-4 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+                  isLightMode
+                    ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500 hover:bg-amber-500/30'
+                }`}
+              >
+                <span>{showTopicsSidebar ? '▼' : '▶'} {showTopicsSidebar ? 'Hide' : 'Show'} Topics</span>
+              </button>
+
+              <div className="flex flex-col md:flex-row gap-6">
               {/* Topics Sidebar */}
-              <div className={`w-64 flex-shrink-0 rounded-2xl border p-4 h-fit sticky top-20 ${
+              <div className={`w-full md:w-64 flex-shrink-0 rounded-2xl border p-4 h-fit md:sticky md:top-20 transition-all ${
+                  showTopicsSidebar ? 'block' : 'hidden md:block'
+                } ${
                 isLightMode
                   ? 'bg-white border-slate-200 shadow-md'
                   : 'bg-slate-800/50 border-slate-700 shadow-md'
@@ -822,7 +860,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                       <button
                         key={topic}
                         onClick={() => setSelectedEnglishTopic(topic)}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition ${
+                        className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition text-sm sm:text-base ${
                           isSelected
                             ? isLightMode
                               ? 'bg-amber-100 text-amber-900 border border-amber-300'
@@ -833,7 +871,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-sm">{topic}</span>
+                          <span className="font-semibold text-xs sm:text-sm">{topic}</span>
                           <span className={`text-xs font-semibold px-2 py-1 rounded ${
                             isSelected
                               ? isLightMode
@@ -875,14 +913,14 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                       {topicQuestions.map((question) => (
                         <div
                           key={question.id}
-                          className={`rounded-2xl border p-6 ${
+                          className={`rounded-2xl border p-4 sm:p-6 ${
                             isLightMode
                               ? 'bg-white border-slate-200 shadow-md'
                               : 'bg-slate-800/50 border-slate-700 shadow-md'
                           }`}
                         >
                           {/* Question */}
-                          <h4 className={`text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          <h4 className={`text-base sm:text-lg font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                             {question.question}
                           </h4>
 
@@ -897,7 +935,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                 <button
                                   key={idx}
                                   onClick={() => handleAnswerSelect(question.id, idx)}
-                                  className={`w-full text-left p-3 rounded-lg border-2 transition ${
+                                  className={`w-full text-left p-2 sm:p-3 rounded-lg border-2 text-sm sm:text-base transition ${
                                     isSelected
                                       ? hasAnswered
                                         ? isCorrect
@@ -935,7 +973,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                     }`}>
                                       {isSelected && hasAnswered && isCorrect ? '✓' : String.fromCharCode(65 + idx)}
                                     </span>
-                                    <span>{option}</span>
+                                    <span className="text-xs sm:text-sm">{option}</span>
                                   </div>
                                 </button>
                               );
@@ -1011,6 +1049,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                     </div>
                   );
                 })()}
+              </div>
               </div>
             </div>
           )}
