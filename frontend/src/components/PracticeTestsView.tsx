@@ -1116,7 +1116,17 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                       </p>
                                     </div>
                                     <button
-                                      onClick={() => setAiAnalysis({ ...aiAnalysis, [question.id]: null })}
+                                      onClick={async () => {
+                                        setAiAnalysis({ ...aiAnalysis, [question.id]: null });
+                                        try {
+                                          await fetch('https://cheiken021-letai.hf.space/clear-cache', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' }
+                                          });
+                                        } catch (err) {
+                                          console.error('Failed to clear cache:', err);
+                                        }
+                                      }}
                                       className={`flex-shrink-0 px-3 py-1 rounded text-xs font-semibold transition ${
                                         isLightMode
                                           ? 'bg-indigo-200 text-indigo-700 hover:bg-indigo-300'
@@ -1412,7 +1422,17 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                       </p>
                                     </div>
                                     <button
-                                      onClick={() => setAiAnalysis({ ...aiAnalysis, [question.id]: null })}
+                                      onClick={async () => {
+                                        setAiAnalysis({ ...aiAnalysis, [question.id]: null });
+                                        try {
+                                          await fetch('https://cheiken021-letai.hf.space/clear-cache', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' }
+                                          });
+                                        } catch (err) {
+                                          console.error('Failed to clear cache:', err);
+                                        }
+                                      }}
                                       className={`flex-shrink-0 px-3 py-1 rounded text-xs font-semibold transition ${
                                         isLightMode
                                           ? 'bg-indigo-200 text-indigo-700 hover:bg-indigo-300'
@@ -1706,7 +1726,17 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                       </p>
                                     </div>
                                     <button
-                                      onClick={() => setAiAnalysis({ ...aiAnalysis, [question.id]: null })}
+                                      onClick={async () => {
+                                        setAiAnalysis({ ...aiAnalysis, [question.id]: null });
+                                        try {
+                                          await fetch('https://cheiken021-letai.hf.space/clear-cache', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' }
+                                          });
+                                        } catch (err) {
+                                          console.error('Failed to clear cache:', err);
+                                        }
+                                      }}
                                       className={`flex-shrink-0 px-3 py-1 rounded text-xs font-semibold transition ${
                                         isLightMode
                                           ? 'bg-indigo-200 text-indigo-700 hover:bg-indigo-300'
