@@ -90,6 +90,9 @@ export function LandingPage() {
     }
   ];
 
+  // Helper function to calculate parallax offset
+  const getParallaxOffset = (factor: number) => scrollY * factor;
+
   return (
     <div className={`${isLightMode ? 'bg-slate-50' : 'bg-slate-950'} transition-colors duration-200`}>
       {/* Navigation */}
@@ -130,7 +133,7 @@ export function LandingPage() {
           : 'bg-gradient-to-br from-slate-900 to-slate-950'
       }`}>
         {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ transform: `translateY(${getParallaxOffset(0.5)}px)`, willChange: 'transform' }}>
           <div className={`absolute -top-40 -right-40 w-80 h-80 ${
             isLightMode ? 'bg-blue-200/20' : 'bg-blue-600/10'
           } rounded-full blur-3xl animate-blob`} />
@@ -139,7 +142,7 @@ export function LandingPage() {
           } rounded-full blur-3xl animate-blob animation-delay-2000`} />
         </div>
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
+        <div className="max-w-5xl mx-auto text-center relative z-10" style={{ transform: `translateY(${getParallaxOffset(-0.2)}px)`, willChange: 'transform' }}>
           <div className="mb-4 inline-block">
             <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
               isLightMode
@@ -217,6 +220,7 @@ export function LandingPage() {
                     ? 'bg-white border-slate-200'
                     : 'bg-slate-800/50 border-slate-700'
                 }`}
+                style={{ transform: `translateY(${getParallaxOffset(0.3)}px)`, willChange: 'transform' }}
               >
                 <h3 className={`text-2xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                   {value.title}
@@ -250,7 +254,7 @@ export function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-6">
             {buildingBlocks.map((block, idx) => (
-              <div key={idx} className="flex gap-4">
+              <div key={idx} className="flex gap-4" style={{ transform: `translateY(${getParallaxOffset(0.15 + idx * 0.08)}px)`, willChange: 'transform' }}>
                 <div className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center font-bold text-lg ${
                   isLightMode
                     ? 'bg-blue-100 text-blue-600'
@@ -301,6 +305,7 @@ export function LandingPage() {
                     ? 'bg-white border-slate-200 hover:shadow-lg hover:shadow-slate-300/40'
                     : 'bg-slate-800/50 border-slate-700 hover:shadow-lg hover:shadow-slate-900/40'
                 }`}
+                style={{ transform: `translateY(${getParallaxOffset(0.2 + idx * 0.05)}px)`, willChange: 'transform' }}
               >
                 <div className="text-4xl mb-3">
                   {feature.icon}
@@ -362,7 +367,7 @@ export function LandingPage() {
           ? 'bg-gradient-to-r from-blue-500 to-blue-600'
           : 'bg-gradient-to-r from-blue-600 to-blue-700'
       }`}>
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center" style={{ transform: `translateY(${getParallaxOffset(-0.25)}px)`, willChange: 'transform' }}>
           <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">
             Ready to Begin Your Journey?
           </h2>
