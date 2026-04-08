@@ -28,6 +28,9 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
   const [activeTab, setActiveTab] = useState<'test-taken' | 'materials'>('test-taken');
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showSolution, setShowSolution] = useState<Record<string, boolean>>({});
+  const [aiAnalysis, setAiAnalysis] = useState<Record<string, string | null>>({});
+  const [aiLoading, setAiLoading] = useState<Record<string, boolean>>({});
+  const [aiError, setAiError] = useState<Record<string, string | null>>({});
   const [materialsSubject, setMaterialsSubject] = useState<'math' | 'english' | 'situational'>('math');
   const [selectedMathTopic, setSelectedMathTopic] = useState<string>('Arithmetic and Number Theory');
   const [selectedEnglishTopic, setSelectedEnglishTopic] = useState<string>('English for Specific Purposes');
@@ -446,6 +449,64 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
       ...showSolution,
       [questionId]: !showSolution[questionId]
     });
+  };
+
+  const detectLanguage = (text: string): 'english' | 'tagalog' => {
+    const filipinoKeywords = ['ano', 'ang', 'sa', 'ng', 'mga', 'ba', 'kung', 'ay', 'ito', 'yung', 'kang', 'mo', 'ko', 'nyo', 'natin', 'kami'];
+    const lowerText = text.toLowerCase();
+    const filipinoMatches = filipinoKeywords.filter(word =>
+      new RegExp(`\\b${word}\\b`).test(lowerText)
+    ).length;
+    return filipinoMatches >= 2 ? 'tagalog' : 'english';
+  };
+
+  const buildAnalysisPrompt = (language: 'english' | 'tagalog') => {
+    if (language === 'tagalog') {
+      return 'Magbigay ng detalyadong pagsusuri para sa bawat pagpipilian - kung bakit tama ang tamang sagot at kung bakit mali ang bawat isa sa mga maling sumagot. Isama ang mga key concepts at learning points.';
+    } else {
+      return 'Provide detailed analysis for each choice - why the correct answer is right and why each wrong answer is incorrect. Include key concepts and learning points.';
+    }
+  };
+
+  const fetchAiAnalysis = async (questionId: string, question: string, options: string[], correctAnswer: number) => {
+    if (aiLoading[questionId] || aiAnalysis[questionId]) return;
+
+    setAiLoading({ ...aiLoading, [questionId]: true });
+    setAiError({ ...aiError, [questionId]: null });
+
+    try {
+      const detectedLanguage = detectLanguage(question);
+      const analysisPrompt = buildAnalysisPrompt(detectedLanguage);
+
+      const response = await fetch('https://cheiken021-letai.hf.space/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: question,
+          choices: options,
+          correct_answer: options[correctAnswer],
+          max_new_tokens: 800,
+          temperature: 0.7,
+          language: detectedLanguage,
+          explanation_instruction: analysisPrompt
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setAiAnalysis({ ...aiAnalysis, [questionId]: data.explanation });
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to generate analysis';
+      setAiError({ ...aiError, [questionId]: errorMsg });
+      console.error('AI analysis error:', err);
+    } finally {
+      setAiLoading({ ...aiLoading, [questionId]: false });
+    }
   };
 
   const getMathScore = () => {
@@ -971,19 +1032,36 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                   : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
                               </div>
 
-                              {/* Solution Toggle */}
-                              <button
-                                onClick={() => toggleSolution(question.id)}
-                                className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
-                                  isLightMode
-                                    ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-                                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
-                                }`}
-                              >
-                                {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
-                              </button>
+                              {/* Solution and AI Analysis Buttons */}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => toggleSolution(question.id)}
+                                  className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
+                                    isLightMode
+                                      ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                                      : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                                  }`}
+                                >
+                                  {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
+                                </button>
+                                <button
+                                  onClick={() => fetchAiAnalysis(question.id, question.question, question.options, question.correctAnswer)}
+                                  disabled={aiLoading[question.id]}
+                                  className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
+                                    aiLoading[question.id]
+                                      ? isLightMode
+                                        ? 'bg-indigo-200 text-indigo-700 cursor-not-allowed'
+                                        : 'bg-indigo-500/30 text-indigo-300 cursor-not-allowed'
+                                      : isLightMode
+                                      ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                                      : 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
+                                  }`}
+                                >
+                                  {aiLoading[question.id] ? '⏳ Analyzing...' : '✨ AI Analysis'}
+                                </button>
+                              </div>
 
-                              {/* Solution and Explanation */}
+                              {/* Solution Display */}
                               {showSolution[question.id] && (
                                 <div className={`p-4 rounded-lg space-y-3 ${
                                   isLightMode
@@ -1014,6 +1092,41 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                       {question.explanation}
                                     </p>
                                   </div>
+                                </div>
+                              )}
+
+                              {/* AI Analysis Display */}
+                              {aiAnalysis[question.id] && (
+                                <div className={`p-4 rounded-lg space-y-3 ${
+                                  isLightMode
+                                    ? 'bg-indigo-50 border border-indigo-200'
+                                    : 'bg-indigo-500/10 border border-indigo-700'
+                                }`}>
+                                  <h5 className={`font-bold mb-2 ${
+                                    isLightMode ? 'text-indigo-900' : 'text-indigo-200'
+                                  }`}>
+                                    ✨ AI Analysis:
+                                  </h5>
+                                  <p className={`text-sm leading-relaxed ${
+                                    isLightMode ? 'text-indigo-800' : 'text-indigo-100'
+                                  }`}>
+                                    {aiAnalysis[question.id]}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* AI Error Display */}
+                              {aiError[question.id] && (
+                                <div className={`p-4 rounded-lg ${
+                                  isLightMode
+                                    ? 'bg-red-50 border border-red-200'
+                                    : 'bg-red-500/10 border border-red-700'
+                                }`}>
+                                  <p className={`text-sm ${
+                                    isLightMode ? 'text-red-700' : 'text-red-300'
+                                  }`}>
+                                    Error: {aiError[question.id]}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -1201,19 +1314,36 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                   : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
                               </div>
 
-                              {/* Solution Toggle */}
-                              <button
-                                onClick={() => toggleSolution(question.id)}
-                                className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
-                                  isLightMode
-                                    ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-                                    : 'bg-slate-700/50 text-white hover:bg-slate-700'
-                                }`}
-                              >
-                                {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
-                              </button>
+                              {/* Solution and AI Analysis Buttons */}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => toggleSolution(question.id)}
+                                  className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
+                                    isLightMode
+                                      ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                                      : 'bg-slate-700/50 text-white hover:bg-slate-700'
+                                  }`}
+                                >
+                                  {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
+                                </button>
+                                <button
+                                  onClick={() => fetchAiAnalysis(question.id, question.question, question.options, question.correctAnswer)}
+                                  disabled={aiLoading[question.id]}
+                                  className={`flex-1 px-4 py-2 rounded-lg font-semibold transition ${
+                                    aiLoading[question.id]
+                                      ? isLightMode
+                                        ? 'bg-indigo-200 text-indigo-700 cursor-not-allowed'
+                                        : 'bg-indigo-500/30 text-indigo-300 cursor-not-allowed'
+                                      : isLightMode
+                                      ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                                      : 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
+                                  }`}
+                                >
+                                  {aiLoading[question.id] ? '⏳ Analyzing...' : '✨ AI Analysis'}
+                                </button>
+                              </div>
 
-                              {/* Solution and Explanation */}
+                              {/* Solution Display */}
                               {showSolution[question.id] && (
                                 <div className={`p-4 rounded-lg space-y-3 ${
                                   isLightMode
@@ -1244,6 +1374,41 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                       {question.explanation}
                                     </p>
                                   </div>
+                                </div>
+                              )}
+
+                              {/* AI Analysis Display */}
+                              {aiAnalysis[question.id] && (
+                                <div className={`p-4 rounded-lg space-y-3 ${
+                                  isLightMode
+                                    ? 'bg-indigo-50 border border-indigo-200'
+                                    : 'bg-indigo-500/10 border border-indigo-700'
+                                }`}>
+                                  <h5 className={`font-bold mb-2 ${
+                                    isLightMode ? 'text-indigo-900' : 'text-indigo-200'
+                                  }`}>
+                                    ✨ AI Analysis:
+                                  </h5>
+                                  <p className={`text-sm leading-relaxed ${
+                                    isLightMode ? 'text-indigo-800' : 'text-indigo-100'
+                                  }`}>
+                                    {aiAnalysis[question.id]}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* AI Error Display */}
+                              {aiError[question.id] && (
+                                <div className={`p-4 rounded-lg ${
+                                  isLightMode
+                                    ? 'bg-red-50 border border-red-200'
+                                    : 'bg-red-500/10 border border-red-700'
+                                }`}>
+                                  <p className={`text-sm ${
+                                    isLightMode ? 'text-red-700' : 'text-red-300'
+                                  }`}>
+                                    Error: {aiError[question.id]}
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -1431,7 +1596,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                   : `✗ Incorrect. The correct answer is: ${question.options[question.correctAnswer]}`}
                               </div>
 
-                              {/* Solution Toggle */}
+                              {/* Solution and AI Analysis Buttons */}
                               <button
                                 onClick={() => toggleSolution(question.id)}
                                 className={`w-full px-4 py-2 rounded-lg font-semibold transition ${
@@ -1442,8 +1607,23 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                               >
                                 {showSolution[question.id] ? '▼ Hide Solution' : '▶ Show Solution'}
                               </button>
+                              <button
+                                onClick={() => fetchAiAnalysis(question.id, question.question, question.options, question.correctAnswer)}
+                                disabled={aiLoading[question.id]}
+                                className={`w-full px-4 py-2 rounded-lg font-semibold transition mt-2 ${
+                                  aiLoading[question.id]
+                                    ? isLightMode
+                                      ? 'bg-indigo-200 text-indigo-700 cursor-not-allowed'
+                                      : 'bg-indigo-500/30 text-indigo-300 cursor-not-allowed'
+                                    : isLightMode
+                                    ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                                    : 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30'
+                                }`}
+                              >
+                                {aiLoading[question.id] ? '⏳ Analyzing...' : '✨ AI Analysis'}
+                              </button>
 
-                              {/* Solution and Explanation */}
+                              {/* Solution Display */}
                               {showSolution[question.id] && (
                                 <div className={`p-4 rounded-lg space-y-3 ${
                                   isLightMode
@@ -1474,6 +1654,41 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
                                       {question.explanation}
                                     </p>
                                   </div>
+                                </div>
+                              )}
+
+                              {/* AI Analysis Display */}
+                              {aiAnalysis[question.id] && (
+                                <div className={`p-4 rounded-lg space-y-3 ${
+                                  isLightMode
+                                    ? 'bg-indigo-50 border border-indigo-200'
+                                    : 'bg-indigo-500/10 border border-indigo-700'
+                                }`}>
+                                  <h5 className={`font-bold mb-2 ${
+                                    isLightMode ? 'text-indigo-900' : 'text-indigo-200'
+                                  }`}>
+                                    ✨ AI Analysis:
+                                  </h5>
+                                  <p className={`text-sm leading-relaxed ${
+                                    isLightMode ? 'text-indigo-800' : 'text-indigo-100'
+                                  }`}>
+                                    {aiAnalysis[question.id]}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* AI Error Display */}
+                              {aiError[question.id] && (
+                                <div className={`p-4 rounded-lg ${
+                                  isLightMode
+                                    ? 'bg-red-50 border border-red-200'
+                                    : 'bg-red-500/10 border border-red-700'
+                                }`}>
+                                  <p className={`text-sm ${
+                                    isLightMode ? 'text-red-700' : 'text-red-300'
+                                  }`}>
+                                    Error: {aiError[question.id]}
+                                  </p>
                                 </div>
                               )}
                             </div>
