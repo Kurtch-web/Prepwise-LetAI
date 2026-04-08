@@ -154,11 +154,12 @@ export function LandingPage() {
       <section
         id="hero"
         ref={(el) => { if (el) sectionRefs.current.hero = el; }}
-        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20 min-h-[90vh] flex items-center ${
+        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10 flex items-center ${
           isLightMode
             ? 'bg-white'
             : 'bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950'
         }`}
+        style={{ minHeight: 'calc(100vh - 56px)' }}
       >
         {/* Parallax background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -183,7 +184,7 @@ export function LandingPage() {
         </div>
 
         <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
-          <div className="mb-4 inline-block animate-fade-in">
+          <div className="mb-2.5 inline-block animate-fade-in">
             <span className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-500 ${
               isLightMode
                 ? 'bg-blue-100 text-blue-700'
@@ -193,7 +194,7 @@ export function LandingPage() {
             </span>
           </div>
 
-          <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight animate-fade-in-delay-1 ${
+          <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-3 leading-tight animate-fade-in-delay-1 ${
             isLightMode ? 'text-slate-900' : 'text-white'
           }`}>
             Quality Teacher Preparation,
@@ -203,13 +204,13 @@ export function LandingPage() {
             </span>
           </h1>
 
-          <p className={`text-base sm:text-lg mb-6 max-w-2xl mx-auto leading-relaxed animate-fade-in-delay-2 ${
+          <p className={`text-sm sm:text-base mb-4 max-w-2xl mx-auto leading-relaxed animate-fade-in-delay-2 ${
             isLightMode ? 'text-slate-600' : 'text-slate-300'
           }`}>
             Comprehensive platform helping aspiring teachers succeed in licensure examinations and build confident, effective teaching careers.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6 animate-fade-in-delay-3">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-4 animate-fade-in-delay-3">
             <button
               onClick={() => navigate('/dashboard')}
               className="px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-sm sm:text-base hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-300"
@@ -237,13 +238,13 @@ export function LandingPage() {
       <section
         id="mission"
         ref={(el) => { if (el) sectionRefs.current.mission = el; }}
-        className={`relative px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
+        className={`relative px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
           isLightMode ? 'bg-slate-50' : 'bg-slate-900'
         }`}
       >
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 transition-all duration-500 ${
+          <div className="text-center mb-8">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
               visibleSections.has('mission') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Our Core Values
@@ -283,13 +284,13 @@ export function LandingPage() {
       <section
         id="building-blocks"
         ref={(el) => { if (el) sectionRefs.current['building-blocks'] = el; }}
-        className={`relative px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
+        className={`relative px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
           isLightMode ? 'bg-white' : 'bg-slate-950'
         }`}
       >
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 transition-all duration-500 ${
+          <div className="text-center mb-8">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
               visibleSections.has('building-blocks') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Our Platform Features
@@ -333,15 +334,15 @@ export function LandingPage() {
       <section
         id="features"
         ref={(el) => { if (el) sectionRefs.current.features = el; }}
-        className={`px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
+        className={`px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
           isLightMode
             ? 'bg-slate-50'
             : 'bg-gradient-to-b from-slate-900 to-slate-950'
         }`}
       >
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 transition-all duration-500 ${
+          <div className="text-center mb-8">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
               visibleSections.has('features') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Why Choose EduHub
@@ -383,13 +384,13 @@ export function LandingPage() {
       <section
         id="why-built"
         ref={(el) => { if (el) sectionRefs.current['why-built'] = el; }}
-        className={`px-4 sm:px-6 lg:px-8 py-10 sm:py-14 ${
+        className={`px-4 sm:px-6 lg:px-8 py-8 sm:py-10 ${
           isLightMode ? 'bg-white' : 'bg-slate-900'
         }`}
       >
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 transition-all duration-500 ${
+          <div className="text-center mb-7">
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-extrabold mb-2 transition-all duration-500 ${
               visibleSections.has('why-built') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             } ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Why We Built This
@@ -445,7 +446,7 @@ export function LandingPage() {
       <section
         id="cta"
         ref={(el) => { if (el) sectionRefs.current.cta = el; }}
-        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-8 sm:py-12 ${
+        className={`relative overflow-hidden px-4 sm:px-6 lg:px-8 py-6 sm:py-8 ${
           isLightMode
             ? 'bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600'
             : 'bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700'
@@ -464,12 +465,12 @@ export function LandingPage() {
         </div>
 
         <div className="max-w-2xl mx-auto text-center relative z-10">
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-3 transition-all duration-500 ${
+          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 transition-all duration-500 ${
             visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             Ready to Begin?
           </h2>
-          <p className={`text-sm sm:text-base text-white/90 mb-5 transition-all duration-500 delay-100 ${
+          <p className={`text-xs sm:text-sm text-white/90 mb-4 transition-all duration-500 delay-100 ${
             visibleSections.has('cta') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             Join thousands of educators preparing for success with comprehensive resources and community support.
@@ -484,13 +485,13 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className={`px-4 sm:px-6 lg:px-8 py-8 sm:py-10 border-t ${
+      <footer className={`px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-t ${
         isLightMode
           ? 'bg-slate-50 border-slate-200'
           : 'bg-slate-950 border-slate-800'
       }`}>
         <div className="max-w-6xl mx-auto">
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5 mb-5">
             <div>
               <div className={`text-base sm:text-lg font-bold mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 EduHub
@@ -531,7 +532,7 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className={`text-center text-xs py-4 border-t ${
+          <div className={`text-center text-xs py-3 border-t ${
             isLightMode ? 'border-slate-200 text-slate-600' : 'border-slate-800 text-slate-400'
           }`}>
             <p>© 2024 EduHub. Empowering educators. All rights reserved.</p>
