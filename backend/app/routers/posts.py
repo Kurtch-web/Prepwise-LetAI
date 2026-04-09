@@ -274,7 +274,7 @@ async def list_posts(
                     } if like.user else None,
                     'created_at': like.created_at.isoformat(),
                 }
-                for like in post.likes
+                for like in post.likes[:20]  # Limit to first 20 likes
             ],
             'comments': [
                 {
@@ -287,7 +287,7 @@ async def list_posts(
                     'like_count': len(comment.likes) if hasattr(comment, 'likes') else 0,
                     'created_at': comment.created_at.isoformat(),
                 }
-                for comment in post.comments
+                for comment in post.comments[:20]  # Limit to first 20 comments
             ],
             'like_count': len(post.likes),
             'comment_count': len(post.comments),
