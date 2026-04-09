@@ -5,11 +5,14 @@ import { API_BASE } from '../config/backends';
 import { Post, postsService } from '../services/postsService';
 import { formatRelativeTime } from '../utils/dateFormatter';
 
+type SettingsTab = 'profile' | 'posts';
+
 export function SettingsPage() {
   const { user } = useAuth();
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
 
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [reviewType, setReviewType] = useState(user?.reviewType || 'GenEd');
   const [targetExamDate, setTargetExamDate] = useState(user?.targetExamDate || '');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +22,7 @@ export function SettingsPage() {
   // Posts state
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedFlaggedPost, setSelectedFlaggedPost] = useState<Post | null>(null);
   const [appealText, setAppealText] = useState('');
   const [appealLoading, setAppealLoading] = useState(false);
@@ -119,15 +123,49 @@ export function SettingsPage() {
         ? 'bg-gradient-to-b from-green-50 via-white to-slate-50'
         : 'bg-[#051b15]'
     }`}>
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
           <h1 className={`text-3xl font-black mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
             ⚙️ Settings
           </h1>
           <p className={`text-base ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-            Customize your learning preferences
+            Manage your account and posts
           </p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6 border-b" style={{
+          borderColor: isLightMode ? '#e2e8f0' : '#334155'
+        }}>
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-6 py-3 font-semibold border-b-2 transition-all ${
+              activeTab === 'profile'
+                ? isLightMode
+                  ? 'border-emerald-500 text-emerald-600'
+                  : 'border-emerald-500 text-emerald-400'
+                : isLightMode
+                ? 'border-transparent text-slate-600 hover:text-slate-900'
+                : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            👤 Profile
+          </button>
+          <button
+            onClick={() => setActiveTab('posts')}
+            className={`px-6 py-3 font-semibold border-b-2 transition-all ${
+              activeTab === 'posts'
+                ? isLightMode
+                  ? 'border-emerald-500 text-emerald-600'
+                  : 'border-emerald-500 text-emerald-400'
+                : isLightMode
+                ? 'border-transparent text-slate-600 hover:text-slate-900'
+                : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            📝 My Posts
+          </button>
         </div>
 
         {/* Settings Card */}
@@ -136,7 +174,9 @@ export function SettingsPage() {
             ? 'bg-white/95 border-slate-200 shadow-lg'
             : 'bg-slate-800/50 border-slate-700 shadow-2xl'
         }`}>
-          <form onSubmit={handleSaveSettings} className="space-y-6">
+          {/* Profile Tab */}
+          {activeTab === 'profile' && (
+            <form onSubmit={handleSaveSettings} className="space-y-6">
             {/* Profile Info Section */}
             <div className={`rounded-lg p-4 ${
               isLightMode
@@ -265,137 +305,207 @@ export function SettingsPage() {
                 '💾 Save Settings'
               )}
             </button>
-          </form>
-        </div>
+            </form>
+          )}
 
-        {/* My Posts Section */}
-        <div className="mt-8">
-          <h2 className={`text-2xl font-bold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-            📝 My Posts
-          </h2>
+          {/* Posts Tab */}
+          {activeTab === 'posts' && (
+            <div className="space-y-6">
 
-          {postsLoading ? (
-            <div className={`rounded-2xl p-8 text-center ${
-              isLightMode
-                ? 'bg-white/95 border border-slate-200'
-                : 'bg-slate-800/50 border border-slate-700'
-            }`}>
-              <p className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>Loading posts...</p>
-            </div>
-          ) : userPosts.length === 0 ? (
-            <div className={`rounded-2xl p-8 text-center ${
-              isLightMode
-                ? 'bg-white/95 border border-slate-200'
-                : 'bg-slate-800/50 border border-slate-700'
-            }`}>
-              <p className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>No posts yet</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {userPosts.map((post) => (
-                <div
-                  key={post.id}
-                  className={`rounded-2xl border p-6 ${
-                    post.is_flagged
-                      ? isLightMode
-                        ? 'bg-red-50 border-red-200'
-                        : 'bg-red-900/20 border-red-700'
-                      : isLightMode
-                      ? 'bg-white border-slate-200'
-                      : 'bg-slate-800/40 border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4 mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`text-sm font-semibold px-2 py-1 rounded ${
-                          post.category === 'user' ? 'bg-purple-100 text-purple-700' :
-                          post.category === 'admin' ? 'bg-red-100 text-red-700' :
-                          post.category === 'news' ? 'bg-orange-100 text-orange-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {post.category === 'user' && '👤 User'}
-                          {post.category === 'admin' && '🛡️ Admin'}
-                          {post.category === 'news' && '📰 News'}
-                          {post.category === 'important' && '⚠️ Important'}
-                        </span>
-                        {post.is_flagged && (
-                          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
-                            isLightMode
-                              ? 'bg-red-200 text-red-700'
-                              : 'bg-red-600/30 text-red-300'
-                          }`}>
-                            🚩 FLAGGED
-                          </span>
-                        )}
-                      </div>
-                      <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                        {formatRelativeTime(post.created_at)}
-                      </p>
-                    </div>
-                    <div className="text-right text-sm">
-                      <p className={isLightMode ? 'text-slate-600' : 'text-white/60'}>
-                        👁️ {post.view_count} views
-                      </p>
-                      <p className={isLightMode ? 'text-slate-600' : 'text-white/60'}>
-                        💬 {post.comment_count} comments
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className={`text-sm leading-relaxed mb-4 ${isLightMode ? 'text-slate-700' : 'text-white/80'}`}>
-                    {post.content}
-                  </p>
-
-                  {post.is_flagged && (
-                    <div className={`rounded-lg p-3 mb-4 ${
-                      isLightMode
-                        ? 'bg-red-100 border border-red-300'
-                        : 'bg-red-900/30 border border-red-700'
-                    }`}>
-                      <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
-                        ⚠️ Flag Reason:
-                      </p>
-                      <p className={`text-sm ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
-                        {post.flag_reason}
-                      </p>
-                      {post.has_appeal && (
-                        <div className={`mt-3 pt-3 border-t ${isLightMode ? 'border-red-300' : 'border-red-700'}`}>
-                          <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
-                            📢 Your Appeal:
-                          </p>
-                          <p className={`text-sm ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
-                            {post.appeal_text}
-                          </p>
-                          <p className={`text-xs mt-2 ${isLightMode ? 'text-amber-600' : 'text-amber-400'}`}>
-                            ⏳ Awaiting admin review...
-                          </p>
-                        </div>
-                      )}
-                      {!post.has_appeal && (
-                        <button
-                          onClick={() => {
-                            setSelectedFlaggedPost(post);
-                            setAppealText('');
-                            setAppealError(null);
-                          }}
-                          className={`mt-3 w-full px-4 py-2 rounded-lg font-semibold text-sm transition ${
-                            isLightMode
-                              ? 'bg-amber-600 text-white hover:bg-amber-700'
-                              : 'bg-amber-600 text-white hover:bg-amber-700'
-                          }`}
-                        >
-                          📢 Submit Appeal
-                        </button>
-                      )}
-                    </div>
-                  )}
+              {postsLoading ? (
+                <div className={`rounded-2xl p-8 text-center ${
+                  isLightMode
+                    ? 'bg-slate-50 border border-slate-200'
+                    : 'bg-slate-700/30 border border-slate-600'
+                }`}>
+                  <p className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>Loading posts...</p>
                 </div>
-              ))}
+              ) : userPosts.length === 0 ? (
+                <div className={`rounded-2xl p-8 text-center ${
+                  isLightMode
+                    ? 'bg-slate-50 border border-slate-200'
+                    : 'bg-slate-700/30 border border-slate-600'
+                }`}>
+                  <p className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>No posts yet</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {userPosts.map((post) => (
+                    <button
+                      key={post.id}
+                      onClick={() => setSelectedPost(post)}
+                      className={`rounded-2xl border p-4 text-left transition-all hover:shadow-lg ${
+                        post.is_flagged
+                          ? isLightMode
+                            ? 'bg-red-50 border-red-200 hover:border-red-300'
+                            : 'bg-red-900/20 border-red-700 hover:border-red-600'
+                          : isLightMode
+                          ? 'bg-white border-slate-200 hover:border-slate-300'
+                          : 'bg-slate-800/40 border-slate-700 hover:border-slate-600'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                            post.category === 'user' ? 'bg-purple-100 text-purple-700' :
+                            post.category === 'admin' ? 'bg-red-100 text-red-700' :
+                            post.category === 'news' ? 'bg-orange-100 text-orange-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {post.category === 'user' && '👤'}
+                            {post.category === 'admin' && '🛡️'}
+                            {post.category === 'news' && '📰'}
+                            {post.category === 'important' && '⚠️'}
+                          </span>
+                          {post.is_flagged && (
+                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                              isLightMode
+                                ? 'bg-red-200 text-red-700'
+                                : 'bg-red-600/30 text-red-300'
+                            }`}>
+                              🚩
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                          {formatRelativeTime(post.created_at)}
+                        </p>
+                      </div>
+                      <p className={`text-sm line-clamp-2 mb-2 ${isLightMode ? 'text-slate-700' : 'text-white/80'}`}>
+                        {post.content}
+                      </p>
+                      <div className="flex gap-3 text-xs">
+                        <span className={isLightMode ? 'text-slate-600' : 'text-white/60'}>👁️ {post.view_count}</span>
+                        <span className={isLightMode ? 'text-slate-600' : 'text-white/60'}>💬 {post.comment_count}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* Post Detail Modal */}
+      {selectedPost && !selectedFlaggedPost && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className={`rounded-2xl border max-w-2xl w-full max-h-[80vh] overflow-y-auto ${
+            isLightMode
+              ? 'bg-white border-slate-200'
+              : 'bg-slate-800 border-slate-700'
+          }`}>
+            {/* Modal Header */}
+            <div className={`sticky top-0 border-b p-6 flex items-center justify-between ${
+              isLightMode
+                ? 'bg-white border-slate-200'
+                : 'bg-slate-800 border-slate-700'
+            }`}>
+              <div className="flex items-center gap-3">
+                <span className={`text-sm font-semibold px-2 py-1 rounded ${
+                  selectedPost.category === 'user' ? 'bg-purple-100 text-purple-700' :
+                  selectedPost.category === 'admin' ? 'bg-red-100 text-red-700' :
+                  selectedPost.category === 'news' ? 'bg-orange-100 text-orange-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {selectedPost.category === 'user' && '👤 User'}
+                  {selectedPost.category === 'admin' && '🛡️ Admin'}
+                  {selectedPost.category === 'news' && '📰 News'}
+                  {selectedPost.category === 'important' && '⚠️ Important'}
+                </span>
+                {selectedPost.is_flagged && (
+                  <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                    isLightMode
+                      ? 'bg-red-200 text-red-700'
+                      : 'bg-red-600/30 text-red-300'
+                  }`}>
+                    🚩 FLAGGED
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setSelectedPost(null)}
+                className={`text-2xl font-bold ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              <div>
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  {formatRelativeTime(selectedPost.created_at)}
+                </p>
+              </div>
+
+              <p className={`text-lg leading-relaxed ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                {selectedPost.content}
+              </p>
+
+              {/* Stats */}
+              <div className="flex gap-6 pt-4">
+                <div className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  👁️ {selectedPost.view_count} views
+                </div>
+                <div className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  💬 {selectedPost.comment_count} comments
+                </div>
+                <div className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  ❤️ {selectedPost.like_count || 0} likes
+                </div>
+              </div>
+
+              {/* Flag Info */}
+              {selectedPost.is_flagged && (
+                <div className={`rounded-lg p-4 ${
+                  isLightMode
+                    ? 'bg-red-50 border border-red-200'
+                    : 'bg-red-900/20 border border-red-700'
+                }`}>
+                  <p className={`text-sm font-semibold mb-2 ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
+                    ⚠️ This post has been flagged
+                  </p>
+                  <p className={`text-sm mb-3 ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
+                    <strong>Reason:</strong> {selectedPost.flag_reason}
+                  </p>
+
+                  {selectedPost.has_appeal ? (
+                    <div className={`rounded-lg p-3 ${
+                      isLightMode
+                        ? 'bg-amber-50 border border-amber-200'
+                        : 'bg-amber-900/20 border border-amber-700'
+                    }`}>
+                      <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
+                        📢 Your Appeal (Awaiting Review):
+                      </p>
+                      <p className={`text-sm ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
+                        {selectedPost.appeal_text}
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setSelectedFlaggedPost(selectedPost);
+                        setSelectedPost(null);
+                        setAppealText('');
+                        setAppealError(null);
+                      }}
+                      className={`w-full px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                        isLightMode
+                          ? 'bg-amber-600 text-white hover:bg-amber-700'
+                          : 'bg-amber-600 text-white hover:bg-amber-700'
+                      }`}
+                    >
+                      📢 Submit Appeal
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Appeal Modal */}
       {selectedFlaggedPost && (
