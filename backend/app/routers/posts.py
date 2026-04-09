@@ -201,7 +201,7 @@ async def list_posts(
         selectinload(Post.author),
         selectinload(Post.attachments),
         selectinload(Post.likes).selectinload(Like.user),
-        selectinload(Post.comments).selectinload(Comment.author),
+        selectinload(Post.comments).selectinload(Comment.user),
     )
 
     # Filter posts based on visibility
@@ -281,9 +281,9 @@ async def list_posts(
                     'id': comment.id,
                     'content': comment.content,
                     'author': {
-                        'id': comment.author.id,
-                        'username': comment.author.username,
-                    } if comment.author else None,
+                        'id': comment.user.id,
+                        'username': comment.user.username,
+                    } if comment.user else None,
                     'like_count': len(comment.likes) if hasattr(comment, 'likes') else 0,
                     'created_at': comment.created_at.isoformat(),
                 }
