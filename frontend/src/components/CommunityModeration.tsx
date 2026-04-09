@@ -67,6 +67,22 @@ export function CommunityModeration() {
     }
   };
 
+  const handleDenyAppeal = async (postId: string) => {
+    if (!confirm('Are you sure? This will delete the post permanently.')) {
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await postsService.denyAppeal(postId);
+      await loadPosts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to deny appeal');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const filteredPosts = posts.filter(post => {
     if (filterBy === 'flagged') return post.is_flagged;
     if (filterBy === 'appeals') return post.has_appeal;
@@ -268,9 +284,33 @@ export function CommunityModeration() {
                   <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
                     User Appeal:
                   </p>
-                  <p className={`text-sm ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
+                  <p className={`text-sm mb-3 ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
                     {post.appeal_text}
                   </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleUnflagPost(post.id)}
+                      disabled={actionLoading}
+                      className={`flex-1 px-3 py-2 rounded-lg font-semibold text-sm transition ${
+                        isLightMode
+                          ? 'bg-green-600 text-white hover:bg-green-700 disabled:opacity-50'
+                          : 'bg-green-600 text-white hover:bg-green-700 disabled:opacity-50'
+                      }`}
+                    >
+                      ✅ Accept Appeal
+                    </button>
+                    <button
+                      onClick={() => handleDenyAppeal(post.id)}
+                      disabled={actionLoading}
+                      className={`flex-1 px-3 py-2 rounded-lg font-semibold text-sm transition ${
+                        isLightMode
+                          ? 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
+                          : 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
+                      }`}
+                    >
+                      ❌ Deny Appeal
+                    </button>
+                  </div>
                 </div>
               )}
 

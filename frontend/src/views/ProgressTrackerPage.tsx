@@ -4,12 +4,12 @@ import { useTheme } from '../providers/ThemeProvider';
 import { fetchAllQuizResults, QuizResult, fetchAnalytics, AnalyticsData, fetchQuizResultDetails } from '../services/progressService';
 import { API_BASE } from '../config/backends';
 
-type Tab = 'users' | 'progress' | 'analytics';
+type Tab = 'progress' | 'analytics';
 
 export function ProgressTrackerPage() {
   const { user } = useAuth();
   const { theme } = useTheme();
-  const [activeTab, setActiveTab] = useState<Tab>('users');
+  const [activeTab, setActiveTab] = useState<Tab>('progress');
   const isLightMode = theme === 'light';
 
   return (
@@ -38,20 +38,6 @@ export function ProgressTrackerPage() {
               : 'bg-slate-800/50 border border-slate-700 shadow-lg'
           }`}>
             <div className="space-y-2">
-              <button
-                onClick={() => setActiveTab('users')}
-                className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-left ${
-                  activeTab === 'users'
-                    ? isLightMode
-                      ? 'bg-emerald-500 text-white shadow-lg'
-                      : 'bg-emerald-600 text-white shadow-lg'
-                    : isLightMode
-                    ? 'text-slate-600 hover:bg-slate-100'
-                    : 'text-slate-400 hover:bg-slate-700/40'
-                }`}
-              >
-                👤 Account
-              </button>
               <button
                 onClick={() => setActiveTab('progress')}
                 className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-left ${
@@ -89,89 +75,11 @@ export function ProgressTrackerPage() {
               ? 'bg-white/95 border border-slate-200 shadow-md'
               : 'bg-slate-800/50 border border-slate-700 shadow-lg'
           }`}>
-            {activeTab === 'users' && <UsersTab isLightMode={isLightMode} />}
             {activeTab === 'progress' && <ProgressTab isLightMode={isLightMode} />}
             {activeTab === 'analytics' && <AnalyticsTab isLightMode={isLightMode} />}
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function UsersTab({ isLightMode }: { isLightMode: boolean }) {
-  const { user } = useAuth();
-  const [loginHistory, setLoginHistory] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchLoginData = async () => {
-      try {
-        // Use the fetch API with proper authentication
-        const token = localStorage.getItem('auth_token');
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json'
-        };
-
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const response = await fetch(`${API_BASE}/auth/login-history`, {
-          credentials: 'include',
-          headers
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setLoginHistory(data);
-        }
-      } catch (error) {
-        console.error('Error fetching login data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLoginData();
-  }, []);
-
-  if (loading) {
-    return <div className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>Loading...</div>;
-  }
-
-  return (
-    <div className="space-y-6">
-      <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-        Account Information
-      </h2>
-
-      {/* Account Overview */}
-      <div className={`rounded-lg p-6 border ${
-        isLightMode
-          ? 'bg-slate-50 border-slate-200'
-          : 'bg-slate-700/30 border-slate-600'
-      }`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              Username
-            </p>
-            <p className={`text-lg font-bold mt-1 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              {user?.username}
-            </p>
-          </div>
-          <div>
-            <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              Email
-            </p>
-            <p className={`text-lg font-bold mt-1 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              {user?.email || 'Not provided'}
-            </p>
-          </div>
-        </div>
-      </div>
-
     </div>
   );
 }

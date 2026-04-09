@@ -222,6 +222,12 @@ export const postsService = {
     });
   },
 
+  // Deny appeal and delete post (admin only)
+  denyAppeal: (postId: string) =>
+    request<{ message: string }>(`/posts/${postId}/appeal/deny`, {
+      method: 'POST'
+    }),
+
   // Get all posts for admin moderation (with flag status)
   fetchAllPostsForModeration: (skip: number = 0, limit: number = 50) =>
     request<{ posts: Post[] }>(`/posts/admin/moderation?skip=${skip}&limit=${limit}&_t=${Date.now()}`, {
