@@ -674,6 +674,52 @@ async def submit_appeal(
     return {'message': 'Appeal submitted successfully'}
 
 
+@router.post('/posts/{post_id}/appeal/deny')
+async def deny_appeal(
+    post_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, str]:
+    """Deny an appeal and delete the post (admin only)."""
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Only admins can deny appeals',
+        )
+
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.attachments))
+    )
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Post not found',
+        )
+
+    if not post.has_appeal:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='This post does not have an appeal',
+        )
+
+    # Delete attachments from storage
+    storage = get_supabase_storage()
+    for attachment in post.attachments:
+        try:
+            if storage:
+                storage.delete(f"community/{post_id}/{attachment.id}/{attachment.original_filename}")
+        except Exception:
+            pass
+
+    # Delete the post
+    await db.delete(post)
+    await db.commit()
+
+    return {'message': 'Appeal denied and post deleted successfully'}
+
+
 @router.get('/posts/admin/moderation')
 async def get_posts_for_moderation(
     skip: int = 0,
