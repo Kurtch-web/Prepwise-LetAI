@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -109,6 +109,14 @@ class Post(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     author_id: Mapped[int] = mapped_column(ForeignKey('user_accounts.id', ondelete='CASCADE'), index=True)
     content: Mapped[str] = mapped_column(Text)
+    category: Mapped[str] = mapped_column(String(32), default='user', index=True)  # 'user', 'admin', 'news', 'important'
+    view_count: Mapped[int] = mapped_column(Integer, default=0)
+    is_flagged: Mapped[bool] = mapped_column(default=False, index=True)
+    flag_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    flagged_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    has_appeal: Mapped[bool] = mapped_column(default=False, index=True)
+    appeal_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    appeal_submitted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
@@ -39,10 +40,16 @@ class PostResponse(BaseModel):
     author_id: int
     author_username: str
     content: str
+    category: str
     attachments: List[AttachmentResponse]
     like_count: int
     comment_count: int
     user_liked: bool
+    view_count: int
+    is_flagged: bool
+    flag_reason: Optional[str]
+    has_appeal: bool
+    appeal_text: Optional[str]
     created_at: str
     updated_at: str
 
@@ -110,27 +117,41 @@ async def _upload_attachment(
 @router.post('/posts', status_code=status.HTTP_201_CREATED)
 async def create_post(
     content: str = Form(...),
+    category: str = Form(default='user'),
     files: List[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict:
-    """Create a new post (admin only) with optional attachments"""
-    if current_user.role != 'admin':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail='Only admins can create posts',
-        )
-
+    """Create a new post with optional attachments. 
+    
+    Categories:
+    - 'user': Regular user posts
+    - 'admin': Admin/news posts (admin only)
+    - 'news': News posts (admin only)
+    - 'important': Important announcements (admin only)
+    """
     if not content.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail='Content cannot be empty',
         )
 
+    # Only admins can create admin/news/important posts
+    if category in ['admin', 'news', 'important'] and current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Only admins can create admin/news/important posts',
+        )
+
+    # Validate category
+    if category not in ['user', 'admin', 'news', 'important']:
+        category = 'user'
+
     post = Post(
         id=str(uuid.uuid4()),
         author_id=current_user.id,
         content=content.strip(),
+        category=category,
     )
     db.add(post)
     await db.flush()
@@ -146,6 +167,7 @@ async def create_post(
     return {
         'id': post.id,
         'message': 'Post created successfully',
+        'category': post.category,
         'attachments': [
             {
                 'id': a.id,
@@ -191,22 +213,26 @@ async def list_posts(
         # Regular users (students) can only see:
         # 1. Posts from their assigned instructor
         # 2. Posts from other students (if they have the same instructor)
+        # 3. Non-flagged posts only
         base_query = base_query.where(
-            or_(
-                # Posts from their assigned instructor
-                and_(
-                    Post.author_id == current_user.instructor_id,
-                    Post.author_id.isnot(None)
-                ),
-                # Posts from other students with same instructor
-                Post.author_id.in_(
-                    select(UserAccount.id).where(
-                        and_(
-                            UserAccount.instructor_id == current_user.instructor_id,
-                            UserAccount.role == 'user'
+            and_(
+                or_(
+                    # Posts from their assigned instructor
+                    and_(
+                        Post.author_id == current_user.instructor_id,
+                        Post.author_id.isnot(None)
+                    ),
+                    # Posts from other students with same instructor
+                    Post.author_id.in_(
+                        select(UserAccount.id).where(
+                            and_(
+                                UserAccount.instructor_id == current_user.instructor_id,
+                                UserAccount.role == 'user'
+                            )
                         )
-                    )
+                    ),
                 ),
+                Post.is_flagged == False  # Don't show flagged posts to regular users
             )
         )
 
@@ -226,6 +252,7 @@ async def list_posts(
             'author_id': post.author_id,
             'author_username': post.author.username,
             'content': post.content,
+            'category': post.category,
             'attachments': [
                 {
                     'id': a.id,
@@ -238,6 +265,11 @@ async def list_posts(
             'like_count': len(post.likes),
             'comment_count': len(post.comments),
             'user_liked': user_liked,
+            'view_count': post.view_count,
+            'is_flagged': post.is_flagged,
+            'flag_reason': post.flag_reason,
+            'has_appeal': post.has_appeal,
+            'appeal_text': post.appeal_text,
             'created_at': post.created_at.isoformat(),
             'updated_at': post.updated_at.isoformat(),
         })
@@ -533,3 +565,170 @@ async def delete_post(
     await db.commit()
 
     return {'message': 'Post deleted successfully'}
+
+
+@router.post('/posts/{post_id}/flag')
+async def flag_post(
+    post_id: str,
+    reason: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, str]:
+    """Flag a post (admin only). Post will be hidden from regular users."""
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Only admins can flag posts',
+        )
+
+    post = await db.scalar(select(Post).where(Post.id == post_id))
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Post not found',
+        )
+
+    if not reason.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Flag reason cannot be empty',
+        )
+
+    post.is_flagged = True
+    post.flag_reason = reason.strip()
+    post.flagged_at = datetime.utcnow()
+    await db.commit()
+
+    return {'message': 'Post flagged successfully'}
+
+
+@router.delete('/posts/{post_id}/flag')
+async def unflag_post(
+    post_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, str]:
+    """Unflag a post (admin only). Post will be visible to all users again."""
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Only admins can unflag posts',
+        )
+
+    post = await db.scalar(select(Post).where(Post.id == post_id))
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Post not found',
+        )
+
+    post.is_flagged = False
+    post.flag_reason = None
+    post.flagged_at = None
+    post.has_appeal = False
+    post.appeal_text = None
+    post.appeal_submitted_at = None
+    await db.commit()
+
+    return {'message': 'Post unflagged successfully'}
+
+
+@router.post('/posts/{post_id}/appeal')
+async def submit_appeal(
+    post_id: str,
+    appeal_text: str = Form(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, str]:
+    """Submit an appeal for a flagged post."""
+    post = await db.scalar(select(Post).where(Post.id == post_id))
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Post not found',
+        )
+
+    if post.author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='You can only appeal your own posts',
+        )
+
+    if not post.is_flagged:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='This post is not flagged',
+        )
+
+    if not appeal_text.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Appeal text cannot be empty',
+        )
+
+    post.has_appeal = True
+    post.appeal_text = appeal_text.strip()
+    post.appeal_submitted_at = datetime.utcnow()
+    await db.commit()
+
+    return {'message': 'Appeal submitted successfully'}
+
+
+@router.get('/posts/admin/moderation')
+async def get_posts_for_moderation(
+    skip: int = 0,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, List]:
+    """Get all posts for admin moderation (admin only)."""
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Only admins can access moderation',
+        )
+
+    result = await db.execute(
+        select(Post)
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.attachments),
+            selectinload(Post.likes),
+            selectinload(Post.comments),
+        )
+        .order_by(Post.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    posts = result.scalars().all()
+
+    posts_response = []
+    for post in posts:
+        posts_response.append({
+            'id': post.id,
+            'author_id': post.author_id,
+            'author_username': post.author.username,
+            'content': post.content,
+            'category': post.category,
+            'attachments': [
+                {
+                    'id': a.id,
+                    'file_url': a.file_url,
+                    'file_type': a.file_type,
+                    'original_filename': a.original_filename,
+                }
+                for a in post.attachments
+            ],
+            'like_count': len(post.likes),
+            'comment_count': len(post.comments),
+            'user_liked': False,
+            'view_count': post.view_count,
+            'is_flagged': post.is_flagged,
+            'flag_reason': post.flag_reason,
+            'has_appeal': post.has_appeal,
+            'appeal_text': post.appeal_text,
+            'created_at': post.created_at.isoformat(),
+            'updated_at': post.updated_at.isoformat(),
+        })
+
+    return {'posts': posts_response}
