@@ -265,6 +265,30 @@ async def list_posts(
                 }
                 for a in post.attachments
             ],
+            'likes': [
+                {
+                    'id': like.id,
+                    'user': {
+                        'id': like.user.id,
+                        'username': like.user.username,
+                    } if like.user else None,
+                    'created_at': like.created_at.isoformat(),
+                }
+                for like in post.likes
+            ],
+            'comments': [
+                {
+                    'id': comment.id,
+                    'content': comment.content,
+                    'author': {
+                        'id': comment.author.id,
+                        'username': comment.author.username,
+                    } if comment.author else None,
+                    'like_count': len(comment.likes) if hasattr(comment, 'likes') else 0,
+                    'created_at': comment.created_at.isoformat(),
+                }
+                for comment in post.comments
+            ],
             'like_count': len(post.likes),
             'comment_count': len(post.comments),
             'user_liked': user_liked,

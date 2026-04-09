@@ -484,9 +484,6 @@ export function SettingsPage() {
                     isLightMode ? 'border-slate-200' : 'border-slate-700'
                   }`}>
                     <div className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                      👁️ {selectedPost.view_count} views
-                    </div>
-                    <div className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
                       ❤️ {selectedPost.like_count || 0} likes
                     </div>
                     <div className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
@@ -496,24 +493,9 @@ export function SettingsPage() {
 
                   {/* Comments Section */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className={`font-bold text-lg ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                        💬 Comments ({selectedPost.comment_count})
-                      </h3>
-                      <select
-                        value={postDetailFilter}
-                        onChange={(e) => setPostDetailFilter(e.target.value as any)}
-                        className={`text-sm px-3 py-1 rounded-lg border ${
-                          isLightMode
-                            ? 'bg-white border-slate-300 text-slate-900'
-                            : 'bg-slate-700 border-slate-600 text-white'
-                        }`}
-                      >
-                        <option value="latest">Latest</option>
-                        <option value="most-liked">Most Liked</option>
-                        <option value="least-liked">Least Liked</option>
-                      </select>
-                    </div>
+                    <h3 className={`font-bold text-lg ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      💬 Comments ({selectedPost.comment_count})
+                    </h3>
 
                     {selectedPost.comments && selectedPost.comments.length > 0 ? (
                       <div className="space-y-3">
