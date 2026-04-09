@@ -210,10 +210,10 @@ async def list_posts(
         # Admins can see all posts
         pass
     elif current_user:
-        # Regular users (students) can only see:
+        # Regular users (students) can see:
         # 1. Posts from their assigned instructor
         # 2. Posts from other students (if they have the same instructor)
-        # 3. Non-flagged posts only
+        # 3. Non-flagged posts OR their own flagged posts (so they can appeal)
         base_query = base_query.where(
             and_(
                 or_(
@@ -232,7 +232,10 @@ async def list_posts(
                         )
                     ),
                 ),
-                Post.is_flagged == False  # Don't show flagged posts to regular users
+                or_(
+                    Post.is_flagged == False,  # Show non-flagged posts
+                    Post.author_id == current_user.id  # Show own flagged posts (for appeal)
+                )
             )
         )
 
