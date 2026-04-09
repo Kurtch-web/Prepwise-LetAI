@@ -10,6 +10,7 @@ import { AssessmentSurvey } from '../components/AssessmentSurvey';
 import { AssessmentTemplatesList } from '../components/AssessmentTemplatesList';
 import { AddQuestionFromBankModal } from '../components/AddQuestionFromBankModal';
 import { EditQuizModal } from '../components/EditQuizModal';
+import { CommunityModeration } from '../components/CommunityModeration';
 import { api, type UserProfile } from '../services/api';
 import quizService from '../services/quizService';
 import { useTheme } from '../providers/ThemeProvider';
@@ -26,8 +27,8 @@ export function AdminPortalPage() {
   const isLightMode = theme === 'light';
   const cardShellClasses = isLightMode ? lightCardShell : darkCardShell;
 
-  const [activeTab, setActiveTab] = useState<'users' | 'learning-materials' | 'assessment'>('users');
-  const [materialsTab, setMaterialsTab] = useState<'videos' | 'upload' | 'diagnostic-test' | 'drills' | 'short-quiz' | 'preboard' | 'flashcards' | 'questions-bank' | 'archive'>('questions-bank');
+  const [activeTab, setActiveTab] = useState<'users' | 'learning-materials' | 'assessment' | 'community'>('users');
+  const [materialsTab, setMaterialsTab] = useState<'videos' | 'upload' | 'diagnostic-test' | 'drills' | 'short-quiz' | 'preboard' | 'flashcards' | 'questions-bank' | 'archive' | 'community'>('questions-bank');
   const [quizType, setQuizType] = useState<'diagnostic-test' | 'drills' | 'short-quiz' | 'preboard'>('diagnostic-test');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
@@ -335,6 +336,20 @@ export function AdminPortalPage() {
           }`}
         >
           📚 Learning Materials
+        </button>
+        <button
+          onClick={() => setActiveTab('community')}
+          className={`px-4 py-3 font-semibold transition ${
+            activeTab === 'community'
+              ? isLightMode
+                ? 'border-b-2 border-emerald-600 text-emerald-700'
+                : 'border-b-2 border-emerald-400 text-white'
+              : isLightMode
+              ? 'text-slate-600 hover:text-slate-900'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          🛡️ Community
         </button>
       </div>
 
@@ -646,6 +661,21 @@ export function AdminPortalPage() {
                 >
                   <span>📦</span>
                   <span>Archive</span>
+                </button>
+                <button
+                  onClick={() => setMaterialsTab('community')}
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition ${
+                    materialsTab === 'community'
+                      ? isLightMode
+                        ? 'bg-purple-100 text-purple-700 border-b-2 border-purple-600'
+                        : 'bg-purple-500/30 text-purple-300 border-b-2 border-purple-400'
+                      : isLightMode
+                      ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span>🛡️</span>
+                  <span>Community</span>
                 </button>
               </div>
             </div>
@@ -1059,6 +1089,11 @@ export function AdminPortalPage() {
                 </div>
               )}
 
+              {materialsTab === 'community' && (
+                <div>
+                  <CommunityModeration />
+                </div>
+              )}
 
               {materialsTab === 'archive' && (
                 <div className="flex flex-col gap-6">
@@ -1197,6 +1232,14 @@ export function AdminPortalPage() {
                 </div>
               )}
             </div>
+          </div>
+        </section>
+      )}
+
+      {activeTab === 'community' && (
+        <section className="flex flex-col gap-6">
+          <div className={cardShellClasses}>
+            <CommunityModeration />
           </div>
         </section>
       )}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
+import { useAuth } from '../providers/AuthProvider';
 import { postsService } from '../services/postsService';
 
 interface CreatePostFormProps {
@@ -9,15 +10,27 @@ interface CreatePostFormProps {
 
 export function CreatePostForm({ onPostCreated, isLoading = false }: CreatePostFormProps) {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const isLightMode = theme === 'light';
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState<'user' | 'admin' | 'news' | 'important'>('user');
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.currentTarget.files || []);
-    setFiles([...files, ...selectedFiles]);
+    const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
+    
+    const validFiles = selectedFiles.filter(file => {
+      if (file.size > MAX_FILE_SIZE) {
+        setError(`File "${file.name}" exceeds 4MB limit`);
+        return false;
+      }
+      return true;
+    });
+    
+    setFiles([...files, ...validFiles]);
   };
 
   const removeFile = (index: number) => {
@@ -34,9 +47,10 @@ export function CreatePostForm({ onPostCreated, isLoading = false }: CreatePostF
     setUploading(true);
     setError(null);
     try {
-      await postsService.createPost(content, files);
+      await postsService.createPost(content, files, category);
       setContent('');
       setFiles([]);
+      setCategory('user');
       onPostCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create post');
@@ -84,17 +98,50 @@ export function CreatePostForm({ onPostCreated, isLoading = false }: CreatePostF
           </div>
         )}
 
+        {user?.role === 'admin' && (
+          <div>
+            <label className={`block text-sm font-medium mb-2 ${
+              isLightMode ? 'text-slate-700' : 'text-emerald-300'
+            }`}>
+              📂 Post Category
+            </label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {(['user', 'admin', 'news', 'important'] as const).map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat)}
+                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                    category === cat
+                      ? isLightMode
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-emerald-600 text-white'
+                      : isLightMode
+                      ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      : 'bg-slate-800 text-white hover:bg-slate-700'
+                  }`}
+                >
+                  {cat === 'user' && '👤 User'}
+                  {cat === 'admin' && '🛡️ Admin'}
+                  {cat === 'news' && '📰 News'}
+                  {cat === 'important' && '⚠️ Important'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div>
           <label className={`block text-sm font-medium mb-2 ${
             isLightMode ? 'text-slate-700' : 'text-emerald-300'
           }`}>
-            Attachments (Images, Videos, GIFs, PDFs)
+            Attachments (Images, PDFs) - Max 4MB
           </label>
           <input
             type="file"
             multiple
             onChange={handleFileSelect}
-            accept="image/*,video/*,.pdf,.gif"
+            accept="image/*,.pdf"
             className={`block w-full text-sm ${
               isLightMode
                 ? 'text-slate-600 file:rounded-lg file:border file:border-emerald-300 file:bg-emerald-50 file:px-3 file:py-2 file:font-semibold file:text-emerald-700'

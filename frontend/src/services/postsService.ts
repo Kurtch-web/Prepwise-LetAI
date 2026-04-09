@@ -23,10 +23,16 @@ export interface Post {
   author_id: number;
   author_username: string;
   content: string;
+  category: 'user' | 'admin' | 'news' | 'important';
   attachments: PostAttachment[];
   like_count: number;
   comment_count: number;
   user_liked: boolean;
+  view_count: number;
+  is_flagged: boolean;
+  flag_reason?: string;
+  has_appeal: boolean;
+  appeal_text?: string;
   created_at: string;
   updated_at: string;
 }
@@ -126,9 +132,10 @@ async function requestForm<T>(path: string, form: FormData, options: RequestInit
 
 export const postsService = {
   // Create a new post with optional attachments
-  createPost: (content: string, files: File[] = []) => {
+  createPost: (content: string, files: File[] = [], category: string = 'user') => {
     const form = new FormData();
     form.append('content', content);
+    form.append('category', category);
     files.forEach((file, index) => {
       form.append('files', file);
     });
@@ -189,6 +196,37 @@ export const postsService = {
   deletePost: (postId: string) =>
     request<{ message: string }>(`/posts/${postId}`, {
       method: 'DELETE'
+    }),
+
+  // Flag a post (admin only)
+  flagPost: (postId: string, reason: string) => {
+    const form = new FormData();
+    form.append('reason', reason);
+    return requestForm<{ message: string }>(`/posts/${postId}/flag`, form, {
+      method: 'POST'
+    });
+  },
+
+  // Unflag a post (admin only)
+  unflagPost: (postId: string) =>
+    request<{ message: string }>(`/posts/${postId}/flag`, {
+      method: 'DELETE'
+    }),
+
+  // Submit appeal for flagged post
+  submitAppeal: (postId: string, appealText: string) => {
+    const form = new FormData();
+    form.append('appeal_text', appealText);
+    return requestForm<{ message: string }>(`/posts/${postId}/appeal`, form, {
+      method: 'POST'
+    });
+  },
+
+  // Get all posts for admin moderation (with flag status)
+  fetchAllPostsForModeration: (skip: number = 0, limit: number = 50) =>
+    request<{ posts: Post[] }>(`/posts/admin/moderation?skip=${skip}&limit=${limit}&_t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store'
     })
 };
 

@@ -6,6 +6,7 @@ import { CreatePostForm } from './CreatePostForm';
 import { PostCard } from './PostCard';
 
 type PostSortOption = 'new' | 'old' | 'liked';
+type PostCategory = 'all' | 'user' | 'admin' | 'news' | 'important';
 
 export function PostFeed() {
   const { theme } = useTheme();
@@ -16,6 +17,7 @@ export function PostFeed() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<PostSortOption>('new');
+  const [categoryFilter, setCategoryFilter] = useState<PostCategory>('all');
 
   useEffect(() => {
     loadPosts();
@@ -49,10 +51,12 @@ export function PostFeed() {
 
   // Filter and sort posts
   const filteredAndSortedPosts = useMemo(() => {
-    let filtered = posts.filter(post =>
-      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.author_username.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    let filtered = posts.filter(post => {
+      const matchesSearch = post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.author_username.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === 'all' || post.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
 
     // Sort posts
     if (sortBy === 'new') {
@@ -64,12 +68,12 @@ export function PostFeed() {
     }
 
     return filtered;
-  }, [posts, searchQuery, sortBy]);
+  }, [posts, searchQuery, sortBy, categoryFilter]);
 
   return (
     <div className="space-y-6">
-      {/* Create Post Form - Admin Only */}
-      {user?.role === 'admin' && (
+      {/* Create Post Form - All Users */}
+      {user && (
         <CreatePostForm onPostCreated={handlePostCreated} isLoading={loading} />
       )}
 
@@ -114,7 +118,81 @@ export function PostFeed() {
           />
         </div>
 
-        {/* Filter Tabs */}
+        {/* Category Filter */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setCategoryFilter('all')}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+              categoryFilter === 'all'
+                ? isLightMode
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-blue-600 text-white'
+                : isLightMode
+                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            📋 All Posts
+          </button>
+          <button
+            onClick={() => setCategoryFilter('user')}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+              categoryFilter === 'user'
+                ? isLightMode
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-purple-600 text-white'
+                : isLightMode
+                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            👤 User Posts
+          </button>
+          <button
+            onClick={() => setCategoryFilter('admin')}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+              categoryFilter === 'admin'
+                ? isLightMode
+                  ? 'bg-red-600 text-white'
+                  : 'bg-red-600 text-white'
+                : isLightMode
+                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            🛡️ Admin
+          </button>
+          <button
+            onClick={() => setCategoryFilter('news')}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+              categoryFilter === 'news'
+                ? isLightMode
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-orange-600 text-white'
+                : isLightMode
+                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            📰 News
+          </button>
+          <button
+            onClick={() => setCategoryFilter('important')}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+              categoryFilter === 'important'
+                ? isLightMode
+                  ? 'bg-yellow-600 text-white'
+                  : 'bg-yellow-600 text-white'
+                : isLightMode
+                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+            }`}
+          >
+            ⚠️ Important
+          </button>
+        </div>
+
+        {/* Sort Filter */}
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => setSortBy('new')}
