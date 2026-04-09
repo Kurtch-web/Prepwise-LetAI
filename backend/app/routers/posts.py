@@ -561,7 +561,7 @@ async def delete_post(
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
-    """Delete a post (admin only)"""
+    """Delete a post (user can delete own posts, admin can delete any)"""
     post = await db.scalar(
         select(Post)
         .where(Post.id == post_id)
@@ -573,10 +573,11 @@ async def delete_post(
             detail='Post not found',
         )
 
-    if current_user.role != 'admin':
+    # Allow user to delete their own post, or admin to delete any post
+    if post.author_id != current_user.id and current_user.role != 'admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Only admins can delete posts',
+            detail='You can only delete your own posts',
         )
 
     # Delete attachments from storage

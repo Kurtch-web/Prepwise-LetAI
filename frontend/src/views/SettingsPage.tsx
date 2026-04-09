@@ -28,23 +28,25 @@ export function SettingsPage() {
   const [appealLoading, setAppealLoading] = useState(false);
   const [appealError, setAppealError] = useState<string | null>(null);
   const [postDetailFilter, setPostDetailFilter] = useState<'latest' | 'most-liked' | 'least-liked'>('latest');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Load user posts function
+  const loadUserPosts = async () => {
+    setPostsLoading(true);
+    try {
+      const result = await postsService.fetchPosts(0, 100);
+      // Filter posts by current user
+      const myPosts = result.posts.filter(post => post.author_id === user?.id);
+      setUserPosts(myPosts);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    } finally {
+      setPostsLoading(false);
+    }
+  };
 
   // Load user posts on mount
   useEffect(() => {
-    const loadUserPosts = async () => {
-      setPostsLoading(true);
-      try {
-        const result = await postsService.fetchPosts(0, 100);
-        // Filter posts by current user
-        const myPosts = result.posts.filter(post => post.author_id === user?.id);
-        setUserPosts(myPosts);
-      } catch (error) {
-        console.error('Error loading posts:', error);
-      } finally {
-        setPostsLoading(false);
-      }
-    };
-
     if (user?.id) {
       loadUserPosts();
     }
@@ -105,16 +107,29 @@ export function SettingsPage() {
     setAppealError(null);
     try {
       await postsService.submitAppeal(selectedFlaggedPost.id, appealText);
-      setAppealText('');
       setSelectedFlaggedPost(null);
-      // Reload posts to show updated appeal status
-      const result = await postsService.fetchPosts(0, 100);
-      const myPosts = result.posts.filter(post => post.author_id === user?.id);
-      setUserPosts(myPosts);
-    } catch (error) {
-      setAppealError(error instanceof Error ? error.message : 'Failed to submit appeal');
-    } finally {
+      setAppealText('');
+      await loadUserPosts();
+    } catch (err) {
+      setAppealError(err instanceof Error ? err.message : 'Failed to submit appeal');
       setAppealLoading(false);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    try {
+      await postsService.deletePost(postId);
+      setSelectedPost(null);
+      await loadUserPosts();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete post');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -424,12 +439,25 @@ export function SettingsPage() {
                   </span>
                 )}
               </div>
-              <button
-                onClick={() => setSelectedPost(null)}
-                className={`text-2xl font-bold ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDeletePost(selectedPost.id)}
+                  disabled={deleteLoading}
+                  className={`px-3 py-1 rounded-lg text-sm font-semibold transition ${
+                    isLightMode
+                      ? 'bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50'
+                      : 'bg-red-900/30 text-red-300 hover:bg-red-900/50 disabled:opacity-50'
+                  }`}
+                >
+                  {deleteLoading ? '🗑️ Deleting...' : '🗑️ Delete'}
+                </button>
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className={`text-2xl font-bold ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Modal Content - Scrollable */}
