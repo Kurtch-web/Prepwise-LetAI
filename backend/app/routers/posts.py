@@ -200,8 +200,8 @@ async def list_posts(
     base_query = select(Post).options(
         selectinload(Post.author),
         selectinload(Post.attachments),
-        selectinload(Post.likes),
-        selectinload(Post.comments),
+        selectinload(Post.likes).selectinload(Like.user),
+        selectinload(Post.comments).selectinload(Comment.author),
     )
 
     # Filter posts based on visibility
