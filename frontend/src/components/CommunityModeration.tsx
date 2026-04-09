@@ -3,13 +3,7 @@ import { useTheme } from '../providers/ThemeProvider';
 import { Post, postsService } from '../services/postsService';
 import { formatRelativeTime } from '../utils/dateFormatter';
 
-interface ModerationPost extends Post {
-  is_flagged?: boolean;
-  flag_reason?: string;
-  has_appeal?: boolean;
-  appeal_text?: string;
-  view_count?: number;
-}
+interface ModerationPost extends Post {}
 
 export function CommunityModeration() {
   const { theme } = useTheme();
