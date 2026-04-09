@@ -27,6 +27,7 @@ export function SettingsPage() {
   const [appealText, setAppealText] = useState('');
   const [appealLoading, setAppealLoading] = useState(false);
   const [appealError, setAppealError] = useState<string | null>(null);
+  const [postDetailFilter, setPostDetailFilter] = useState<'latest' | 'most-liked' | 'least-liked'>('latest');
 
   // Load user posts on mount
   useEffect(() => {
@@ -387,22 +388,22 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {/* Post Detail Modal */}
+      {/* Post Detail Modal - Facebook Style */}
       {selectedPost && !selectedFlaggedPost && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className={`rounded-2xl border max-w-2xl w-full max-h-[80vh] overflow-y-auto ${
+          <div className={`rounded-2xl border w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col ${
             isLightMode
               ? 'bg-white border-slate-200'
               : 'bg-slate-800 border-slate-700'
           }`}>
             {/* Modal Header */}
-            <div className={`sticky top-0 border-b p-6 flex items-center justify-between ${
+            <div className={`border-b p-6 flex items-center justify-between ${
               isLightMode
                 ? 'bg-white border-slate-200'
                 : 'bg-slate-800 border-slate-700'
             }`}>
               <div className="flex items-center gap-3">
-                <span className={`text-sm font-semibold px-2 py-1 rounded ${
+                <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
                   selectedPost.category === 'user' ? 'bg-purple-100 text-purple-700' :
                   selectedPost.category === 'admin' ? 'bg-red-100 text-red-700' :
                   selectedPost.category === 'news' ? 'bg-orange-100 text-orange-700' :
@@ -414,7 +415,7 @@ export function SettingsPage() {
                   {selectedPost.category === 'important' && '⚠️ Important'}
                 </span>
                 {selectedPost.is_flagged && (
-                  <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                  <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
                     isLightMode
                       ? 'bg-red-200 text-red-700'
                       : 'bg-red-600/30 text-red-300'
@@ -431,77 +432,207 @@ export function SettingsPage() {
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-4">
-              <div>
-                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                  {formatRelativeTime(selectedPost.created_at)}
-                </p>
-              </div>
+            {/* Modal Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+                {/* Main Post Content */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Post Header */}
+                  <div>
+                    <p className={`text-sm mb-2 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                      {formatRelativeTime(selectedPost.created_at)}
+                    </p>
+                  </div>
 
-              <p className={`text-lg leading-relaxed ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                {selectedPost.content}
-              </p>
+                  {/* Post Content */}
+                  <div>
+                    <p className={`text-lg leading-relaxed ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      {selectedPost.content}
+                    </p>
+                  </div>
 
-              {/* Stats */}
-              <div className="flex gap-6 pt-4">
-                <div className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                  👁️ {selectedPost.view_count} views
-                </div>
-                <div className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                  💬 {selectedPost.comment_count} comments
-                </div>
-                <div className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                  ❤️ {selectedPost.like_count || 0} likes
-                </div>
-              </div>
-
-              {/* Flag Info */}
-              {selectedPost.is_flagged && (
-                <div className={`rounded-lg p-4 ${
-                  isLightMode
-                    ? 'bg-red-50 border border-red-200'
-                    : 'bg-red-900/20 border border-red-700'
-                }`}>
-                  <p className={`text-sm font-semibold mb-2 ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
-                    ⚠️ This post has been flagged
-                  </p>
-                  <p className={`text-sm mb-3 ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
-                    <strong>Reason:</strong> {selectedPost.flag_reason}
-                  </p>
-
-                  {selectedPost.has_appeal ? (
-                    <div className={`rounded-lg p-3 ${
-                      isLightMode
-                        ? 'bg-amber-50 border border-amber-200'
-                        : 'bg-amber-900/20 border border-amber-700'
-                    }`}>
-                      <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
-                        📢 Your Appeal (Awaiting Review):
-                      </p>
-                      <p className={`text-sm ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
-                        {selectedPost.appeal_text}
-                      </p>
+                  {/* Attachments/Images */}
+                  {selectedPost.attachments && selectedPost.attachments.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedPost.attachments.map((attachment) => (
+                        <div
+                          key={attachment.id}
+                          className={`rounded-lg overflow-hidden ${
+                            isLightMode ? 'bg-slate-100' : 'bg-slate-700/50'
+                          }`}
+                        >
+                          {attachment.file_type?.startsWith('image') ? (
+                            <img
+                              src={attachment.file_url}
+                              alt="Post attachment"
+                              className="w-full h-48 object-cover"
+                            />
+                          ) : (
+                            <div className={`w-full h-48 flex items-center justify-center ${
+                              isLightMode ? 'bg-slate-200' : 'bg-slate-700'
+                            }`}>
+                              <span className="text-3xl">📎</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setSelectedFlaggedPost(selectedPost);
-                        setSelectedPost(null);
-                        setAppealText('');
-                        setAppealError(null);
-                      }}
-                      className={`w-full px-4 py-2 rounded-lg font-semibold text-sm transition ${
-                        isLightMode
-                          ? 'bg-amber-600 text-white hover:bg-amber-700'
-                          : 'bg-amber-600 text-white hover:bg-amber-700'
-                      }`}
-                    >
-                      📢 Submit Appeal
-                    </button>
+                  )}
+
+                  {/* Stats Bar */}
+                  <div className={`flex justify-between py-4 border-t border-b ${
+                    isLightMode ? 'border-slate-200' : 'border-slate-700'
+                  }`}>
+                    <div className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                      👁️ {selectedPost.view_count} views
+                    </div>
+                    <div className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                      ❤️ {selectedPost.like_count || 0} likes
+                    </div>
+                    <div className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                      💬 {selectedPost.comment_count} comments
+                    </div>
+                  </div>
+
+                  {/* Comments Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className={`font-bold text-lg ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                        💬 Comments ({selectedPost.comment_count})
+                      </h3>
+                      <select
+                        value={postDetailFilter}
+                        onChange={(e) => setPostDetailFilter(e.target.value as any)}
+                        className={`text-sm px-3 py-1 rounded-lg border ${
+                          isLightMode
+                            ? 'bg-white border-slate-300 text-slate-900'
+                            : 'bg-slate-700 border-slate-600 text-white'
+                        }`}
+                      >
+                        <option value="latest">Latest</option>
+                        <option value="most-liked">Most Liked</option>
+                        <option value="least-liked">Least Liked</option>
+                      </select>
+                    </div>
+
+                    {selectedPost.comments && selectedPost.comments.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedPost.comments.map((comment) => (
+                          <div
+                            key={comment.id}
+                            className={`rounded-lg p-3 ${
+                              isLightMode
+                                ? 'bg-slate-50 border border-slate-200'
+                                : 'bg-slate-700/30 border border-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                                {comment.author?.username || 'Anonymous'}
+                              </p>
+                              <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                                {formatRelativeTime(comment.created_at)}
+                              </p>
+                            </div>
+                            <p className={`text-sm mb-2 ${isLightMode ? 'text-slate-700' : 'text-white/80'}`}>
+                              {comment.content}
+                            </p>
+                            <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                              ❤️ {comment.like_count || 0} likes
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className={`text-sm text-center py-4 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                        No comments yet
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sidebar - Likes & Flag Info */}
+                <div className="space-y-6">
+                  {/* Likes Section */}
+                  <div className={`rounded-lg p-4 ${
+                    isLightMode
+                      ? 'bg-slate-50 border border-slate-200'
+                      : 'bg-slate-700/30 border border-slate-700'
+                  }`}>
+                    <h3 className={`font-bold mb-3 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      ❤️ Likes ({selectedPost.like_count || 0})
+                    </h3>
+                    {selectedPost.likes && selectedPost.likes.length > 0 ? (
+                      <div className="space-y-2">
+                        {selectedPost.likes.slice(0, 10).map((like) => (
+                          <div key={like.id} className={`text-sm ${isLightMode ? 'text-slate-700' : 'text-white/80'}`}>
+                            {like.user?.username || 'Anonymous'}
+                          </div>
+                        ))}
+                        {selectedPost.likes.length > 10 && (
+                          <p className={`text-xs text-center pt-2 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                            +{selectedPost.likes.length - 10} more
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                        No likes yet
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Flag Info */}
+                  {selectedPost.is_flagged && (
+                    <div className={`rounded-lg p-4 ${
+                      isLightMode
+                        ? 'bg-red-50 border border-red-200'
+                        : 'bg-red-900/20 border border-red-700'
+                    }`}>
+                      <p className={`text-sm font-semibold mb-2 ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
+                        ⚠️ Post Flagged
+                      </p>
+                      <p className={`text-xs mb-3 ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>
+                        <strong>Reason:</strong> {selectedPost.flag_reason}
+                      </p>
+
+                      {selectedPost.has_appeal ? (
+                        <div className={`rounded-lg p-3 ${
+                          isLightMode
+                            ? 'bg-amber-50 border border-amber-200'
+                            : 'bg-amber-900/20 border border-amber-700'
+                        }`}>
+                          <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
+                            📢 Your Appeal:
+                          </p>
+                          <p className={`text-xs ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>
+                            {selectedPost.appeal_text}
+                          </p>
+                          <p className={`text-xs mt-2 ${isLightMode ? 'text-amber-600' : 'text-amber-400'}`}>
+                            ⏳ Awaiting review...
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setSelectedFlaggedPost(selectedPost);
+                            setSelectedPost(null);
+                            setAppealText('');
+                            setAppealError(null);
+                          }}
+                          className={`w-full px-3 py-2 rounded-lg font-semibold text-xs transition ${
+                            isLightMode
+                              ? 'bg-amber-600 text-white hover:bg-amber-700'
+                              : 'bg-amber-600 text-white hover:bg-amber-700'
+                          }`}
+                        >
+                          📢 Submit Appeal
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

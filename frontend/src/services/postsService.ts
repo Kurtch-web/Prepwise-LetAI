@@ -18,6 +18,26 @@ export interface PostComment {
   created_at: string;
 }
 
+export interface Comment {
+  id: string;
+  content: string;
+  author?: {
+    id: number;
+    username: string;
+  };
+  like_count: number;
+  created_at: string;
+}
+
+export interface Like {
+  id: string;
+  user?: {
+    id: number;
+    username: string;
+  };
+  created_at: string;
+}
+
 export interface Post {
   id: string;
   author_id: number;
@@ -25,6 +45,8 @@ export interface Post {
   content: string;
   category: 'user' | 'admin' | 'news' | 'important';
   attachments: PostAttachment[];
+  comments?: Comment[];
+  likes?: Like[];
   like_count: number;
   comment_count: number;
   user_liked: boolean;
