@@ -173,6 +173,12 @@ export const postsService = {
       cache: 'no-store'
     }),
 
+  fetchAnnouncementPosts: (limit: number = 20) =>
+    request<{ posts: Post[] }>(`/posts/announcements?limit=${limit}&_t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store'
+    }),
+
   // Fetch a single post (no caching - always fresh)
   fetchPost: (postId: string) =>
     request<Post>(`/posts/${postId}?_t=${Date.now()}`, {

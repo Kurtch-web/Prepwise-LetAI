@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
+import { Post, postsService } from '../services/postsService';
+import { formatRelativeTime } from '../utils/dateFormatter';
 import { AdminPortalPage } from '../views/AdminPortalPage';
 import { UserDashboardPage } from '../views/UserDashboardPage';
 import { LandingPage } from '../views/LandingPage';
@@ -15,6 +17,265 @@ import { QuizPage } from '../views/QuizPage';
 import { QuestionBankPage } from '../views/QuestionBankPage';
 import VideoLessonsPage from '../views/VideoLessonsPage';
 import { ProgressTrackerPage } from '../views/ProgressTrackerPage';
+
+function NotificationsButton() {
+  const { theme } = useTheme();
+  const { user } = useAuth();
+  const isLightMode = theme === 'light';
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [announcementPosts, setAnnouncementPosts] = useState<Post[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [ring, setRing] = useState(false);
+
+  const storageKey = user?.id ? `announcement_read_ids_${user.id}` : 'announcement_read_ids';
+
+  const loadReadIds = (): Set<string> => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return new Set();
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return new Set();
+      return new Set(parsed.filter((x) => typeof x === 'string'));
+    } catch {
+      return new Set();
+    }
+  };
+
+  const saveReadIds = (ids: Set<string>) => {
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(ids)));
+  };
+
+  const refresh = async (triggerRing: boolean) => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const res = await postsService.fetchAnnouncementPosts(20);
+      const posts = res.posts || [];
+      setAnnouncementPosts(posts);
+
+      const readIds = loadReadIds();
+      const unread = posts.filter((p) => !readIds.has(p.id));
+
+      setUnreadCount((prev) => {
+        if (triggerRing && unread.length > prev) {
+          setRing(true);
+          window.setTimeout(() => setRing(false), 1200);
+        }
+        return unread.length;
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    refresh(false);
+    const id = window.setInterval(() => refresh(true), 60000);
+    return () => window.clearInterval(id);
+  }, [user?.id]);
+
+  const markRead = (postId: string) => {
+    const readIds = loadReadIds();
+    readIds.add(postId);
+
+    const knownIds = new Set(announcementPosts.map((p) => p.id));
+    const pruned = new Set(Array.from(readIds).filter((id) => knownIds.has(id)));
+    saveReadIds(pruned);
+
+    setUnreadCount(announcementPosts.filter((p) => !pruned.has(p.id)).length);
+  };
+
+  if (!user) return null;
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          setIsOpen(true);
+          setSelectedPost(null);
+          refresh(false);
+        }}
+        className={`relative px-3 py-2 rounded-lg font-semibold transition-all ${
+          isLightMode
+            ? 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+            : 'bg-slate-800 text-white hover:bg-slate-700'
+        } ${ring ? 'animate-bounce' : ''}`}
+        aria-label="Notifications"
+      >
+        🔔
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
+        )}
+      </button>
+
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            setIsOpen(false);
+            setSelectedPost(null);
+          }}
+        >
+          <div
+            className={`rounded-2xl border w-full max-w-2xl max-h-[85vh] overflow-hidden ${
+              isLightMode
+                ? 'bg-white border-slate-200'
+                : 'bg-slate-800 border-slate-700'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`border-b p-5 flex items-center justify-between ${
+              isLightMode ? 'border-slate-200' : 'border-slate-700'
+            }`}>
+              <div>
+                <h3 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                  Notifications
+                </h3>
+                <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  🛡️ Admin, 📰 News, ⚠️ Important
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setSelectedPost(null);
+                }}
+                className={`text-2xl font-bold ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto max-h-[calc(85vh-80px)]">
+              {loading ? (
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  Loading...
+                </p>
+              ) : selectedPost ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        selectedPost.category === 'admin'
+                          ? 'bg-red-100 text-red-700'
+                          : selectedPost.category === 'news'
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {selectedPost.category === 'admin' && '🛡️ Admin'}
+                        {selectedPost.category === 'news' && '📰 News'}
+                        {selectedPost.category === 'important' && '⚠️ Important'}
+                      </span>
+                      <span className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                        {formatRelativeTime(selectedPost.created_at)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedPost(null)}
+                      className={`text-sm font-semibold ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'}`}
+                    >
+                      Back
+                    </button>
+                  </div>
+
+                  <p className={`text-base leading-relaxed ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                    {selectedPost.content}
+                  </p>
+
+                  {selectedPost.attachments && selectedPost.attachments.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedPost.attachments.map((a) => (
+                        <div
+                          key={a.id}
+                          className={`rounded-lg overflow-hidden ${isLightMode ? 'bg-slate-100' : 'bg-slate-700/50'}`}
+                        >
+                          {a.file_type?.startsWith('image') ? (
+                            <img
+                              src={a.file_url}
+                              alt={a.original_filename || 'Attachment'}
+                              className="w-full h-40 object-cover"
+                            />
+                          ) : (
+                            <div className={`w-full h-40 flex items-center justify-center ${
+                              isLightMode ? 'bg-slate-200' : 'bg-slate-700'
+                            }`}>
+                              <span className="text-3xl">📎</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : announcementPosts.length === 0 ? (
+                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                  No notifications yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {(() => {
+                    const readIds = loadReadIds();
+                    return announcementPosts.map((p) => {
+                      const isUnread = !readIds.has(p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => {
+                            markRead(p.id);
+                            setSelectedPost(p);
+                          }}
+                          className={`w-full text-left rounded-xl border p-4 transition-all ${
+                            isLightMode
+                              ? isUnread
+                                ? 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
+                                : 'bg-white border-slate-200 hover:bg-slate-50'
+                              : isUnread
+                              ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/15'
+                              : 'bg-slate-800 border-slate-700 hover:bg-slate-700/40'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                  p.category === 'admin'
+                                    ? 'bg-red-100 text-red-700'
+                                    : p.category === 'news'
+                                    ? 'bg-orange-100 text-orange-700'
+                                    : 'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                  {p.category === 'admin' && '🛡️ Admin'}
+                                  {p.category === 'news' && '📰 News'}
+                                  {p.category === 'important' && '⚠️ Important'}
+                                </span>
+                                {isUnread && <span className="h-2 w-2 rounded-full bg-red-500" />}
+                              </div>
+                              <p className={`text-sm font-semibold line-clamp-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                                {p.content}
+                              </p>
+                              <p className={`text-xs mt-1 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                                {formatRelativeTime(p.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 function HeaderBanner() {
   const { theme, toggleTheme } = useTheme();
@@ -109,6 +370,7 @@ function HeaderBanner() {
                 {user.role === 'admin' ? '👑 Admin' : '👤'}
               </span>
             )}
+            <NotificationsButton />
           </div>
 
           <div className={`hidden lg:flex items-center gap-3 flex-shrink-0 text-sm ${
@@ -124,6 +386,7 @@ function HeaderBanner() {
             >
               {isLightMode ? '🌙' : '☀️'}
             </button>
+            <NotificationsButton />
             {user && (
               <>
                 <span className={`font-medium px-3 py-1 rounded-full ${
