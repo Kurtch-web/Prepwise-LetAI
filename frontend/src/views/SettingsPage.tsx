@@ -27,7 +27,6 @@ export function SettingsPage() {
   const [appealText, setAppealText] = useState('');
   const [appealLoading, setAppealLoading] = useState(false);
   const [appealError, setAppealError] = useState<string | null>(null);
-  const [postDetailFilter, setPostDetailFilter] = useState<'latest' | 'most-liked' | 'least-liked'>('latest');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteConfirmPost, setDeleteConfirmPost] = useState<Post | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -145,10 +144,10 @@ export function SettingsPage() {
         ? 'bg-gradient-to-b from-green-50 via-white to-slate-50'
         : 'bg-[#051b15]'
     }`}>
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className={`text-3xl font-black mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+          <h1 className={`text-2xl sm:text-3xl font-black mb-2 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
             ⚙️ Settings
           </h1>
           <p className={`text-base ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -157,12 +156,12 @@ export function SettingsPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 mb-6 border-b" style={{
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2 mb-6 border-b" style={{
           borderColor: isLightMode ? '#e2e8f0' : '#334155'
         }}>
           <button
             onClick={() => setActiveTab('profile')}
-            className={`px-6 py-3 font-semibold border-b-2 transition-all ${
+            className={`text-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold border-b-2 transition-all ${
               activeTab === 'profile'
                 ? isLightMode
                   ? 'border-emerald-500 text-emerald-600'
@@ -176,7 +175,7 @@ export function SettingsPage() {
           </button>
           <button
             onClick={() => setActiveTab('posts')}
-            className={`px-6 py-3 font-semibold border-b-2 transition-all ${
+            className={`text-center px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold border-b-2 transition-all ${
               activeTab === 'posts'
                 ? isLightMode
                   ? 'border-emerald-500 text-emerald-600'
@@ -191,7 +190,7 @@ export function SettingsPage() {
         </div>
 
         {/* Settings Card */}
-        <div className={`rounded-2xl p-8 backdrop-blur-xl border transition-all duration-300 ${
+        <div className={`rounded-2xl p-4 sm:p-8 backdrop-blur-xl border transition-all duration-300 ${
           isLightMode
             ? 'bg-white/95 border-slate-200 shadow-lg'
             : 'bg-slate-800/50 border-slate-700 shadow-2xl'
@@ -332,7 +331,7 @@ export function SettingsPage() {
 
           {/* Posts Tab */}
           {activeTab === 'posts' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
 
               {postsLoading ? (
                 <div className={`rounded-2xl p-8 text-center ${
@@ -356,7 +355,7 @@ export function SettingsPage() {
                     <button
                       key={post.id}
                       onClick={() => setSelectedPost(post)}
-                      className={`rounded-2xl border p-4 text-left transition-all hover:shadow-lg ${
+                      className={`rounded-2xl border p-3 sm:p-4 text-left transition-all hover:shadow-lg ${
                         post.is_flagged
                           ? isLightMode
                             ? 'bg-red-50 border-red-200 hover:border-red-300'
@@ -367,7 +366,7 @@ export function SettingsPage() {
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <span className={`text-xs font-semibold px-2 py-1 rounded ${
                             post.category === 'user' ? 'bg-purple-100 text-purple-700' :
                             post.category === 'admin' ? 'bg-red-100 text-red-700' :
@@ -389,7 +388,7 @@ export function SettingsPage() {
                             </span>
                           )}
                         </div>
-                        <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                        <p className={`text-xs text-right ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
                           {formatRelativeTime(post.created_at)}
                         </p>
                       </div>
@@ -397,7 +396,7 @@ export function SettingsPage() {
                         {post.content}
                       </p>
                       <div className="flex gap-3 text-xs">
-                        <span className={isLightMode ? 'text-slate-600' : 'text-white/60'}>👁️ {post.view_count}</span>
+                        <span className={isLightMode ? 'text-slate-600' : 'text-white/60'}>❤️ {post.like_count || 0}</span>
                         <span className={isLightMode ? 'text-slate-600' : 'text-white/60'}>💬 {post.comment_count}</span>
                       </div>
                     </button>
@@ -418,7 +417,7 @@ export function SettingsPage() {
               : 'bg-slate-800 border-slate-700'
           }`}>
             {/* Modal Header */}
-            <div className={`border-b p-6 flex items-center justify-between ${
+            <div className={`border-b p-4 sm:p-6 flex items-center justify-between ${
               isLightMode
                 ? 'bg-white border-slate-200'
                 : 'bg-slate-800 border-slate-700'
@@ -468,7 +467,7 @@ export function SettingsPage() {
 
             {/* Modal Content - Scrollable */}
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6">
                 {/* Main Post Content */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Post Header */}
@@ -487,18 +486,20 @@ export function SettingsPage() {
 
                   {/* Attachments/Images */}
                   {selectedPost.attachments && selectedPost.attachments.length > 0 && (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {selectedPost.attachments.map((attachment) => (
                         <div
                           key={attachment.id}
                           className={`rounded-lg overflow-hidden ${
-                            isLightMode ? 'bg-slate-100' : 'bg-slate-700/50'
+                            isLightMode
+                              ? 'bg-slate-100'
+                              : 'bg-slate-700/50'
                           }`}
                         >
                           {attachment.file_type?.startsWith('image') ? (
                             <img
                               src={attachment.file_url}
-                              alt="Post attachment"
+                              alt={attachment.original_filename || 'Attachment'}
                               className="w-full h-48 object-cover"
                             />
                           ) : (
