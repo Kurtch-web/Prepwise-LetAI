@@ -304,6 +304,66 @@ async def list_posts(
     return {'posts': posts_response}
 
 
+@router.get('/posts/announcements')
+async def list_announcement_posts(
+    limit: int = 20,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, List]:
+    posts_query = (
+        select(Post)
+        .where(
+            and_(
+                Post.category.in_(['admin', 'news', 'important']),
+                Post.is_flagged == False,
+            )
+        )
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.attachments),
+            selectinload(Post.likes),
+            selectinload(Post.comments),
+        )
+        .order_by(Post.created_at.desc())
+        .limit(limit)
+    )
+
+    result = await db.execute(posts_query)
+    posts = result.scalars().all()
+
+    posts_response = []
+    for post in posts:
+        user_liked = any(like.user_id == current_user.id for like in post.likes)
+        posts_response.append({
+            'id': post.id,
+            'author_id': post.author_id,
+            'author_username': post.author.username,
+            'content': post.content,
+            'category': post.category,
+            'attachments': [
+                {
+                    'id': a.id,
+                    'file_url': a.file_url,
+                    'file_type': a.file_type,
+                    'original_filename': a.original_filename,
+                }
+                for a in post.attachments
+            ],
+            'like_count': len(post.likes),
+            'comment_count': len(post.comments),
+            'user_liked': user_liked,
+            'view_count': post.view_count,
+            'is_flagged': post.is_flagged,
+            'flag_reason': post.flag_reason,
+            'has_appeal': post.has_appeal,
+            'appeal_text': post.appeal_text,
+            'created_at': post.created_at.isoformat(),
+            'updated_at': post.updated_at.isoformat(),
+        })
+
+    return {'posts': posts_response}
+
+
 @router.get('/posts/{post_id}')
 async def get_post(
     post_id: str,
