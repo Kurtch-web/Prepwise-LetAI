@@ -115,14 +115,14 @@ function NotificationsButton() {
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 px-4 pt-24 pb-6 overflow-y-auto"
           onClick={() => {
             setIsOpen(false);
             setSelectedPost(null);
           }}
         >
           <div
-            className={`rounded-2xl border w-full max-w-2xl max-h-[85vh] overflow-hidden ${
+            className={`rounded-2xl border w-full max-w-2xl max-h-[75vh] overflow-hidden flex flex-col ${
               isLightMode
                 ? 'bg-white border-slate-200'
                 : 'bg-slate-800 border-slate-700'
@@ -151,7 +151,7 @@ function NotificationsButton() {
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto max-h-[calc(85vh-80px)]">
+            <div className="p-5 overflow-y-auto flex-1">
               {loading ? (
                 <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
                   Loading...
