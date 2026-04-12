@@ -4,6 +4,7 @@ import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
 import { Post, postsService } from '../services/postsService';
+import { supabase } from '../config/supabaseClient';
 import { formatRelativeTime } from '../utils/dateFormatter';
 import { AdminPortalPage } from '../views/AdminPortalPage';
 import { UserDashboardPage } from '../views/UserDashboardPage';
@@ -76,8 +77,36 @@ function NotificationsButton() {
   useEffect(() => {
     if (!user) return;
     refresh(false);
-    const id = window.setInterval(() => refresh(true), 60000);
-    return () => window.clearInterval(id);
+    let refreshTimeout: number | undefined;
+
+    const scheduleRefresh = (triggerRing: boolean) => {
+      if (refreshTimeout) window.clearTimeout(refreshTimeout);
+      refreshTimeout = window.setTimeout(() => refresh(triggerRing), 350);
+    };
+
+    const channel = supabase
+      .channel(`announcements_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'posts', filter: 'category=eq.admin' },
+        (payload: any) => scheduleRefresh(payload.eventType === 'INSERT'),
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'posts', filter: 'category=eq.news' },
+        (payload: any) => scheduleRefresh(payload.eventType === 'INSERT'),
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'posts', filter: 'category=eq.important' },
+        (payload: any) => scheduleRefresh(payload.eventType === 'INSERT'),
+      )
+      .subscribe();
+
+    return () => {
+      if (refreshTimeout) window.clearTimeout(refreshTimeout);
+      supabase.removeChannel(channel);
+    };
   }, [user?.id]);
 
   const markRead = (postId: string) => {

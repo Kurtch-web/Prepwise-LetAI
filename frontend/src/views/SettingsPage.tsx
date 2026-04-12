@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
 import { useTheme } from '../providers/ThemeProvider';
 import { API_BASE } from '../config/backends';
 import { Post, postsService } from '../services/postsService';
+import { supabase } from '../config/supabaseClient';
 import { formatRelativeTime } from '../utils/dateFormatter';
 
 type SettingsTab = 'profile' | 'posts';
@@ -32,7 +33,7 @@ export function SettingsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Load user posts function
-  const loadUserPosts = async () => {
+  const loadUserPosts = useCallback(async () => {
     setPostsLoading(true);
     try {
       const result = await postsService.fetchPosts(0, 100);
@@ -44,14 +45,63 @@ export function SettingsPage() {
     } finally {
       setPostsLoading(false);
     }
-  };
+  }, [user?.id]);
 
   // Load user posts on mount
   useEffect(() => {
     if (user?.id) {
       loadUserPosts();
     }
-  }, [user?.id]);
+  }, [user?.id, loadUserPosts]);
+
+  useEffect(() => {
+    if (!selectedPost) return;
+
+    let refreshTimeout: number | undefined;
+
+    const scheduleRefresh = () => {
+      if (refreshTimeout) window.clearTimeout(refreshTimeout);
+      refreshTimeout = window.setTimeout(async () => {
+        try {
+          const fresh = await postsService.fetchPost(selectedPost.id);
+          setSelectedPost(fresh);
+        } catch {
+        }
+      }, 250);
+    };
+
+    const channel = supabase
+      .channel(`post_detail_${selectedPost.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'comments', filter: `post_id=eq.${selectedPost.id}` },
+        scheduleRefresh,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'likes', filter: `post_id=eq.${selectedPost.id}` },
+        scheduleRefresh,
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'posts', filter: `id=eq.${selectedPost.id}` },
+        scheduleRefresh,
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'posts', filter: `id=eq.${selectedPost.id}` },
+        async () => {
+          setSelectedPost(null);
+          await loadUserPosts();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      if (refreshTimeout) window.clearTimeout(refreshTimeout);
+      supabase.removeChannel(channel);
+    };
+  }, [loadUserPosts, selectedPost]);
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();

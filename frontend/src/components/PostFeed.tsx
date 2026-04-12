@@ -1,7 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
 import { Post, postsService } from '../services/postsService';
+import { supabase } from '../config/supabaseClient';
 import { CreatePostForm } from './CreatePostForm';
 import { PostCard } from './PostCard';
 
@@ -19,23 +20,46 @@ export function PostFeed() {
   const [sortBy, setSortBy] = useState<PostSortOption>('new');
   const [categoryFilter, setCategoryFilter] = useState<PostCategory>('all');
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  const loadPosts = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
 
-  const loadPosts = async () => {
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
-      // Add timestamp cache buster to ensure fresh data
       const result = await postsService.fetchPosts(0, 50);
       setPosts(result.posts);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load posts');
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadPosts();
+
+    let refreshTimeout: number | undefined;
+    const scheduleRefresh = () => {
+      if (refreshTimeout) window.clearTimeout(refreshTimeout);
+      refreshTimeout = window.setTimeout(() => loadPosts({ silent: true }), 350);
+    };
+
+    const channel = supabase
+      .channel('posts_feed_live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, scheduleRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, scheduleRefresh)
+      .subscribe();
+
+    return () => {
+      if (refreshTimeout) window.clearTimeout(refreshTimeout);
+      supabase.removeChannel(channel);
+    };
+  }, [loadPosts]);
 
   const handlePostCreated = async () => {
     await loadPosts();
@@ -87,7 +111,7 @@ export function PostFeed() {
             📝 Community Posts
           </h2>
           <button
-            onClick={loadPosts}
+            onClick={() => loadPosts()}
             disabled={loading}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
               isLightMode
