@@ -11,6 +11,12 @@ export function LandingPage() {
   const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
   const [isLearnMoreModalOpen, setIsLearnMoreModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('how-it-helps'); // Initialize activeTab with 'how-it-helps'
+  const [platformInfoModal, setPlatformInfoModal] = useState<null | {
+    title: string;
+    description: string;
+    primaryActionLabel: string;
+    primaryAction: () => void;
+  }>(null);
 
   // Navbar state on scroll + Intersection Observer for reveal animations
   useEffect(() => {
@@ -480,7 +486,7 @@ export function LandingPage() {
           <div className={`absolute bottom-20 right-20 w-32 h-32 rounded-full blur-2xl animate-float ${isLightMode ? 'bg-emerald-200/60' : 'bg-emerald-500/15'}`} style={{animationDelay: '1s'}}></div>
         </div>
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-10 mb-12">
+          <div className="grid md:grid-cols-3 gap-10 mb-12">
             <div>
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-500 rounded-3xl flex items-center justify-center shadow-2xl">
@@ -517,29 +523,68 @@ export function LandingPage() {
             <div>
               <h4 className="font-display text-2xl font-bold mb-8">Platform</h4>
               <ul className={`space-y-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Practice Quizzes</a></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Diagnostic Tests</a></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Flashcards</a></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Question Bank</a></li>
+                <li>
+                  <button
+                    type="button"
+                    className="hover:text-emerald-500 transition-colors"
+                    onClick={() =>
+                      setPlatformInfoModal({
+                        title: 'Practice Quizzes',
+                        description:
+                          'Use practice quizzes to build familiarity with LET-style questions, improve accuracy, and strengthen topic recall through repeated practice.',
+                        primaryActionLabel: 'Go to Quizzes',
+                        primaryAction: () => navigate('/quiz'),
+                      })
+                    }
+                  >
+                    Practice Quizzes
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="hover:text-emerald-500 transition-colors"
+                    onClick={() =>
+                      setPlatformInfoModal({
+                        title: 'Diagnostic Tests',
+                        description:
+                          'Start with a diagnostic test to assess your current level and identify weak areas, so you can focus your review on what matters most.',
+                        primaryActionLabel: 'Go to Quizzes',
+                        primaryAction: () => navigate('/quiz'),
+                      })
+                    }
+                  >
+                    Diagnostic Tests
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="hover:text-emerald-500 transition-colors"
+                    onClick={() =>
+                      setPlatformInfoModal({
+                        title: 'Flashcards',
+                        description:
+                          'Flashcards help you memorize key concepts and definitions using quick review sessions and spaced repetition for better long-term retention.',
+                        primaryActionLabel: 'Go to Flashcards',
+                        primaryAction: () => navigate('/materials/flashcards'),
+                      })
+                    }
+                  >
+                    Flashcards
+                  </button>
+                </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-display text-2xl font-bold mb-8">Company</h4>
-              <ul className={`space-y-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-emerald-500 transition-colors">Privacy</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-display text-2xl font-bold mb-8">Newsletter</h4>
-              <p className={`${isLightMode ? 'text-slate-600' : 'text-slate-400'} mb-6`}>Get exam updates and review tips</p>
-              <div className="flex">
-                <input className={`flex-1 px-6 py-4 rounded-l-2xl focus:outline-none focus:border-emerald-400 placeholder-slate-500 ${isLightMode ? 'bg-emerald-50/80 border border-emerald-200/80 text-slate-900' : 'bg-slate-800/50 border border-slate-700/50 text-white'}`} placeholder="your.email@cvsu.edu.ph" />
-                <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-bold rounded-r-2xl hover:from-emerald-600 hover:to-green-600 transition-all shadow-lg">
-                  Subscribe
-                </button>
+              <h4 className="font-display text-2xl font-bold mb-8">Study Quote</h4>
+              <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white/60 border-emerald-200/70' : 'bg-slate-800/40 border-slate-700/60'}`}>
+                <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'} text-lg leading-relaxed`}>
+                  “Live as if you were to die tomorrow. Learn as if you were to live forever.”
+                </p>
+                <p className={`${isLightMode ? 'text-slate-500' : 'text-slate-400'} mt-4 font-semibold`}>
+                  — Mahatma Gandhi
+                </p>
               </div>
             </div>
           </div>
@@ -548,6 +593,40 @@ export function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {platformInfoModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setPlatformInfoModal(null)}>
+          <div className={`rounded-2xl w-full max-w-xl overflow-hidden ${isLightMode ? 'bg-white' : 'bg-slate-800'}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`flex items-center justify-between p-6 border-b ${isLightMode ? 'border-slate-200' : 'border-slate-700'}`}>
+              <h2 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{platformInfoModal.title}</h2>
+              <button onClick={() => setPlatformInfoModal(null)} className={`text-3xl leading-none ${isLightMode ? 'text-slate-500 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}>×</button>
+            </div>
+            <div className="p-6">
+              <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'} leading-relaxed`}>{platformInfoModal.description}</p>
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  className={`flex-1 px-5 py-3 rounded-xl font-bold transition-all ${isLightMode ? 'bg-slate-100 text-slate-900 hover:bg-slate-200' : 'bg-slate-700 text-white hover:bg-slate-600'}`}
+                  onClick={() => setPlatformInfoModal(null)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 px-5 py-3 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 transition-all"
+                  onClick={() => {
+                    const action = platformInfoModal.primaryAction;
+                    setPlatformInfoModal(null);
+                    action();
+                  }}
+                >
+                  {platformInfoModal.primaryActionLabel}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Learn More Modal */}
       {isLearnMoreModalOpen && (

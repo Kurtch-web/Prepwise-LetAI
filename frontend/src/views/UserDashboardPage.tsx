@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../providers/AuthProvider';
 import { useTheme } from '../providers/ThemeProvider';
 import { WelcomeModal } from '../components/WelcomeModal';
@@ -7,9 +8,17 @@ import { PostFeed } from '../components/PostFeed';
 
 export function UserDashboardPage() {
   const [showWelcome, setShowWelcome] = useState(false);
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
+
+  const [platformInfoModal, setPlatformInfoModal] = useState<null | {
+    title: string;
+    description: string;
+    primaryActionLabel: string;
+    primaryAction: () => void;
+  }>(null);
 
   const displayName = user?.username?.split('@')[0] || 'User';
   const reviewType = user?.reviewType || 'GenEd';
@@ -202,6 +211,134 @@ export function UserDashboardPage() {
           <p className={`text-2xl font-bold ${isLightMode ? 'text-purple-900' : 'text-purple-100'}`}>Our Goal</p>
         </div>
       </div>
+
+      <footer className={`${isLightMode ? 'bg-emerald-50/70 text-slate-900 border border-emerald-100/80' : 'bg-gradient-to-r from-slate-900 to-slate-800 text-white'} py-10 rounded-2xl relative overflow-hidden`}>
+        <div className={`absolute inset-0 ${isLightMode ? 'opacity-40' : 'opacity-20'}`}>
+          <div className={`absolute top-10 left-10 w-40 h-40 rounded-full blur-3xl animate-float ${isLightMode ? 'bg-emerald-100' : 'bg-white/10'}`}></div>
+          <div className={`absolute bottom-10 right-20 w-32 h-32 rounded-full blur-2xl animate-float ${isLightMode ? 'bg-emerald-200/60' : 'bg-emerald-500/15'}`} style={{animationDelay: '1s'}}></div>
+        </div>
+        <div className="relative px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-10 mb-10">
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-500 rounded-3xl flex items-center justify-center shadow-2xl">
+                  <span className="text-2xl font-display font-bold">E</span>
+                </div>
+                <span className="text-2xl font-display font-bold">PrepWise</span>
+              </div>
+              <p className={`${isLightMode ? 'text-slate-600' : 'text-slate-400'} leading-relaxed mb-6 max-w-md`}>
+                PRC-aligned LET preparation platform. Built to support aspiring educators with structured practice.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-display text-xl font-bold mb-6">Platform</h4>
+              <ul className={`space-y-3 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                <li>
+                  <button
+                    type="button"
+                    className="hover:text-emerald-500 transition-colors"
+                    onClick={() =>
+                      setPlatformInfoModal({
+                        title: 'Practice Quizzes',
+                        description:
+                          'Use practice quizzes to build familiarity with LET-style questions, improve accuracy, and strengthen topic recall through repeated practice.',
+                        primaryActionLabel: 'Go to Quizzes',
+                        primaryAction: () => navigate('/quiz'),
+                      })
+                    }
+                  >
+                    Practice Quizzes
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="hover:text-emerald-500 transition-colors"
+                    onClick={() =>
+                      setPlatformInfoModal({
+                        title: 'Diagnostic Tests',
+                        description:
+                          'Start with a diagnostic test to assess your current level and identify weak areas, so you can focus your review on what matters most.',
+                        primaryActionLabel: 'Go to Quizzes',
+                        primaryAction: () => navigate('/quiz'),
+                      })
+                    }
+                  >
+                    Diagnostic Tests
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="hover:text-emerald-500 transition-colors"
+                    onClick={() =>
+                      setPlatformInfoModal({
+                        title: 'Flashcards',
+                        description:
+                          'Flashcards help you memorize key concepts and definitions using quick review sessions and spaced repetition for better long-term retention.',
+                        primaryActionLabel: 'Go to Flashcards',
+                        primaryAction: () => navigate('/materials/flashcards'),
+                      })
+                    }
+                  >
+                    Flashcards
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-display text-xl font-bold mb-6">Study Quote</h4>
+              <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white/60 border-emerald-200/70' : 'bg-slate-800/40 border-slate-700/60'}`}>
+                <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'} text-lg leading-relaxed`}>
+                  “Live as if you were to die tomorrow. Learn as if you were to live forever.”
+                </p>
+                <p className={`${isLightMode ? 'text-slate-500' : 'text-slate-400'} mt-4 font-semibold`}>
+                  — Mahatma Gandhi
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className={`border-t ${isLightMode ? 'border-emerald-200/60 text-slate-500' : 'border-slate-800 text-slate-500'} pt-6 text-center text-sm`}>
+            2026 PrepWise. Empowering future educators. All rights reserved.
+          </div>
+        </div>
+      </footer>
+
+      {platformInfoModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setPlatformInfoModal(null)}>
+          <div className={`rounded-2xl w-full max-w-xl overflow-hidden ${isLightMode ? 'bg-white' : 'bg-slate-800'}`} onClick={(e) => e.stopPropagation()}>
+            <div className={`flex items-center justify-between p-6 border-b ${isLightMode ? 'border-slate-200' : 'border-slate-700'}`}>
+              <h2 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{platformInfoModal.title}</h2>
+              <button onClick={() => setPlatformInfoModal(null)} className={`text-3xl leading-none ${isLightMode ? 'text-slate-500 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}>×</button>
+            </div>
+            <div className="p-6">
+              <p className={`${isLightMode ? 'text-slate-700' : 'text-slate-300'} leading-relaxed`}>{platformInfoModal.description}</p>
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  className={`flex-1 px-5 py-3 rounded-xl font-bold transition-all ${isLightMode ? 'bg-slate-100 text-slate-900 hover:bg-slate-200' : 'bg-slate-700 text-white hover:bg-slate-600'}`}
+                  onClick={() => setPlatformInfoModal(null)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 px-5 py-3 rounded-xl font-bold bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:from-emerald-600 hover:to-green-600 transition-all"
+                  onClick={() => {
+                    const action = platformInfoModal.primaryAction;
+                    setPlatformInfoModal(null);
+                    action();
+                  }}
+                >
+                  {platformInfoModal.primaryActionLabel}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
     </div>

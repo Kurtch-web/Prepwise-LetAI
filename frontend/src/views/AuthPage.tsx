@@ -1356,12 +1356,6 @@ export function AuthPage() {
                 <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>support@prepwise.edu.ph</p>
                 <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Response within 24 hours</p>
               </div>
-
-              <div className={`p-4 rounded-lg ${isLightMode ? 'bg-purple-50 border border-purple-200' : 'bg-purple-900/20 border border-purple-800'}`}>
-                <p className={`text-xs font-semibold mb-1 ${isLightMode ? 'text-purple-600' : 'text-purple-400'}`}>LIVE CHAT</p>
-                <p className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Available on Dashboard</p>
-                <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Real-time assistance</p>
-              </div>
             </div>
           </div>
 
