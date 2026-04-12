@@ -399,7 +399,7 @@ export function AuthPage() {
               <p className={`text-sm sm:text-lg leading-relaxed mb-6 sm:mb-8 ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
                 {mode === 'signin'
                   ? 'Continue your LET exam preparation journey and achieve your goals with our comprehensive study materials.'
-                  : 'Get instant access to updated GenEd & ProfEd materials aligned with the latest PRC standards.'}
+                  : '“Education is the most powerful weapon which you can use to change the world.” — Nelson Mandela'}
               </p>
 
               {/* Features List */}
@@ -431,24 +431,30 @@ export function AuthPage() {
                 ) : (
                   <>
                     <div className="flex items-start gap-3">
-                      <div className="text-2xl mt-1">🚀</div>
+                      <div className="text-2xl mt-1">�</div>
                       <div>
-                        <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Free Forever</p>
-                        <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>No credit card required to start</p>
+                        <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          “The beautiful thing about learning is that no one can take it away from you.”
+                        </p>
+                        <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>— B.B. King</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="text-2xl mt-1">✅</div>
+                      <div className="text-2xl mt-1">⏳</div>
                       <div>
-                        <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>PRC Aligned</p>
-                        <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Latest 2024 exam standards</p>
+                        <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          “Success is the sum of small efforts, repeated day in and day out.”
+                        </p>
+                        <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>— Robert Collier</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
-                      <div className="text-2xl mt-1">🎓</div>
+                      <div className="text-2xl mt-1">�</div>
                       <div>
-                        <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Expert Content</p>
-                        <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>Curated by education professionals</p>
+                        <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          “There are no shortcuts to any place worth going.”
+                        </p>
+                        <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>— Beverly Sills</p>
                       </div>
                     </div>
                   </>
