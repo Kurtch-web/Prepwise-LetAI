@@ -71,7 +71,7 @@ export function SettingsPage() {
     };
 
     const channel = supabase
-      .channel(`post_detail_${selectedPost.id}`)
+      .channel(`post_detail_${selectedPost.id}_${Date.now()}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'comments', filter: `post_id=eq.${selectedPost.id}` },

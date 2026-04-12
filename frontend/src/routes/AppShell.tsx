@@ -85,7 +85,7 @@ function NotificationsButton() {
     };
 
     const channel = supabase
-      .channel(`announcements_${user.id}`)
+      .channel(`announcements_${user.id}_${Date.now()}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'posts', filter: 'category=eq.admin' },

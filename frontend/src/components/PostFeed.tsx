@@ -49,7 +49,7 @@ export function PostFeed() {
     };
 
     const channel = supabase
-      .channel('posts_feed_live')
+      .channel(`posts_feed_live_${Date.now()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, scheduleRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, scheduleRefresh)
