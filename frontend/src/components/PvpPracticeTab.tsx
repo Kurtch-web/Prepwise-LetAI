@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
 import { PracticeTestSession } from '../services/progressService';
 import { authService } from '../services/authService';
-import pvpService, { CustomQuizSummary, PvpChatMessage, PvpLobby, PvpLobbyQuiz } from '../services/pvpService';
+import pvpService, { CustomQuizSummary, PvpLobby, PvpLobbyQuiz } from '../services/pvpService';
 
 interface PvpPracticeTabProps {
   availableSessions: PracticeTestSession[];
@@ -43,11 +43,6 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
     { question_text: '', choices: ['', '', '', ''], correct_answer: 'A' }
   ]);
 
-  const [chatMessages, setChatMessages] = useState<PvpChatMessage[]>([]);
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatError, setChatError] = useState<string | null>(null);
-  const [chatInput, setChatInput] = useState('');
-
   const loadCustomQuizzes = async () => {
     setCustomError(null);
     setCustomLoading(true);
@@ -58,27 +53,6 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
       setCustomError(err instanceof Error ? err.message : 'Failed to load custom tests');
     } finally {
       setCustomLoading(false);
-    }
-  };
-
-  const handleSendChat = async () => {
-    if (!lobby?.id) return;
-    const content = chatInput.trim();
-    if (!content) return;
-
-    setChatError(null);
-    setChatInput('');
-    try {
-      const msg = await pvpService.sendLobbyMessage(lobby.id, content);
-      setChatMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev;
-        const next = [...prev, msg];
-        next.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-        return next;
-      });
-    } catch (err) {
-      setChatError(err instanceof Error ? err.message : 'Failed to send message');
-      setChatInput(content);
     }
   };
 
@@ -101,70 +75,6 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
   useEffect(() => {
     loadCustomQuizzes().catch(() => undefined);
   }, []);
-
-  useEffect(() => {
-    if (!lobby?.id) {
-      setChatMessages([]);
-      setChatInput('');
-      setChatError(null);
-      return;
-    }
-
-    let cancelled = false;
-    const lobbyId = lobby.id;
-
-    const load = async () => {
-      try {
-        setChatLoading(true);
-        setChatError(null);
-        const msgs = await pvpService.getLobbyMessages(lobbyId);
-        if (!cancelled) setChatMessages(msgs);
-      } catch (err) {
-        if (!cancelled) setChatError(err instanceof Error ? err.message : 'Failed to load chat');
-      } finally {
-        if (!cancelled) setChatLoading(false);
-      }
-    };
-
-    load().catch(() => undefined);
-
-    const channel = supabase
-      .channel(`pvp-chat-${lobbyId}-${Date.now()}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'pvp_messages', filter: `lobby_id=eq.${lobbyId}` },
-        (payload: any) => {
-          if (cancelled) return;
-          const row = payload?.new;
-          if (!row?.id) {
-            load().catch(() => undefined);
-            return;
-          }
-
-          setChatMessages((prev) => {
-            if (prev.some((m) => m.id === row.id)) return prev;
-            const next = [...prev, {
-              id: String(row.id),
-              lobby_id: String(row.lobby_id),
-              user_id: Number(row.user_id),
-              username: String(row.username || ''),
-              full_name: row.full_name ?? null,
-              content: String(row.content || ''),
-              created_at: String(row.created_at || new Date().toISOString()),
-            }];
-
-            next.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-            return next;
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
-    };
-  }, [lobby?.id]);
 
   const myParticipant = useMemo(() => {
     if (!lobby) return null;
@@ -1089,129 +999,44 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
           )}
         </div>
 
-        <div className="space-y-6">
-          <div className={`rounded-2xl border p-6 h-fit ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
-            <div className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Leaderboard</div>
-            <div className="mt-4 space-y-3">
-              {sortedParticipants.map(p => {
-                const progressText = p.is_finished
-                  ? 'Finished'
-                  : p.current_question_index > 0
-                    ? `Q${p.current_question_index}`
-                    : 'Not started';
+        <div className={`rounded-2xl border p-6 h-fit ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
+          <div className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Leaderboard</div>
+          <div className="mt-4 space-y-3">
+            {sortedParticipants.map(p => {
+              const progressText = p.is_finished
+                ? 'Finished'
+                : p.current_question_index > 0
+                  ? `Q${p.current_question_index}`
+                  : 'Not started';
 
-                const finishTime = p.is_finished ? getFinishTimeLabel(p.finished_at) : null;
+              const finishTime = p.is_finished ? getFinishTimeLabel(p.finished_at) : null;
 
-                return (
-                  <div
-                    key={p.id}
-                    className={`rounded-xl border p-4 flex items-center justify-between ${
-                      isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/20 border-slate-600'
-                    }`}
-                  >
-                    <div className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{p.full_name || p.username}</div>
-                    <div className="text-right">
-                      <div className={`font-extrabold ${isLightMode ? 'text-blue-700' : 'text-blue-300'}`}>{progressText}</div>
-                      {finishTime && (
-                        <div className={`text-xs font-bold mt-1 ${isLightMode ? 'text-purple-700' : 'text-purple-300'}`}>
-                          {finishTime}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {showScores && (
-              <div className={`mt-6 text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                Scores are now revealed.
-              </div>
-            )}
-          </div>
-
-          <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
-            <div className="flex items-center justify-between gap-3">
-              <div className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Chat</div>
-              {chatLoading && (
-                <div className={`text-xs font-bold ${isLightMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                  Loading...
-                </div>
-              )}
-            </div>
-
-            {chatError && (
-              <div className={`mt-3 p-3 rounded-lg font-semibold ${isLightMode ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-red-500/10 text-red-300 border border-red-700'}`}>
-                {chatError}
-              </div>
-            )}
-
-            <div className={`mt-4 rounded-xl border p-3 h-64 sm:h-72 overflow-y-auto ${
-              isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/20 border-slate-600'
-            }`}>
-              {chatMessages.length === 0 ? (
-                <div className={`text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                  No messages yet.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {chatMessages.map((m) => {
-                    const isMe = myUserId != null && m.user_id === myUserId;
-                    return (
-                      <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-2 border ${
-                          isMe
-                            ? isLightMode
-                              ? 'bg-emerald-600 border-emerald-600 text-white'
-                              : 'bg-emerald-600 border-emerald-600 text-white'
-                            : isLightMode
-                            ? 'bg-white border-slate-200 text-slate-900'
-                            : 'bg-slate-800 border-slate-700 text-white'
-                        }`}>
-                          <div className={`text-xs font-bold ${isMe ? 'text-white/90' : isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>
-                            {m.full_name || m.username}
-                          </div>
-                          <div className="text-sm font-semibold whitespace-pre-wrap break-words">
-                            {m.content}
-                          </div>
-                        </div>
+              return (
+                <div
+                  key={p.id}
+                  className={`rounded-xl border p-4 flex items-center justify-between ${
+                    isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/20 border-slate-600'
+                  }`}
+                >
+                  <div className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{p.full_name || p.username}</div>
+                  <div className="text-right">
+                    <div className={`font-extrabold ${isLightMode ? 'text-blue-700' : 'text-blue-300'}`}>{progressText}</div>
+                    {finishTime && (
+                      <div className={`text-xs font-bold mt-1 ${isLightMode ? 'text-purple-700' : 'text-purple-300'}`}>
+                        {finishTime}
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-
-            <div className="mt-3 flex flex-col sm:flex-row gap-2">
-              <input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSendChat().catch(() => undefined);
-                  }
-                }}
-                placeholder="Type a message..."
-                className={`flex-1 px-4 py-3 rounded-lg border font-semibold ${
-                  isLightMode
-                    ? 'bg-white border-slate-200 text-slate-900'
-                    : 'bg-slate-900/20 border-slate-600 text-white'
-                }`}
-              />
-              <button
-                onClick={() => handleSendChat().catch(() => undefined)}
-                disabled={!chatInput.trim()}
-                className={`w-full sm:w-auto px-5 py-3 rounded-lg font-bold ${
-                  isLightMode
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                } disabled:opacity-50`}
-              >
-                Send
-              </button>
-            </div>
+              );
+            })}
           </div>
+
+          {showScores && (
+            <div className={`mt-6 text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              Scores are now revealed.
+            </div>
+          )}
         </div>
       </div>
     </div>
