@@ -411,6 +411,12 @@ async def leave_lobby(
     if not participant:
         return {"message": "Not in lobby"}
 
+    # IMPORTANT: Preserve match history.
+    # If the participant already finished (or the lobby is completed), do not delete rows.
+    # Otherwise the progress tracker "PvP" history will show no matches.
+    if lobby.status == 'completed' or participant.is_finished:
+        return {"message": "Left lobby"}
+
     await db.delete(participant)
 
     if lobby.host_user_id == current_user.id:
