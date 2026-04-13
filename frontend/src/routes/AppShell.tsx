@@ -19,6 +19,7 @@ import { QuizPage } from '../views/QuizPage';
 import { QuestionBankPage } from '../views/QuestionBankPage';
 import VideoLessonsPage from '../views/VideoLessonsPage';
 import { ProgressTrackerPage } from '../views/ProgressTrackerPage';
+import { OfflineOverlay } from '../components/OfflineOverlay';
 
 function NotificationsButton() {
   const { theme } = useTheme();
@@ -603,18 +604,33 @@ export function AppShell() {
   const isLanding = location.pathname === '/';
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
-  if (isLanding) return <LandingPage />;
+  if (isLanding) {
+    return (
+      <>
+        <OfflineOverlay />
+        <LandingPage />
+      </>
+    );
+  }
   if (isAuthPage || location.pathname === '/reset-password') {
     return (
-      <div className={`min-h-screen`}>
-        <Routes>
-          <Route path="/login" element={<AuthPage />} />
-          <Route path="/signup" element={<AuthPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-        </Routes>
-      </div>
+      <>
+        <OfflineOverlay />
+        <div className={`min-h-screen`}>
+          <Routes>
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/signup" element={<AuthPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+          </Routes>
+        </div>
+      </>
     );
   }
 
-  return <MainLayout />;
+  return (
+    <>
+      <OfflineOverlay />
+      <MainLayout />
+    </>
+  );
 }
