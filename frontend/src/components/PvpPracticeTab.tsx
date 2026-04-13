@@ -32,6 +32,7 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
   const [customQuizzes, setCustomQuizzes] = useState<CustomQuizSummary[]>([]);
   const [customLoading, setCustomLoading] = useState(false);
   const [customError, setCustomError] = useState<string | null>(null);
+  const [deletingCustomId, setDeletingCustomId] = useState<string | null>(null);
 
   const [showCustomBuilder, setShowCustomBuilder] = useState(false);
   const [customTitle, setCustomTitle] = useState('');
@@ -52,6 +53,22 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
       setCustomError(err instanceof Error ? err.message : 'Failed to load custom tests');
     } finally {
       setCustomLoading(false);
+    }
+  };
+
+  const handleDeleteCustomQuiz = async (quizId: string) => {
+    const ok = window.confirm('Delete this custom test?');
+    if (!ok) return;
+
+    setDeletingCustomId(quizId);
+    setCustomError(null);
+    try {
+      await pvpService.deleteCustomQuiz(quizId);
+      await loadCustomQuizzes();
+    } catch (err) {
+      setCustomError(err instanceof Error ? err.message : 'Failed to delete custom test');
+    } finally {
+      setDeletingCustomId(null);
     }
   };
 
@@ -543,17 +560,30 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
                             Questions: {q.total_questions}
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleCreateLobby(q.id).catch(() => undefined)}
-                          disabled={loading}
-                          className={`px-4 py-2 rounded-lg font-bold ${
-                            isLightMode
-                              ? 'bg-purple-600 text-white hover:bg-purple-700'
-                              : 'bg-purple-600 text-white hover:bg-purple-700'
-                          } disabled:opacity-50`}
-                        >
-                          Create
-                        </button>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => handleCreateLobby(q.id).catch(() => undefined)}
+                            disabled={loading || deletingCustomId === q.id}
+                            className={`px-4 py-2 rounded-lg font-bold ${
+                              isLightMode
+                                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                                : 'bg-purple-600 text-white hover:bg-purple-700'
+                            } disabled:opacity-50`}
+                          >
+                            Create
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCustomQuiz(q.id).catch(() => undefined)}
+                            disabled={loading || deletingCustomId === q.id}
+                            className={`px-4 py-2 rounded-lg font-bold border ${
+                              isLightMode
+                                ? 'bg-white border-red-200 text-red-700 hover:bg-red-50'
+                                : 'bg-slate-900/20 border-red-500/40 text-red-300 hover:bg-red-500/10'
+                            } disabled:opacity-50`}
+                          >
+                            {deletingCustomId === q.id ? 'Deleting...' : 'Delete'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

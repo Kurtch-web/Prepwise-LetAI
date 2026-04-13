@@ -151,6 +151,28 @@ async def list_custom_quizzes(
     }
 
 
+@router.delete("/custom/{quiz_id}")
+async def delete_custom_quiz(
+    quiz_id: str,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    quiz = await db.scalar(select(Quiz).where(Quiz.id == quiz_id))
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
+
+    if quiz.test_type != 'custom':
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not a custom quiz")
+
+    if quiz.creator_id != current_user.id and current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
+
+    quiz.is_archived = True
+    await db.commit()
+
+    return {"status": "success"}
+
+
 @router.get("/list")
 async def list_my_quizzes(
     test_type: Optional[str] = None,

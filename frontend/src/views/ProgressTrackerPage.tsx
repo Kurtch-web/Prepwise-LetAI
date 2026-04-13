@@ -366,11 +366,12 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
 
       {/* Modal for displaying quizzes of selected test type */}
       {modalOpen && selectedTestType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className={`rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto ${
-            isLightMode ? 'bg-white' : 'bg-slate-800'
-          }`}>
-            <div className={`sticky top-0 border-b p-6 flex items-center justify-between ${
+        <div className="fixed inset-0 z-50 bg-black/50 p-4 overflow-y-auto">
+          <div className="mx-auto w-full max-w-2xl">
+            <div className={`rounded-2xl w-full max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col ${
+              isLightMode ? 'bg-white' : 'bg-slate-800'
+            }`}>
+            <div className={`shrink-0 border-b p-6 flex items-center justify-between ${
               isLightMode
                 ? 'bg-white border-slate-200'
                 : 'bg-slate-800 border-slate-700'
@@ -393,7 +394,7 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
               </button>
             </div>
 
-            <div className="p-6 space-y-3">
+            <div className="flex-1 overflow-y-auto p-6 space-y-3">
               {(groupedQuizzes[selectedTestType] || []).map((quiz) => (
                 <button
                   key={quiz.sessionId}
@@ -456,16 +457,18 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
               ))}
             </div>
           </div>
+          </div>
         </div>
       )}
 
       {/* Quiz Details Modal */}
       {quizDetailsModalOpen && selectedQuiz && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
-          <div className={`rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto ${
-            isLightMode ? 'bg-white' : 'bg-slate-800'
-          }`}>
-            <div className={`sticky top-0 border-b p-6 flex items-center justify-between ${
+        <div className="fixed inset-0 z-[60] bg-black/50 p-4 overflow-y-auto">
+          <div className="mx-auto w-full max-w-3xl">
+            <div className={`rounded-2xl w-full max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col ${
+              isLightMode ? 'bg-white' : 'bg-slate-800'
+            }`}>
+            <div className={`shrink-0 border-b p-6 flex items-center justify-between ${
               isLightMode
                 ? 'bg-white border-slate-200'
                 : 'bg-slate-800 border-slate-700'
@@ -489,7 +492,7 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Score Summary */}
               <div className={`rounded-lg p-6 ${
                 isLightMode
@@ -656,6 +659,7 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
                 </div>
               )}
             </div>
+          </div>
           </div>
         </div>
       )}

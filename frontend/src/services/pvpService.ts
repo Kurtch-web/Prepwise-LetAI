@@ -211,6 +211,12 @@ const pvpService = {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+  },
+
+  async deleteCustomQuiz(quizId: string) {
+    return request(`/api/quizzes/custom/${quizId}`, {
+      method: 'DELETE'
+    });
   }
 };
 
