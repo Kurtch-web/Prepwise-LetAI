@@ -3,8 +3,9 @@ import { useAuth } from '../providers/AuthProvider';
 import { useTheme } from '../providers/ThemeProvider';
 import { fetchAllQuizResults, QuizResult, fetchAnalytics, AnalyticsData, fetchQuizResultDetails } from '../services/progressService';
 import { API_BASE } from '../config/backends';
+import pvpService, { PvpMatchHistoryItem } from '../services/pvpService';
 
-type Tab = 'progress' | 'analytics';
+type Tab = 'progress' | 'analytics' | 'pvp';
 
 export function ProgressTrackerPage() {
   const { user } = useAuth();
@@ -66,6 +67,20 @@ export function ProgressTrackerPage() {
               >
                 📊 Analytics
               </button>
+              <button
+                onClick={() => setActiveTab('pvp')}
+                className={`w-full px-4 py-3 rounded-lg font-semibold transition-all text-left ${
+                  activeTab === 'pvp'
+                    ? isLightMode
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'bg-emerald-600 text-white shadow-lg'
+                    : isLightMode
+                    ? 'text-slate-600 hover:bg-slate-100'
+                    : 'text-slate-400 hover:bg-slate-700/40'
+                }`}
+              >
+                🎮 PvP
+              </button>
             </div>
           </div>
 
@@ -77,9 +92,122 @@ export function ProgressTrackerPage() {
           }`}>
             {activeTab === 'progress' && <ProgressTab isLightMode={isLightMode} />}
             {activeTab === 'analytics' && <AnalyticsTab isLightMode={isLightMode} />}
+            {activeTab === 'pvp' && <PvpTab isLightMode={isLightMode} />}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function PvpTab({ isLightMode }: { isLightMode: boolean }) {
+  const [matches, setMatches] = useState<PvpMatchHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await pvpService.getHistory();
+        setMatches(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load PvP history');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load().catch(() => undefined);
+  }, []);
+
+  const formatSeconds = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  if (loading) {
+    return <div className={isLightMode ? 'text-slate-600' : 'text-slate-400'}>Loading...</div>;
+  }
+
+  if (error) {
+    return <div className={isLightMode ? 'text-red-700' : 'text-red-300'}>{error}</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className={`text-2xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+        Friendly PvP Matches
+      </h2>
+
+      {matches.length === 0 ? (
+        <div className={`rounded-lg p-12 text-center border ${
+          isLightMode
+            ? 'bg-slate-50 border-slate-200'
+            : 'bg-slate-700/30 border-slate-600'
+        }`}>
+          <p className={`text-lg ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+            No PvP matches yet.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {matches.map((m) => {
+            const playedAt = m.completed_at || m.started_at || null;
+            const score = m.score ?? 0;
+            const total = m.total_questions ?? 0;
+            const finishTime = m.finish_time_seconds != null ? formatSeconds(m.finish_time_seconds) : null;
+
+            return (
+              <div
+                key={m.lobby_id}
+                className={`rounded-2xl border p-5 ${
+                  isLightMode
+                    ? 'bg-white border-slate-200 shadow-sm'
+                    : 'bg-slate-800/40 border-slate-700'
+                }`}
+              >
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="flex-1">
+                    <div className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                      {m.quiz_title}
+                    </div>
+                    <div className={`text-sm font-semibold mt-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                      Lobby: {m.lobby_code} • Players: {m.player_count}
+                    </div>
+                    {playedAt && (
+                      <div className={`text-xs mt-1 ${isLightMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                        {new Date(playedAt).toLocaleString()}
+                      </div>
+                    )}
+                    {m.time_limit_minutes && (
+                      <div className={`text-xs font-bold mt-2 ${isLightMode ? 'text-purple-700' : 'text-purple-300'}`}>
+                        ⏱️ Time limit: {m.time_limit_minutes} min
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="text-right">
+                    <div className={`text-3xl font-black ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>
+                      {total > 0 ? `${score}/${total}` : `${score}`}
+                    </div>
+                    {m.rank != null && (
+                      <div className={`text-sm font-bold mt-1 ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                        Rank: #{m.rank}
+                      </div>
+                    )}
+                    {finishTime && (
+                      <div className={`text-sm font-bold mt-1 ${isLightMode ? 'text-purple-700' : 'text-purple-300'}`}>
+                        Finish: {finishTime}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

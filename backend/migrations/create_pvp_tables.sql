@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.pvp_lobbies (
   quiz_id VARCHAR NOT NULL REFERENCES public.quizzes(id) ON DELETE CASCADE,
   status VARCHAR(16) NOT NULL DEFAULT 'lobby',
   max_players INTEGER NOT NULL DEFAULT 4,
+  time_limit_minutes INTEGER NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   started_at TIMESTAMPTZ NULL,
   completed_at TIMESTAMPTZ NULL
@@ -15,6 +16,7 @@ CREATE INDEX IF NOT EXISTS ix_pvp_lobbies_host_user_id ON public.pvp_lobbies(hos
 CREATE INDEX IF NOT EXISTS ix_pvp_lobbies_quiz_id ON public.pvp_lobbies(quiz_id);
 CREATE INDEX IF NOT EXISTS ix_pvp_lobbies_status ON public.pvp_lobbies(status);
 CREATE INDEX IF NOT EXISTS ix_pvp_lobbies_created_at ON public.pvp_lobbies(created_at);
+CREATE INDEX IF NOT EXISTS ix_pvp_lobbies_time_limit_minutes ON public.pvp_lobbies(time_limit_minutes);
 
 CREATE TABLE IF NOT EXISTS public.pvp_participants (
   id VARCHAR PRIMARY KEY,

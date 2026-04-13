@@ -73,6 +73,7 @@ export interface PvpLobby {
   quiz_id: string;
   status: 'lobby' | 'in_progress' | 'completed' | 'closed';
   max_players: number;
+  time_limit_minutes?: number | null;
   created_at: string;
   started_at?: string | null;
   completed_at?: string | null;
@@ -94,11 +95,32 @@ export interface PvpLobbyQuiz {
   questions: PvpLobbyQuizQuestion[];
 }
 
+export interface PvpMatchHistoryItem {
+  lobby_id: string;
+  lobby_code: string;
+  quiz_id: string;
+  quiz_title: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  time_limit_minutes?: number | null;
+  score?: number | null;
+  correct_count?: number | null;
+  total_questions?: number | null;
+  finished_at?: string | null;
+  finish_time_seconds?: number | null;
+  rank?: number | null;
+  player_count: number;
+}
+
+export interface PvpHistoryResponse {
+  matches: PvpMatchHistoryItem[];
+}
+
 const pvpService = {
-  async createLobby(quizId: string, maxPlayers: number = 4): Promise<PvpLobby> {
+  async createLobby(quizId: string, maxPlayers: number = 4, timeLimitMinutes?: number | null): Promise<PvpLobby> {
     return request<PvpLobby>('/api/pvp/lobbies', {
       method: 'POST',
-      body: JSON.stringify({ quiz_id: quizId, max_players: maxPlayers })
+      body: JSON.stringify({ quiz_id: quizId, max_players: maxPlayers, time_limit_minutes: timeLimitMinutes ?? null })
     });
   },
 
@@ -145,6 +167,13 @@ const pvpService = {
     return request<PvpLobbyQuiz>(`/api/pvp/lobbies/${lobbyId}/quiz`, {
       method: 'GET'
     });
+  },
+
+  async getHistory(): Promise<PvpMatchHistoryItem[]> {
+    const data = await request<PvpHistoryResponse>('/api/pvp/history', {
+      method: 'GET'
+    });
+    return data.matches || [];
   }
 };
 

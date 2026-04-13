@@ -241,6 +241,7 @@ class PvpLobby(Base):
     quiz_id: Mapped[str] = mapped_column(ForeignKey('quizzes.id', ondelete='CASCADE'), index=True)
     status: Mapped[str] = mapped_column(String(16), default='lobby', index=True)
     max_players: Mapped[int] = mapped_column(Integer, default=4)
+    time_limit_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

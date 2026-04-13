@@ -26,6 +26,7 @@ def _generate_lobby_code(length: int = 6) -> str:
 class CreateLobbyRequest(BaseModel):
     quiz_id: str
     max_players: int = Field(default=4, ge=2, le=4)
+    time_limit_minutes: Optional[int] = Field(default=None, ge=1, le=180)
 
 
 class JoinLobbyRequest(BaseModel):
@@ -61,6 +62,7 @@ class LobbyResponse(BaseModel):
     quiz_id: str
     status: str
     max_players: int
+    time_limit_minutes: Optional[int]
     created_at: datetime
     started_at: Optional[datetime]
     completed_at: Optional[datetime]
@@ -80,6 +82,27 @@ class LobbyQuizResponse(BaseModel):
     time_limit_minutes: Optional[int]
     total_questions: int
     questions: List[LobbyQuizQuestionResponse]
+
+
+class PvpHistoryItemResponse(BaseModel):
+    lobby_id: str
+    lobby_code: str
+    quiz_id: str
+    quiz_title: str
+    started_at: Optional[datetime]
+    completed_at: Optional[datetime]
+    time_limit_minutes: Optional[int]
+    score: Optional[int]
+    correct_count: Optional[int]
+    total_questions: Optional[int]
+    finished_at: Optional[datetime]
+    finish_time_seconds: Optional[int]
+    rank: Optional[int]
+    player_count: int
+
+
+class PvpHistoryResponse(BaseModel):
+    matches: List[PvpHistoryItemResponse]
 
 
 async def _require_completed_quiz(db: AsyncSession, user_id: int, quiz_id: str) -> None:
@@ -110,6 +133,7 @@ async def _serialize_lobby(db: AsyncSession, lobby: PvpLobby) -> LobbyResponse:
         quiz_id=lobby.quiz_id,
         status=lobby.status,
         max_players=lobby.max_players,
+        time_limit_minutes=lobby.time_limit_minutes,
         created_at=lobby.created_at,
         started_at=lobby.started_at,
         completed_at=lobby.completed_at,
@@ -154,6 +178,7 @@ async def create_lobby(
             host_user_id=current_user.id,
             quiz_id=payload.quiz_id,
             max_players=payload.max_players,
+            time_limit_minutes=payload.time_limit_minutes,
             status='lobby',
         )
         db.add(lobby)
@@ -183,6 +208,81 @@ async def create_lobby(
     await db.commit()
 
     return await _serialize_lobby(db, lobby)
+
+
+@router.get("/history", response_model=PvpHistoryResponse)
+async def get_pvp_history(
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    rows_result = await db.execute(
+        select(PvpParticipant, PvpLobby, Quiz)
+        .join(PvpLobby, PvpParticipant.lobby_id == PvpLobby.id)
+        .join(Quiz, PvpLobby.quiz_id == Quiz.id)
+        .where(PvpParticipant.user_id == current_user.id)
+        .where(PvpLobby.status == 'completed')
+        .order_by(PvpLobby.completed_at.desc().nullslast(), PvpLobby.started_at.desc().nullslast())
+    )
+    rows = rows_result.all()
+
+    lobby_ids = [lobby.id for _, lobby, _ in rows]
+
+    all_participants_by_lobby: dict[str, list[PvpParticipant]] = {}
+    if lobby_ids:
+        participants_result = await db.execute(
+            select(PvpParticipant)
+            .where(PvpParticipant.lobby_id.in_(lobby_ids))
+        )
+        for p in participants_result.scalars().all():
+            all_participants_by_lobby.setdefault(p.lobby_id, []).append(p)
+
+    matches: List[PvpHistoryItemResponse] = []
+
+    for participant, lobby, quiz in rows:
+        participants = all_participants_by_lobby.get(lobby.id, [])
+
+        ranked = sorted(
+            participants,
+            key=lambda p: (
+                -(p.score or 0),
+                p.finished_at or datetime.max.replace(tzinfo=timezone.utc),
+                p.joined_at,
+            ),
+        )
+
+        rank = None
+        for i, p in enumerate(ranked, start=1):
+            if p.id == participant.id:
+                rank = i
+                break
+
+        finish_time_seconds: Optional[int] = None
+        if lobby.started_at and participant.finished_at:
+            finish_time_seconds = max(
+                0,
+                int((participant.finished_at - lobby.started_at).total_seconds()),
+            )
+
+        matches.append(
+            PvpHistoryItemResponse(
+                lobby_id=lobby.id,
+                lobby_code=lobby.code,
+                quiz_id=lobby.quiz_id,
+                quiz_title=quiz.title if quiz else 'Quiz',
+                started_at=lobby.started_at,
+                completed_at=lobby.completed_at,
+                time_limit_minutes=lobby.time_limit_minutes,
+                score=participant.score,
+                correct_count=participant.correct_count,
+                total_questions=participant.total_questions,
+                finished_at=participant.finished_at,
+                finish_time_seconds=finish_time_seconds,
+                rank=rank,
+                player_count=len(participants),
+            )
+        )
+
+    return PvpHistoryResponse(matches=matches)
 
 
 @router.get("/lobbies/{lobby_id}/quiz", response_model=LobbyQuizResponse)

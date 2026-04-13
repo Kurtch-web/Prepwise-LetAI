@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
 import { PracticeTestSession } from '../services/progressService';
 import { authService } from '../services/authService';
@@ -13,14 +13,18 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
   const me = authService.getUser();
   const myUserId = me?.id;
 
+  const autoSubmittedRef = useRef(false);
+
   const [joinCode, setJoinCode] = useState('');
   const [selectedQuizId, setSelectedQuizId] = useState<string | null>(null);
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState<number>(10);
 
   const [lobby, setLobby] = useState<PvpLobby | null>(null);
   const [quiz, setQuiz] = useState<PvpLobbyQuiz | null>(null);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +41,21 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
   }, [lobby, myUserId, me?.username]);
 
   const isHost = lobby && myUserId != null ? lobby.host_user_id === myUserId : false;
+
+  const formatSeconds = (totalSeconds: number) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  const getFinishTimeLabel = (pFinishedAt?: string | null) => {
+    if (!lobby?.started_at || !pFinishedAt) return null;
+    const startedMs = new Date(lobby.started_at).getTime();
+    const finishedMs = new Date(pFinishedAt).getTime();
+    if (!Number.isFinite(startedMs) || !Number.isFinite(finishedMs)) return null;
+    const elapsedSeconds = Math.max(0, Math.floor((finishedMs - startedMs) / 1000));
+    return formatSeconds(elapsedSeconds);
+  };
 
   const refreshLobby = async (lobbyId: string) => {
     try {
@@ -106,11 +125,59 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
       .finally(() => setLoading(false));
   }, [lobby?.id, lobby?.status, quiz]);
 
+  useEffect(() => {
+    if (!lobby?.started_at || lobby.status !== 'in_progress') {
+      setTimeRemainingSeconds(null);
+      autoSubmittedRef.current = false;
+      return;
+    }
+
+    const minutes = lobby.time_limit_minutes ?? null;
+    if (!minutes || minutes <= 0) {
+      setTimeRemainingSeconds(null);
+      autoSubmittedRef.current = false;
+      return;
+    }
+
+    const startedAtMs = new Date(lobby.started_at).getTime();
+    if (!Number.isFinite(startedAtMs)) {
+      setTimeRemainingSeconds(null);
+      autoSubmittedRef.current = false;
+      return;
+    }
+
+    const endMs = startedAtMs + minutes * 60 * 1000;
+
+    const tick = () => {
+      const nowMs = Date.now();
+      const remaining = Math.max(0, Math.floor((endMs - nowMs) / 1000));
+      setTimeRemainingSeconds(remaining);
+    };
+
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [lobby?.started_at, lobby?.status, lobby?.time_limit_minutes]);
+
+  useEffect(() => {
+    if (!lobby || lobby.status !== 'in_progress') return;
+    if (!quiz) return;
+    if (timeRemainingSeconds === null) return;
+    if (timeRemainingSeconds > 0) return;
+    if (myParticipant?.is_finished) return;
+    if (loading) return;
+    if (autoSubmittedRef.current) return;
+
+    autoSubmittedRef.current = true;
+    handleFinish().catch(() => undefined);
+  }, [timeRemainingSeconds, lobby?.id, lobby?.status, quiz, myParticipant?.is_finished, loading]);
+
   const handleCreateLobby = async (quizId: string) => {
     setError(null);
     setLoading(true);
+    autoSubmittedRef.current = false;
     try {
-      const created = await pvpService.createLobby(quizId, 4);
+      const created = await pvpService.createLobby(quizId, 4, timeLimitMinutes);
       setLobby(created);
       setQuiz(null);
       setSelectedQuizId(quizId);
@@ -127,6 +194,7 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
 
     setError(null);
     setLoading(true);
+    autoSubmittedRef.current = false;
     try {
       const joined = await pvpService.joinLobby(code);
       setLobby(joined);
@@ -153,6 +221,8 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
       setQuiz(null);
       setCurrentQuestionIndex(0);
       setAnswers({});
+      setTimeRemainingSeconds(null);
+      autoSubmittedRef.current = false;
       setJoinCode('');
       setSelectedQuizId(null);
       setLoading(false);
@@ -271,6 +341,43 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
         <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
           <h4 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Create Lobby</h4>
 
+          <div className="mt-4 flex flex-col sm:flex-row gap-3 items-center">
+            <div className={`w-full sm:w-auto font-semibold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+              Time limit (minutes)
+            </div>
+            <input
+              type="number"
+              min={1}
+              max={180}
+              value={timeLimitMinutes}
+              onChange={e => setTimeLimitMinutes(Math.max(1, Math.min(180, Number(e.target.value) || 1)))}
+              className={`w-full sm:w-40 px-4 py-2 rounded-lg border font-semibold ${
+                isLightMode
+                  ? 'bg-white border-slate-200 text-slate-900'
+                  : 'bg-slate-900/20 border-slate-600 text-white'
+              }`}
+            />
+            <div className="flex gap-2 w-full sm:w-auto">
+              {[5, 10, 15, 25, 30, 60].map(m => (
+                <button
+                  key={m}
+                  onClick={() => setTimeLimitMinutes(m)}
+                  className={`flex-1 sm:flex-none px-3 py-2 rounded-lg font-bold border transition ${
+                    timeLimitMinutes === m
+                      ? isLightMode
+                        ? 'bg-purple-600 border-purple-600 text-white'
+                        : 'bg-purple-600 border-purple-600 text-white'
+                      : isLightMode
+                      ? 'bg-slate-100 border-slate-200 text-slate-800 hover:bg-slate-200'
+                      : 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700'
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             {availableSessions.map(session => (
               <div
@@ -325,6 +432,13 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
               Status: {lobby.status}
               {selectedSession ? ` • ${selectedSession.quizTitle}` : ''}
             </div>
+            {timeRemainingSeconds !== null && lobby.status === 'in_progress' && (
+              <div className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold ${
+                isLightMode ? 'bg-purple-100 text-purple-700' : 'bg-purple-900/30 text-purple-300'
+              }`}>
+                ⏱️ {formatSeconds(timeRemainingSeconds)}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3">
@@ -442,7 +556,7 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
                 {currentQuestionIndex === quiz.total_questions - 1 ? (
                   <button
                     onClick={() => handleFinish().catch(() => undefined)}
-                    disabled={Object.keys(answers).length !== quiz.total_questions || loading}
+                    disabled={loading}
                     className={`flex-1 px-6 py-3 rounded-xl font-bold transition ${
                       isLightMode
                         ? 'bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50'
@@ -515,6 +629,8 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
                   ? `Q${p.current_question_index}`
                   : 'Not started';
 
+              const finishTime = p.is_finished ? getFinishTimeLabel(p.finished_at) : null;
+
               return (
                 <div
                   key={p.id}
@@ -523,7 +639,14 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
                   }`}
                 >
                   <div className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{p.full_name || p.username}</div>
-                  <div className={`font-extrabold ${isLightMode ? 'text-blue-700' : 'text-blue-300'}`}>{progressText}</div>
+                  <div className="text-right">
+                    <div className={`font-extrabold ${isLightMode ? 'text-blue-700' : 'text-blue-300'}`}>{progressText}</div>
+                    {finishTime && (
+                      <div className={`text-xs font-bold mt-1 ${isLightMode ? 'text-purple-700' : 'text-purple-300'}`}>
+                        {finishTime}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
