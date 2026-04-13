@@ -15,7 +15,7 @@ from sqlalchemy.orm import selectinload
 
 from ..db import get_db
 from ..dependencies import get_current_user
-from ..models import PvpLobby, PvpParticipant, Quiz, QuizSession, UserAccount
+from ..models import PvpLobby, PvpMessage, PvpParticipant, Quiz, QuizSession, UserAccount
 
 router = APIRouter(prefix="/api/pvp", tags=["pvp"])
 
@@ -106,6 +106,24 @@ class PvpHistoryResponse(BaseModel):
     matches: List[PvpHistoryItemResponse]
 
 
+class PvpMessageResponse(BaseModel):
+    id: str
+    lobby_id: str
+    user_id: int
+    username: str
+    full_name: Optional[str]
+    content: str
+    created_at: datetime
+
+
+class PvpMessagesResponse(BaseModel):
+    messages: List[PvpMessageResponse]
+
+
+class SendPvpMessageRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=500)
+
+
 async def _require_completed_quiz(db: AsyncSession, user_id: int, quiz_id: str) -> None:
     completed = await db.scalar(
         select(func.count(QuizSession.id)).where(
@@ -119,6 +137,16 @@ async def _require_completed_quiz(db: AsyncSession, user_id: int, quiz_id: str) 
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You must complete this test before joining PvP",
         )
+
+
+async def _require_lobby_member(db: AsyncSession, lobby_id: str, user_id: int) -> None:
+    count = await db.scalar(
+        select(func.count(PvpParticipant.id)).where(
+            (PvpParticipant.lobby_id == lobby_id) & (PvpParticipant.user_id == user_id)
+        )
+    )
+    if not count:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a lobby participant")
 
 
 async def _serialize_lobby(db: AsyncSession, lobby: PvpLobby) -> LobbyResponse:
@@ -210,6 +238,77 @@ async def create_lobby(
     await db.commit()
 
     return await _serialize_lobby(db, lobby)
+
+
+@router.get("/lobbies/{lobby_id}/messages", response_model=PvpMessagesResponse)
+async def get_lobby_messages(
+    lobby_id: str,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    lobby = await db.scalar(select(PvpLobby).where(PvpLobby.id == lobby_id))
+    if not lobby:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lobby not found")
+
+    await _require_lobby_member(db, lobby_id, current_user.id)
+
+    result = await db.execute(
+        select(PvpMessage)
+        .where(PvpMessage.lobby_id == lobby_id)
+        .order_by(PvpMessage.created_at.asc())
+        .limit(200)
+    )
+    messages = result.scalars().all()
+
+    return PvpMessagesResponse(
+        messages=[
+            PvpMessageResponse(
+                id=m.id,
+                lobby_id=m.lobby_id,
+                user_id=m.user_id,
+                username=m.username,
+                full_name=m.full_name,
+                content=m.content,
+                created_at=m.created_at,
+            )
+            for m in messages
+        ]
+    )
+
+
+@router.post("/lobbies/{lobby_id}/messages", response_model=PvpMessageResponse)
+async def send_lobby_message(
+    lobby_id: str,
+    payload: SendPvpMessageRequest,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    lobby = await db.scalar(select(PvpLobby).where(PvpLobby.id == lobby_id))
+    if not lobby:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lobby not found")
+
+    await _require_lobby_member(db, lobby_id, current_user.id)
+
+    message = PvpMessage(
+        lobby_id=lobby_id,
+        user_id=current_user.id,
+        username=current_user.username,
+        full_name=current_user.full_name,
+        content=payload.content.strip(),
+    )
+    db.add(message)
+    await db.commit()
+    await db.refresh(message)
+
+    return PvpMessageResponse(
+        id=message.id,
+        lobby_id=message.lobby_id,
+        user_id=message.user_id,
+        username=message.username,
+        full_name=message.full_name,
+        content=message.content,
+        created_at=message.created_at,
+    )
 
 
 @router.get("/history", response_model=PvpHistoryResponse)

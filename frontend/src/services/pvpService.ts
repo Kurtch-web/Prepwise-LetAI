@@ -116,6 +116,20 @@ export interface PvpHistoryResponse {
   matches: PvpMatchHistoryItem[];
 }
 
+export interface PvpChatMessage {
+  id: string;
+  lobby_id: string;
+  user_id: number;
+  username: string;
+  full_name?: string | null;
+  content: string;
+  created_at: string;
+}
+
+interface PvpMessagesResponse {
+  messages: PvpChatMessage[];
+}
+
 export interface CustomQuizQuestionPayload {
   question_text: string;
   choices: string[];
@@ -189,6 +203,20 @@ const pvpService = {
   async getLobbyQuiz(lobbyId: string): Promise<PvpLobbyQuiz> {
     return request<PvpLobbyQuiz>(`/api/pvp/lobbies/${lobbyId}/quiz`, {
       method: 'GET'
+    });
+  },
+
+  async getLobbyMessages(lobbyId: string): Promise<PvpChatMessage[]> {
+    const data = await request<PvpMessagesResponse>(`/api/pvp/lobbies/${lobbyId}/messages`, {
+      method: 'GET'
+    });
+    return data.messages || [];
+  },
+
+  async sendLobbyMessage(lobbyId: string, content: string): Promise<PvpChatMessage> {
+    return request<PvpChatMessage>(`/api/pvp/lobbies/${lobbyId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content })
     });
   },
 
