@@ -116,6 +116,29 @@ export interface PvpHistoryResponse {
   matches: PvpMatchHistoryItem[];
 }
 
+export interface CustomQuizQuestionPayload {
+  question_text: string;
+  choices: string[];
+  correct_answer: string;
+}
+
+export interface CustomQuizCreatePayload {
+  title: string;
+  description?: string | null;
+  questions: CustomQuizQuestionPayload[];
+}
+
+export interface CustomQuizSummary {
+  id: string;
+  title: string;
+  total_questions: number;
+  created_at: string;
+}
+
+interface CustomQuizListResponse {
+  quizzes: CustomQuizSummary[];
+}
+
 const pvpService = {
   async createLobby(quizId: string, maxPlayers: number = 4, timeLimitMinutes?: number | null): Promise<PvpLobby> {
     return request<PvpLobby>('/api/pvp/lobbies', {
@@ -174,6 +197,20 @@ const pvpService = {
       method: 'GET'
     });
     return data.matches || [];
+  },
+
+  async listCustomQuizzes(): Promise<CustomQuizSummary[]> {
+    const data = await request<CustomQuizListResponse>('/api/quizzes/custom', {
+      method: 'GET'
+    });
+    return data.quizzes || [];
+  },
+
+  async createCustomQuiz(payload: CustomQuizCreatePayload): Promise<CustomQuizSummary> {
+    return request<CustomQuizSummary>('/api/quizzes/custom', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 };
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
 import { PracticeTestSession } from '../services/progressService';
 import { authService } from '../services/authService';
-import pvpService, { PvpLobby, PvpLobbyQuiz } from '../services/pvpService';
+import pvpService, { CustomQuizSummary, PvpLobby, PvpLobbyQuiz } from '../services/pvpService';
 
 interface PvpPracticeTabProps {
   availableSessions: PracticeTestSession[];
@@ -29,6 +29,36 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [customQuizzes, setCustomQuizzes] = useState<CustomQuizSummary[]>([]);
+  const [customLoading, setCustomLoading] = useState(false);
+  const [customError, setCustomError] = useState<string | null>(null);
+
+  const [showCustomBuilder, setShowCustomBuilder] = useState(false);
+  const [customTitle, setCustomTitle] = useState('');
+  const [customDescription, setCustomDescription] = useState('');
+  const [customBuilderError, setCustomBuilderError] = useState<string | null>(null);
+  const [customBuilderSaving, setCustomBuilderSaving] = useState(false);
+  const [customQuestions, setCustomQuestions] = useState<Array<{ question_text: string; choices: string[]; correct_answer: string }>>([
+    { question_text: '', choices: ['', '', '', ''], correct_answer: 'A' }
+  ]);
+
+  const loadCustomQuizzes = async () => {
+    setCustomError(null);
+    setCustomLoading(true);
+    try {
+      const quizzes = await pvpService.listCustomQuizzes();
+      setCustomQuizzes(quizzes);
+    } catch (err) {
+      setCustomError(err instanceof Error ? err.message : 'Failed to load custom tests');
+    } finally {
+      setCustomLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCustomQuizzes().catch(() => undefined);
+  }, []);
+
   const myParticipant = useMemo(() => {
     if (!lobby) return null;
     if (myUserId != null) {
@@ -46,6 +76,60 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  const openCustomBuilder = () => {
+    setCustomTitle('');
+    setCustomDescription('');
+    setCustomBuilderError(null);
+    setCustomBuilderSaving(false);
+    setCustomQuestions([{ question_text: '', choices: ['', '', '', ''], correct_answer: 'A' }]);
+    setShowCustomBuilder(true);
+  };
+
+  const handleSaveCustomQuiz = async () => {
+    const title = customTitle.trim();
+    if (!title) {
+      setCustomBuilderError('Title is required');
+      return;
+    }
+
+    const normalized = customQuestions.map((q) => ({
+      question_text: q.question_text.trim(),
+      choices: q.choices.map((c) => c.trim()),
+      correct_answer: q.correct_answer
+    }));
+
+    for (const q of normalized) {
+      if (!q.question_text) {
+        setCustomBuilderError('All questions must have text');
+        return;
+      }
+      if (q.choices.length !== 4 || q.choices.some((c) => !c)) {
+        setCustomBuilderError('Each question must have 4 choices');
+        return;
+      }
+      if (!['A', 'B', 'C', 'D'].includes(q.correct_answer)) {
+        setCustomBuilderError('Each question must have a correct answer');
+        return;
+      }
+    }
+
+    setCustomBuilderError(null);
+    setCustomBuilderSaving(true);
+    try {
+      await pvpService.createCustomQuiz({
+        title,
+        description: customDescription.trim() ? customDescription.trim() : null,
+        questions: normalized
+      });
+      setShowCustomBuilder(false);
+      await loadCustomQuizzes();
+    } catch (err) {
+      setCustomBuilderError(err instanceof Error ? err.message : 'Failed to save custom test');
+    } finally {
+      setCustomBuilderSaving(false);
+    }
   };
 
   const getFinishTimeLabel = (pFinishedAt?: string | null) => {
@@ -300,12 +384,13 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
 
   if (!lobby) {
     return (
-      <div className="space-y-6">
-        <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
-          <h3 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>PvP</h3>
-          <p className={`mt-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-            Create a lobby or join with a code. You can only join if you already completed the same test.
-          </p>
+      <>
+        <div className="space-y-6">
+          <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
+            <h3 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>PvP</h3>
+            <p className={`mt-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              Create a lobby or join with a code. For normal tests, you can only join if you already completed the same test.
+            </p>
 
           <div className="mt-4 flex flex-col sm:flex-row gap-3">
             <input
@@ -338,8 +423,21 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
           )}
         </div>
 
-        <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
-          <h4 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Create Lobby</h4>
+          <div className={`rounded-2xl border p-6 ${isLightMode ? 'bg-white border-slate-200' : 'bg-slate-800/40 border-slate-700'}`}>
+            <div className="flex items-center justify-between gap-3">
+              <h4 className={`text-lg font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Create Lobby</h4>
+              <button
+                onClick={openCustomBuilder}
+                disabled={loading}
+                className={`px-4 py-2 rounded-lg font-bold border transition ${
+                  isLightMode
+                    ? 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                    : 'bg-slate-900/20 border-slate-600 text-white hover:bg-slate-800'
+                } disabled:opacity-50`}
+              >
+                + Custom Test
+              </button>
+            </div>
 
           <div className="mt-4 flex flex-col sm:flex-row gap-3 items-center">
             <div className={`w-full sm:w-auto font-semibold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
@@ -378,42 +476,294 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {availableSessions.map(session => (
-              <div
-                key={session.originalQuizId}
-                className={`rounded-xl border p-4 ${isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/20 border-slate-600'}`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{session.quizTitle}</div>
-                    <div className={`text-sm font-semibold mt-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                      Best: {Math.round(session.bestScore)}%
+            <div className="mt-5">
+              <div className={`text-sm font-bold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                Tests Taken
+              </div>
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {availableSessions.map(session => (
+                  <div
+                    key={session.originalQuizId}
+                    className={`rounded-xl border p-4 ${isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/20 border-slate-600'}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{session.quizTitle}</div>
+                        <div className={`text-sm font-semibold mt-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                          Best: {Math.round(session.bestScore)}%
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleCreateLobby(session.originalQuizId).catch(() => undefined)}
+                        disabled={loading}
+                        className={`px-4 py-2 rounded-lg font-bold ${
+                          isLightMode
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        } disabled:opacity-50`}
+                      >
+                        Create
+                      </button>
                     </div>
                   </div>
+                ))}
+              </div>
+
+              {availableSessions.length === 0 && (
+                <div className={`mt-4 font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  No completed tests yet.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6">
+              <div className={`text-sm font-bold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                Custom Tests
+              </div>
+              {customError && (
+                <div className={`mt-3 p-3 rounded-lg font-semibold ${isLightMode ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-red-500/10 text-red-300 border border-red-700'}`}>
+                  {customError}
+                </div>
+              )}
+              {customLoading ? (
+                <div className={`mt-3 font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  Loading custom tests...
+                </div>
+              ) : (
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {customQuizzes.map((q) => (
+                    <div
+                      key={q.id}
+                      className={`rounded-xl border p-4 ${isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/20 border-slate-600'}`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{q.title}</div>
+                          <div className={`text-sm font-semibold mt-1 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                            Questions: {q.total_questions}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleCreateLobby(q.id).catch(() => undefined)}
+                          disabled={loading}
+                          className={`px-4 py-2 rounded-lg font-bold ${
+                            isLightMode
+                              ? 'bg-purple-600 text-white hover:bg-purple-700'
+                              : 'bg-purple-600 text-white hover:bg-purple-700'
+                          } disabled:opacity-50`}
+                        >
+                          Create
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!customLoading && customQuizzes.length === 0 && (
+                <div className={`mt-4 font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                  No custom tests yet.
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+
+        {showCustomBuilder && (
+          <div
+            className="fixed inset-0 z-[1200] flex items-start justify-center px-4 py-10 overflow-y-auto"
+            onClick={() => setShowCustomBuilder(false)}
+          >
+            <div className={`absolute inset-0 ${isLightMode ? 'bg-black/30' : 'bg-black/60'} backdrop-blur-sm`} />
+            <div
+              className={`relative w-full max-w-3xl rounded-2xl border p-6 ${
+                isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-700'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                    Create Custom Test
+                  </div>
+                  <div className={`mt-1 text-sm font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Add your own questions, choices, and correct answers.
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCustomBuilder(false)}
+                  className={`text-2xl font-bold ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mt-5 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className={`text-sm font-bold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                      Title
+                    </div>
+                    <input
+                      value={customTitle}
+                      onChange={(e) => setCustomTitle(e.target.value)}
+                      className={`mt-2 w-full px-4 py-3 rounded-lg border font-semibold ${
+                        isLightMode
+                          ? 'bg-white border-slate-200 text-slate-900'
+                          : 'bg-slate-900/20 border-slate-600 text-white'
+                      }`}
+                      placeholder="e.g. Cardio Review"
+                    />
+                  </div>
+                  <div>
+                    <div className={`text-sm font-bold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                      Description (optional)
+                    </div>
+                    <input
+                      value={customDescription}
+                      onChange={(e) => setCustomDescription(e.target.value)}
+                      className={`mt-2 w-full px-4 py-3 rounded-lg border font-semibold ${
+                        isLightMode
+                          ? 'bg-white border-slate-200 text-slate-900'
+                          : 'bg-slate-900/20 border-slate-600 text-white'
+                      }`}
+                      placeholder="Short notes"
+                    />
+                  </div>
+                </div>
+
+                {customBuilderError && (
+                  <div className={`p-3 rounded-lg font-semibold ${isLightMode ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-red-500/10 text-red-300 border border-red-700'}`}>
+                    {customBuilderError}
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {customQuestions.map((q, qIdx) => (
+                    <div
+                      key={qIdx}
+                      className={`rounded-2xl border p-5 ${isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-800/30 border-slate-700'}`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                          Question {qIdx + 1}
+                        </div>
+                        <button
+                          onClick={() => setCustomQuestions((prev) => prev.length <= 1 ? prev : prev.filter((_, i) => i !== qIdx))}
+                          disabled={customQuestions.length <= 1}
+                          className={`px-3 py-2 rounded-lg font-bold border transition ${
+                            isLightMode
+                              ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                              : 'bg-slate-900/20 border-slate-600 text-slate-200 hover:bg-slate-800'
+                          } disabled:opacity-50`}
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <textarea
+                        value={q.question_text}
+                        onChange={(e) => setCustomQuestions((prev) => prev.map((x, i) => i === qIdx ? ({ ...x, question_text: e.target.value }) : x))}
+                        className={`mt-3 w-full px-4 py-3 rounded-lg border font-semibold min-h-[90px] ${
+                          isLightMode
+                            ? 'bg-white border-slate-200 text-slate-900'
+                            : 'bg-slate-900/20 border-slate-600 text-white'
+                        }`}
+                        placeholder="Enter the question"
+                      />
+
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {q.choices.map((choice, cIdx) => {
+                          const letter = String.fromCharCode(65 + cIdx);
+                          return (
+                            <div key={cIdx}>
+                              <div className={`text-xs font-bold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                                Choice {letter}
+                              </div>
+                              <input
+                                value={choice}
+                                onChange={(e) => setCustomQuestions((prev) => prev.map((x, i) => {
+                                  if (i !== qIdx) return x;
+                                  const nextChoices = [...x.choices];
+                                  nextChoices[cIdx] = e.target.value;
+                                  return { ...x, choices: nextChoices };
+                                }))}
+                                className={`mt-1 w-full px-3 py-2 rounded-lg border font-semibold ${
+                                  isLightMode
+                                    ? 'bg-white border-slate-200 text-slate-900'
+                                    : 'bg-slate-900/20 border-slate-600 text-white'
+                                }`}
+                                placeholder={`Enter choice ${letter}`}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-4">
+                        <div className={`text-sm font-bold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                          Correct Answer
+                        </div>
+                        <select
+                          value={q.correct_answer}
+                          onChange={(e) => setCustomQuestions((prev) => prev.map((x, i) => i === qIdx ? ({ ...x, correct_answer: e.target.value }) : x))}
+                          className={`mt-2 w-full md:w-48 px-3 py-2 rounded-lg border font-bold ${
+                            isLightMode
+                              ? 'bg-white border-slate-200 text-slate-900'
+                              : 'bg-slate-900/20 border-slate-600 text-white'
+                          }`}
+                        >
+                          <option value="A">A</option>
+                          <option value="B">B</option>
+                          <option value="C">C</option>
+                          <option value="D">D</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <button
-                    onClick={() => handleCreateLobby(session.originalQuizId).catch(() => undefined)}
-                    disabled={loading}
-                    className={`px-4 py-2 rounded-lg font-bold ${
+                    onClick={() => setCustomQuestions((prev) => [...prev, { question_text: '', choices: ['', '', '', ''], correct_answer: 'A' }])}
+                    className={`px-4 py-3 rounded-xl font-bold border transition ${
                       isLightMode
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    } disabled:opacity-50`}
+                        ? 'bg-white border-slate-200 text-slate-900 hover:bg-slate-50'
+                        : 'bg-slate-900/20 border-slate-600 text-white hover:bg-slate-800'
+                    }`}
                   >
-                    Create
+                    + Add Question
                   </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowCustomBuilder(false)}
+                      className={`px-5 py-3 rounded-xl font-bold ${
+                        isLightMode
+                          ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+                          : 'bg-slate-800 text-white hover:bg-slate-700'
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleSaveCustomQuiz().catch(() => undefined)}
+                      disabled={customBuilderSaving}
+                      className={`px-5 py-3 rounded-xl font-bold ${
+                        isLightMode
+                          ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      } disabled:opacity-50`}
+                    >
+                      {customBuilderSaving ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {availableSessions.length === 0 && (
-            <div className={`mt-4 font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-              No completed tests yet.
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </>
     );
   }
 

@@ -22,6 +22,12 @@ class QuizRetakeRequest(BaseModel):
     user_ids: List[int]
 
 
+class CustomQuizCreateRequest(BaseModel):
+    title: str
+    description: Optional[str] = None
+    questions: List[QuestionSchema]
+
+
 def generate_access_code(length: int = 8) -> str:
     """Generate a random alphanumeric access code."""
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
@@ -71,6 +77,77 @@ async def create_quiz(
         "time_limit_minutes": quiz.time_limit_minutes,
         "total_questions": len(quiz_data.questions),
         "created_at": quiz.created_at
+    }
+
+
+@router.post("/custom")
+async def create_custom_quiz(
+    quiz_data: CustomQuizCreateRequest,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    access_code = generate_access_code()
+
+    quiz = Quiz(
+        creator_id=current_user.id,
+        title=quiz_data.title,
+        description=quiz_data.description,
+        access_code=access_code,
+        time_limit_minutes=None,
+        test_type='custom',
+        is_active=True,
+    )
+    db.add(quiz)
+    await db.flush()
+
+    for idx, question_data in enumerate(quiz_data.questions):
+        question = QuizQuestion(
+            quiz_id=quiz.id,
+            question_text=question_data.question_text,
+            choices=question_data.choices,
+            correct_answer=question_data.correct_answer,
+            order=idx,
+        )
+        db.add(question)
+
+    await db.commit()
+    await db.refresh(quiz)
+
+    return {
+        "id": quiz.id,
+        "title": quiz.title,
+        "total_questions": len(quiz_data.questions),
+        "created_at": quiz.created_at,
+    }
+
+
+@router.get("/custom")
+async def list_custom_quizzes(
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Quiz)
+        .where(
+            (Quiz.creator_id == current_user.id)
+            & (Quiz.test_type == 'custom')
+            & (Quiz.is_archived == False)
+        )
+        .options(selectinload(Quiz.questions))
+        .order_by(Quiz.created_at.desc())
+    )
+    quizzes = result.scalars().all()
+
+    return {
+        "quizzes": [
+            {
+                "id": quiz.id,
+                "title": quiz.title,
+                "total_questions": len(quiz.questions),
+                "created_at": quiz.created_at,
+            }
+            for quiz in quizzes
+        ]
     }
 
 

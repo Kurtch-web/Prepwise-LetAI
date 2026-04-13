@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import random
 import string
 from datetime import datetime, timezone
@@ -166,7 +167,8 @@ async def create_lobby(
     if not quiz:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
 
-    await _require_completed_quiz(db, current_user.id, payload.quiz_id)
+    if quiz.test_type != 'custom':
+        await _require_completed_quiz(db, current_user.id, payload.quiz_id)
 
     lobby: Optional[PvpLobby] = None
     last_error: Optional[Exception] = None
@@ -313,6 +315,11 @@ async def get_lobby_quiz(
 
     questions_sorted = sorted(list(quiz.questions or []), key=lambda q: q.order)
 
+    seed = int.from_bytes(hashlib.sha256(lobby.id.encode('utf-8')).digest()[:8], 'big', signed=False)
+    rng = random.Random(seed)
+    questions_ordered = list(questions_sorted)
+    rng.shuffle(questions_ordered)
+
     return LobbyQuizResponse(
         id=quiz.id,
         title=quiz.title,
@@ -323,9 +330,9 @@ async def get_lobby_quiz(
                 id=q.id,
                 question_text=q.question_text,
                 choices=q.choices,
-                order=q.order,
+                order=idx,
             )
-            for q in questions_sorted
+            for idx, q in enumerate(questions_ordered)
         ],
     )
 
@@ -345,7 +352,12 @@ async def join_lobby(
     if lobby.status != 'lobby':
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Lobby already started")
 
-    await _require_completed_quiz(db, current_user.id, lobby.quiz_id)
+    quiz = await db.scalar(select(Quiz).where(Quiz.id == lobby.quiz_id))
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
+
+    if quiz.test_type != 'custom':
+        await _require_completed_quiz(db, current_user.id, lobby.quiz_id)
 
     count = await db.scalar(select(func.count(PvpParticipant.id)).where(PvpParticipant.lobby_id == lobby.id))
     if count >= lobby.max_players:
@@ -410,10 +422,6 @@ async def leave_lobby(
     )
     if not participant:
         return {"message": "Not in lobby"}
-
-    # IMPORTANT: Preserve match history.
-    # If the participant already finished (or the lobby is completed), do not delete rows.
-    # Otherwise the progress tracker "PvP" history will show no matches.
     if lobby.status == 'completed' or participant.is_finished:
         return {"message": "Left lobby"}
 
