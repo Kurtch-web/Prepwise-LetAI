@@ -128,6 +128,12 @@ export interface QuizLeaderboardResponse {
   leaderboard: QuizLeaderboardEntry[];
 }
 
+export interface QuizRetakeResponse {
+  message: string;
+  cleared_sessions: number;
+  user_ids: number[];
+}
+
 const quizService = {
   async createQuiz(title: string, description: string | null, questions: Array<{
     question_text: string;
@@ -196,6 +202,13 @@ const quizService = {
   async getQuizLeaderboard(quizId: string): Promise<QuizLeaderboardResponse> {
     return request<QuizLeaderboardResponse>(`/api/quizzes/quiz/${quizId}/leaderboard`, {
       method: 'GET'
+    });
+  },
+
+  async allowRetake(quizId: string, userIds: number[]): Promise<QuizRetakeResponse> {
+    return request<QuizRetakeResponse>(`/api/quizzes/quiz/${quizId}/retake`, {
+      method: 'POST',
+      body: JSON.stringify({ user_ids: userIds })
     });
   },
 

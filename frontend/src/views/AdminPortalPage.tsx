@@ -285,6 +285,19 @@ export function AdminPortalPage() {
     }
   };
 
+  const refreshLeaderboard = async () => {
+    if (!selectedQuizForLeaderboard) return;
+    setLeaderboardLoading(true);
+    try {
+      const response = await quizService.getQuizLeaderboard(selectedQuizForLeaderboard.id);
+      setLeaderboard(((response as any).leaderboard) || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div className="grid max-w-[880px] gap-3">
@@ -1247,9 +1260,11 @@ export function AdminPortalPage() {
       <LeaderboardModal
         isOpen={leaderboardModalOpen}
         onClose={() => setLeaderboardModalOpen(false)}
+        quizId={selectedQuizForLeaderboard?.id}
         quizTitle={selectedQuizForLeaderboard?.title || 'Quiz'}
         leaderboard={leaderboard}
         loading={leaderboardLoading}
+        onRetakeComplete={refreshLeaderboard}
       />
 
       <AddQuestionFromBankModal

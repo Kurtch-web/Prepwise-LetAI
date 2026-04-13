@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select, func
+from pydantic import BaseModel
+from sqlalchemy import delete, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -15,6 +16,10 @@ from ..models import UserAccount, Quiz, QuizQuestion, QuizSession, QuizAnswer
 from ..schemas import QuestionSchema, QuizCreateSchema, QuizDetailSchema, QuizAnswerSubmitSchema, QuizSessionDetailSchema
 
 router = APIRouter(prefix="/api/quizzes", tags=["quizzes"])
+
+
+class QuizRetakeRequest(BaseModel):
+    user_ids: List[int]
 
 
 def generate_access_code(length: int = 8) -> str:
@@ -508,6 +513,44 @@ async def get_quiz_leaderboard(
         })
 
     return {"leaderboard": leaderboard}
+
+
+@router.post("/quiz/{quiz_id}/retake")
+async def allow_quiz_retake(
+    quiz_id: str,
+    payload: QuizRetakeRequest,
+    current_user: UserAccount = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    quiz = await db.scalar(select(Quiz).where(Quiz.id == quiz_id))
+    if not quiz:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Quiz not found")
+
+    if quiz.creator_id != current_user.id and current_user.role != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
+
+    user_ids = [uid for uid in payload.user_ids if isinstance(uid, int)]
+    if not user_ids:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No users selected")
+
+    sessions_result = await db.execute(
+        select(QuizSession.id)
+        .where((QuizSession.quiz_id == quiz_id) & (QuizSession.user_id.in_(user_ids)))
+    )
+    session_ids = sessions_result.scalars().all()
+
+    if not session_ids:
+        return {"message": "No attempts found", "cleared_sessions": 0, "user_ids": user_ids}
+
+    await db.execute(delete(QuizAnswer).where(QuizAnswer.session_id.in_(session_ids)))
+    await db.execute(delete(QuizSession).where(QuizSession.id.in_(session_ids)))
+    await db.commit()
+
+    return {
+        "message": "Retake enabled",
+        "cleared_sessions": len(session_ids),
+        "user_ids": user_ids,
+    }
 
 
 @router.get("/list-archived")

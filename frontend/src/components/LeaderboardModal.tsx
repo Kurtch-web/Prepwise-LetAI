@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
+import quizService from '../services/quizService';
 
 interface AnswerDetail {
   question_id: string;
@@ -11,7 +12,7 @@ interface AnswerDetail {
 }
 
 interface LeaderboardEntry {
-  user_id: string;
+  user_id: number;
   username: string;
   full_name?: string;
   score: number;
@@ -25,9 +26,11 @@ interface LeaderboardEntry {
 interface LeaderboardModalProps {
   isOpen: boolean;
   onClose: () => void;
+  quizId?: string;
   quizTitle?: string;
   leaderboard: LeaderboardEntry[];
   loading?: boolean;
+  onRetakeComplete?: () => void | Promise<void>;
 }
 
 function formatTimeElapsed(seconds?: number): string {
@@ -239,9 +242,11 @@ function UserAnswersModal({
 export function LeaderboardModal({
   isOpen,
   onClose,
+  quizId,
   quizTitle = 'Quiz',
   leaderboard,
-  loading = false
+  loading = false,
+  onRetakeComplete
 }: LeaderboardModalProps) {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
@@ -249,6 +254,10 @@ export function LeaderboardModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserAnswers, setSelectedUserAnswers] = useState<AnswerDetail[] | null>(null);
   const [selectedUserName, setSelectedUserName] = useState<string>('');
+  const [retakeSelection, setRetakeSelection] = useState<Set<number>>(new Set());
+  const [retakeLoading, setRetakeLoading] = useState(false);
+  const [retakeError, setRetakeError] = useState<string | null>(null);
+  const [retakeSuccess, setRetakeSuccess] = useState<string | null>(null);
 
   // Group leaderboard by category
   const categorizedLeaderboard = {
@@ -272,6 +281,62 @@ export function LeaderboardModal({
   const openUserAnswers = (entry: LeaderboardEntry) => {
     setSelectedUserName(entry.full_name || entry.username);
     setSelectedUserAnswers(entry.answers);
+  };
+
+  const toggleRetakeUser = (userId: number) => {
+    setRetakeSelection((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const selectAllNeedAttention = () => {
+    const ids = categorizedLeaderboard['Need Attention'].map((e) => e.user_id);
+    setRetakeSelection(new Set(ids));
+  };
+
+  const clearRetakeSelection = () => {
+    setRetakeSelection(new Set());
+  };
+
+  const handleRetake = async () => {
+    setRetakeError(null);
+    setRetakeSuccess(null);
+
+    if (selectedTab !== 'Need Attention') {
+      setSelectedTab('Need Attention');
+      setSearchQuery('');
+      return;
+    }
+
+    if (!quizId) {
+      setRetakeError('Missing quiz id');
+      return;
+    }
+
+    const userIds = Array.from(retakeSelection);
+    if (userIds.length === 0) {
+      setRetakeError('Select at least one user');
+      return;
+    }
+
+    if (!window.confirm('Allow selected users to retake this test? Their previous attempt will be cleared.')) {
+      return;
+    }
+
+    setRetakeLoading(true);
+    try {
+      await quizService.allowRetake(quizId, userIds);
+      setRetakeSelection(new Set());
+      setRetakeSuccess('Retake enabled');
+      await onRetakeComplete?.();
+    } catch (err) {
+      setRetakeError(err instanceof Error ? err.message : 'Failed to enable retake');
+    } finally {
+      setRetakeLoading(false);
+    }
   };
 
   const tabs: Array<'Best' | 'Fair' | 'Need Attention'> = ['Best', 'Fair', 'Need Attention'];
@@ -328,38 +393,57 @@ export function LeaderboardModal({
                 const isActive = selectedTab === tab;
 
                 return (
-                  <button
-                    key={tab}
-                    onClick={() => {
-                      setSelectedTab(tab);
-                      setSearchQuery('');
-                    }}
-                    className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap flex items-center gap-2 ${
-                      isActive
-                        ? `${colors.tabBg} ${colors.tabText} border-b-2 ${
-                            tab === 'Best'
-                              ? 'border-emerald-600 dark:border-emerald-400'
-                              : tab === 'Fair'
-                              ? 'border-amber-600 dark:border-amber-400'
-                              : 'border-red-600 dark:border-red-400'
-                          }`
-                        : isLightMode
-                        ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                    }`}
-                  >
-                    <span className="text-lg">{getCategoryIcon(tab)}</span>
-                    <span>{tab}</span>
-                    <span className={`text-xs font-bold ${
-                      isActive
-                        ? colors.tabText
-                        : isLightMode
-                        ? 'text-slate-500'
-                        : 'text-slate-400'
-                    }`}>
-                      ({count})
-                    </span>
-                  </button>
+                  <div key={tab} className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedTab(tab);
+                        setSearchQuery('');
+                        setRetakeError(null);
+                        setRetakeSuccess(null);
+                        if (tab !== 'Need Attention') setRetakeSelection(new Set());
+                      }}
+                      className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap flex items-center gap-2 ${
+                        isActive
+                          ? `${colors.tabBg} ${colors.tabText} border-b-2 ${
+                              tab === 'Best'
+                                ? 'border-emerald-600 dark:border-emerald-400'
+                                : tab === 'Fair'
+                                ? 'border-amber-600 dark:border-amber-400'
+                                : 'border-red-600 dark:border-red-400'
+                            }`
+                          : isLightMode
+                          ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-200'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                      }`}
+                    >
+                      <span className="text-lg">{getCategoryIcon(tab)}</span>
+                      <span>{tab}</span>
+                      <span className={`text-xs font-bold ${
+                        isActive
+                          ? colors.tabText
+                          : isLightMode
+                          ? 'text-slate-500'
+                          : 'text-slate-400'
+                      }`}>
+                        ({count})
+                      </span>
+                    </button>
+                    {tab === 'Need Attention' && (
+                      <button
+                        type="button"
+                        onClick={handleRetake}
+                        disabled={retakeLoading}
+                        className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap flex items-center gap-2 ${
+                          isLightMode
+                            ? 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-60'
+                            : 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-60'
+                        }`}
+                      >
+                        {retakeLoading ? '⏳' : '🔁'}
+                        Retake
+                      </button>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -382,6 +466,45 @@ export function LeaderboardModal({
 
           {/* Content */}
           <div className="p-6 flex-1 overflow-y-auto">
+            {selectedTab === 'Need Attention' && categorizedLeaderboard['Need Attention'].length > 0 && (
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+                    Select users who can retake
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={selectAllNeedAttention}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                        isLightMode
+                          ? 'bg-slate-200 text-slate-900 hover:bg-slate-300'
+                          : 'bg-slate-700 text-white hover:bg-slate-600'
+                      }`}
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearRetakeSelection}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                        isLightMode
+                          ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      }`}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                {retakeError && (
+                  <p className={`text-xs font-semibold ${isLightMode ? 'text-red-700' : 'text-red-300'}`}>{retakeError}</p>
+                )}
+                {retakeSuccess && (
+                  <p className={`text-xs font-semibold ${isLightMode ? 'text-emerald-700' : 'text-emerald-300'}`}>{retakeSuccess}</p>
+                )}
+              </div>
+            )}
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mr-4" />
@@ -412,6 +535,8 @@ export function LeaderboardModal({
               <div className="space-y-3">
                 {filteredEntries.map((entry, idx) => {
                   const colors = getCategoryColor(entry.performance_category, isLightMode);
+                  const isNeedAttentionTab = selectedTab === 'Need Attention';
+                  const isChecked = retakeSelection.has(entry.user_id);
                   
                   return (
                     <div
@@ -425,6 +550,18 @@ export function LeaderboardModal({
                       tabIndex={0}
                     >
                       <div className="flex items-center gap-4 flex-1 min-w-0">
+                        {isNeedAttentionTab && (
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleRetakeUser(entry.user_id)}
+                            onClick={(e) => e.stopPropagation()}
+                            className={`h-4 w-4 rounded border ${
+                              isLightMode ? 'border-slate-300' : 'border-slate-600'
+                            }`}
+                            aria-label={`Allow retake for ${entry.full_name || entry.username}`}
+                          />
+                        )}
                         <span className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${
                           entry.performance_category === 'Best'
                             ? 'bg-emerald-400 text-emerald-900'
