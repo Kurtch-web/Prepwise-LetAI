@@ -69,7 +69,13 @@ export function PvpPracticeTab({ availableSessions, isLightMode }: PvpPracticeTa
     setChatError(null);
     setChatInput('');
     try {
-      await pvpService.sendLobbyMessage(lobby.id, content);
+      const msg = await pvpService.sendLobbyMessage(lobby.id, content);
+      setChatMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        const next = [...prev, msg];
+        next.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        return next;
+      });
     } catch (err) {
       setChatError(err instanceof Error ? err.message : 'Failed to send message');
       setChatInput(content);

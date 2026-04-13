@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../providers/AuthProvider';
 import { useTheme } from '../providers/ThemeProvider';
 import { fetchAllQuizResults, QuizResult, fetchAnalytics, AnalyticsData, fetchQuizResultDetails } from '../services/progressService';
@@ -222,6 +223,8 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
   const [selectedQuiz, setSelectedQuiz] = useState<QuizResult | null>(null);
   const [quizDetailsModalOpen, setQuizDetailsModalOpen] = useState(false);
 
+  const modalRoot = typeof document !== 'undefined' ? document.body : null;
+
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
@@ -365,13 +368,13 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
       )}
 
       {/* Modal for displaying quizzes of selected test type */}
-      {modalOpen && selectedTestType && (
-        <div className="fixed inset-0 z-50 bg-black/50 p-4 overflow-y-auto">
-          <div className="mx-auto w-full max-w-2xl">
-            <div className={`rounded-2xl w-full max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col ${
+      {modalOpen && selectedTestType && modalRoot && createPortal(
+        <div className="fixed inset-0 z-[1000] bg-black/60 p-2 sm:p-4 overflow-y-auto">
+          <div className="mx-auto w-full max-w-5xl">
+            <div className={`rounded-2xl w-full h-[calc(100dvh-1rem)] sm:h-[calc(100vh-2rem)] overflow-hidden flex flex-col ${
               isLightMode ? 'bg-white' : 'bg-slate-800'
             }`}>
-            <div className={`shrink-0 border-b p-6 flex items-center justify-between ${
+            <div className={`shrink-0 border-b p-5 sm:p-6 flex items-center justify-between ${
               isLightMode
                 ? 'bg-white border-slate-200'
                 : 'bg-slate-800 border-slate-700'
@@ -394,7 +397,7 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-3">
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-3">
               {(groupedQuizzes[selectedTestType] || []).map((quiz) => (
                 <button
                   key={quiz.sessionId}
@@ -459,16 +462,16 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
           </div>
           </div>
         </div>
-      )}
+      , modalRoot)}
 
       {/* Quiz Details Modal */}
-      {quizDetailsModalOpen && selectedQuiz && (
-        <div className="fixed inset-0 z-[60] bg-black/50 p-4 overflow-y-auto">
-          <div className="mx-auto w-full max-w-3xl">
-            <div className={`rounded-2xl w-full max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col ${
+      {quizDetailsModalOpen && selectedQuiz && modalRoot && createPortal(
+        <div className="fixed inset-0 z-[1010] bg-black/60 p-2 sm:p-4 overflow-y-auto">
+          <div className="mx-auto w-full max-w-6xl">
+            <div className={`rounded-2xl w-full h-[calc(100dvh-1rem)] sm:h-[calc(100vh-2rem)] overflow-hidden flex flex-col ${
               isLightMode ? 'bg-white' : 'bg-slate-800'
             }`}>
-            <div className={`shrink-0 border-b p-6 flex items-center justify-between ${
+            <div className={`shrink-0 border-b p-5 sm:p-6 flex items-center justify-between ${
               isLightMode
                 ? 'bg-white border-slate-200'
                 : 'bg-slate-800 border-slate-700'
@@ -492,7 +495,7 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
               {/* Score Summary */}
               <div className={`rounded-lg p-6 ${
                 isLightMode
@@ -662,7 +665,7 @@ function ProgressTab({ isLightMode }: { isLightMode: boolean }) {
           </div>
           </div>
         </div>
-      )}
+      , modalRoot)}
     </div>
   );
 }
