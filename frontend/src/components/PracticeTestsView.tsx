@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { fetchPracticeTestSessions, PracticeTestSession, QuizResult } from '../services/progressService';
+import { PvpPracticeTab } from './PvpPracticeTab';
 
 interface PracticeTestsViewProps {
   onSelectQuiz?: (quizId: string, quizTitle: string, testType: string, quizResult?: QuizResult, selectedTime?: number) => void;
@@ -25,7 +26,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
   const [loading, setLoading] = useState(true);
   const [selectedTestType, setSelectedTestType] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'test-taken' | 'materials'>('test-taken');
+  const [activeTab, setActiveTab] = useState<'test-taken' | 'materials' | 'pvp'>('test-taken');
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showSolution, setShowSolution] = useState<Record<string, boolean>>({});
   const [aiAnalysis, setAiAnalysis] = useState<Record<string, string | null>>({});
@@ -421,6 +422,7 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
 
   const testTypeOrder = ['diagnostic-test', 'drills', 'short-quiz', 'preboard', 'practice-quiz'];
   const sortedTestTypes = testTypeOrder.filter(type => groupedByTestType[type]);
+  const availableSessions = Object.values(sessions);
 
   if (loading) {
     return (
@@ -556,6 +558,20 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
           }`}
         >
           Tests Taken
+        </button>
+        <button
+          onClick={() => setActiveTab('pvp')}
+          className={`px-4 sm:px-6 py-3 font-semibold text-sm sm:text-lg transition-all whitespace-nowrap ${
+            activeTab === 'pvp'
+              ? isLightMode
+                ? 'text-purple-600 border-b-2 border-purple-600'
+                : 'text-purple-400 border-b-2 border-purple-400'
+              : isLightMode
+              ? 'text-slate-600 hover:text-slate-900'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          PvP
         </button>
         <button
           onClick={() => setActiveTab('materials')}
@@ -793,6 +809,10 @@ export function PracticeTestsView({ onSelectQuiz, onBack }: PracticeTestsViewPro
             </div>
           )}
         </>
+      )}
+
+      {activeTab === 'pvp' && (
+        <PvpPracticeTab availableSessions={availableSessions} isLightMode={isLightMode} />
       )}
 
       {/* Materials Tab Content */}

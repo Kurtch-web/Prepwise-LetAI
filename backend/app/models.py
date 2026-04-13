@@ -232,6 +232,50 @@ class QuizAnswer(Base):
     question: Mapped['QuizQuestion'] = relationship('QuizQuestion', back_populates='answers')
 
 
+class PvpLobby(Base):
+    __tablename__ = 'pvp_lobbies'
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    code: Mapped[str] = mapped_column(String(8), unique=True, index=True)
+    host_user_id: Mapped[int] = mapped_column(ForeignKey('user_accounts.id', ondelete='CASCADE'), index=True)
+    quiz_id: Mapped[str] = mapped_column(ForeignKey('quizzes.id', ondelete='CASCADE'), index=True)
+    status: Mapped[str] = mapped_column(String(16), default='lobby', index=True)
+    max_players: Mapped[int] = mapped_column(Integer, default=4)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    host: Mapped[UserAccount] = relationship('UserAccount')
+    quiz: Mapped['Quiz'] = relationship('Quiz')
+    participants: Mapped[List['PvpParticipant']] = relationship(
+        'PvpParticipant',
+        back_populates='lobby',
+        cascade='all, delete-orphan',
+    )
+
+
+class PvpParticipant(Base):
+    __tablename__ = 'pvp_participants'
+    __table_args__ = (UniqueConstraint('lobby_id', 'user_id', name='uq_pvp_participant_lobby_user'),)
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    lobby_id: Mapped[str] = mapped_column(ForeignKey('pvp_lobbies.id', ondelete='CASCADE'), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user_accounts.id', ondelete='CASCADE'), index=True)
+    username: Mapped[str] = mapped_column(String(64))
+    full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    joined_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
+    current_question_index: Mapped[int] = mapped_column(Integer, default=0)
+    is_finished: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    correct_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    total_questions: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), index=True)
+
+    lobby: Mapped['PvpLobby'] = relationship('PvpLobby', back_populates='participants')
+    user: Mapped[UserAccount] = relationship('UserAccount')
+
+
 class Question(Base):
     __tablename__ = 'questions'
 
