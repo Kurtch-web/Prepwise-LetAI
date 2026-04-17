@@ -44,6 +44,9 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const cardShellClasses = isLightMode ? lightCardShell : darkCardShell;
   const accentButtonClasses = isLightMode ? lightAccentButton : darkAccentButton;
 
+  const me = authService.getUser();
+  const myUserId = me?.id;
+
   const [selectedQuizType, setSelectedQuizType] = useState<string | null>(null);
   const [quizzes, setQuizzes] = useState<PracticeQuiz[]>([]);
   const [allSessions, setAllSessions] = useState<Record<string, PracticeTestSession>>({});
@@ -54,6 +57,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [pendingQuiz, setPendingQuiz] = useState<PracticeQuiz | null>(null);
   const [timerSecondsPerCard, setTimerSecondsPerCard] = useState(5);
+  const [confidenceByQuestionId, setConfidenceByQuestionId] = useState<Record<string, number>>({});
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -82,6 +86,48 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
 
     loadSessions();
   }, []);
+
+  useEffect(() => {
+    const key = myUserId != null ? `flashcard_confidence_v1_${myUserId}` : null;
+    if (!key) return;
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Record<string, number>;
+      if (parsed && typeof parsed === 'object') {
+        setConfidenceByQuestionId(parsed);
+      }
+    } catch {
+      return;
+    }
+  }, [myUserId]);
+
+  const saveConfidence = (questionId: string, value: number) => {
+    setConfidenceByQuestionId(prev => {
+      const next = { ...prev, [questionId]: value };
+      const key = myUserId != null ? `flashcard_confidence_v1_${myUserId}` : null;
+      if (key) {
+        try {
+          window.localStorage.setItem(key, JSON.stringify(next));
+        } catch {
+          return next;
+        }
+      }
+      return next;
+    });
+  };
+
+  const clearConfidence = () => {
+    setConfidenceByQuestionId({});
+    const key = myUserId != null ? `flashcard_confidence_v1_${myUserId}` : null;
+    if (key) {
+      try {
+        window.localStorage.removeItem(key);
+      } catch {
+        return;
+      }
+    }
+  };
 
   // Auto-flip timer for flashcards
   useEffect(() => {
@@ -194,6 +240,21 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
         order: idx + 1,
         correct_answer: q.correct_answer
       }));
+
+      const priority = (qid: string) => {
+        const v = confidenceByQuestionId[qid];
+        if (v === 1) return 0;
+        if (v == null || v === 0) return 1;
+        if (v === 2) return 2;
+        return 3;
+      };
+
+      formattedQuestions.sort((a, b) => {
+        const pa = priority(a.id);
+        const pb = priority(b.id);
+        if (pa !== pb) return pa - pb;
+        return (a.order ?? 0) - (b.order ?? 0);
+      });
 
       console.log('[FlashcardsTab] Formatted questions:', formattedQuestions);
       console.log('[FlashcardsTab] Questions length:', formattedQuestions.length);
@@ -665,18 +726,32 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                   {selectedQuizType ? quizTypeInfo[selectedQuizType]?.label : 'Practice Quiz'}
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  setShowFlashcardModal(false);
-                  setSelectedQuiz(null);
-                  setQuizQuestions([]);
-                  setCurrentQuestionIndex(0);
-                  setIsFlipped(false);
-                }}
-                className={`text-2xl flex-shrink-0 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => {
+                    clearConfidence();
+                  }}
+                  className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                    isLightMode
+                      ? 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+                  }`}
+                >
+                  Reset Ratings
+                </button>
+                <button
+                  onClick={() => {
+                    setShowFlashcardModal(false);
+                    setSelectedQuiz(null);
+                    setQuizQuestions([]);
+                    setCurrentQuestionIndex(0);
+                    setIsFlipped(false);
+                  }}
+                  className={`text-2xl flex-shrink-0 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Progress Bar */}
@@ -771,6 +846,51 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                         <span className="text-6xl font-bold text-emerald-400">{quizQuestions[currentQuestionIndex].correct_answer}</span>
                       </div>
                       <p className="text-xs text-white/50 mt-6">Click to see question</p>
+
+                      <div className="mt-6">
+                        <p className="text-xs font-semibold text-white/70 mb-2">Confidence</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              saveConfidence(quizQuestions[currentQuestionIndex].id, 1);
+                            }}
+                            className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                              confidenceByQuestionId[quizQuestions[currentQuestionIndex].id] === 1
+                                ? 'border-red-400/60 bg-red-500/20 text-red-200'
+                                : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+                            }`}
+                          >
+                            Not confident
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              saveConfidence(quizQuestions[currentQuestionIndex].id, 2);
+                            }}
+                            className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                              confidenceByQuestionId[quizQuestions[currentQuestionIndex].id] === 2
+                                ? 'border-yellow-400/60 bg-yellow-500/20 text-yellow-200'
+                                : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+                            }`}
+                          >
+                            Somewhat
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              saveConfidence(quizQuestions[currentQuestionIndex].id, 3);
+                            }}
+                            className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                              confidenceByQuestionId[quizQuestions[currentQuestionIndex].id] === 3
+                                ? 'border-emerald-400/60 bg-emerald-500/20 text-emerald-200'
+                                : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+                            }`}
+                          >
+                            Very confident
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -803,6 +923,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 onClick={() => {
                   setIsFlipped(false);
                   setCurrentQuestionIndex(0);
+                  clearConfidence();
                 }}
                 className={`flex-1 ${accentButtonClasses}`}
               >
@@ -821,6 +942,10 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 Next
               </button>
             </div>
+
+            <p className={`text-xs font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+              Restarting flashcard resets your ratings
+            </p>
 
             {/* AI Explanation Modal */}
             {showAiModal && (
