@@ -4,7 +4,7 @@ from typing import List, Optional
 from uuid import uuid4
 import os
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -459,8 +459,11 @@ async def get_video(video_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get('/{video_id}/stream')
-async def stream_video(video_id: str, db: AsyncSession = Depends(get_db)):
-    """Stream a video from R2 through the backend (bypasses CORS issues)."""
+async def stream_video(video_id: str, request: Request, db: AsyncSession = Depends(get_db)):
+    """Stream a video from storage through the backend (bypasses CORS issues).
+
+    Supports HTTP Range requests so the browser can seek using the native video slider.
+    """
     import asyncio
     import aiohttp
 
@@ -475,12 +478,18 @@ async def stream_video(video_id: str, db: AsyncSession = Depends(get_db)):
 
     file_url = video.file_url
 
+    range_header = request.headers.get('range')
+
     async def iterate_file():
-        """Stream file from R2 in chunks."""
+        """Stream file from storage in chunks."""
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get(file_url) as resp:
-                    if resp.status != 200:
+                upstream_headers = {}
+                if range_header:
+                    upstream_headers['Range'] = range_header
+
+                async with session.get(file_url, headers=upstream_headers) as resp:
+                    if resp.status not in (200, 206):
                         raise HTTPException(status_code=resp.status, detail='Failed to fetch video from storage')
 
                     # Stream in 1MB chunks
@@ -489,13 +498,33 @@ async def stream_video(video_id: str, db: AsyncSession = Depends(get_db)):
         except Exception as e:
             raise HTTPException(status_code=500, detail=f'Error streaming video: {str(e)}')
 
+    response_headers = {
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'public, max-age=3600',
+    }
+
+    # If the client requested a byte range, propagate relevant headers so the browser can seek.
+    if range_header:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(file_url, headers={'Range': range_header}) as head_resp:
+                # Some storage providers return 206 with Content-Range/Content-Length.
+                # We forward what we can to support HTML5 seeking.
+                content_range = head_resp.headers.get('Content-Range')
+                content_length = head_resp.headers.get('Content-Length')
+                if content_range:
+                    response_headers['Content-Range'] = content_range
+                if content_length:
+                    response_headers['Content-Length'] = content_length
+
+        status_code = status.HTTP_206_PARTIAL_CONTENT
+    else:
+        status_code = status.HTTP_200_OK
+
     return StreamingResponse(
         iterate_file(),
         media_type='video/mp4',
-        headers={
-            'Accept-Ranges': 'bytes',
-            'Cache-Control': 'public, max-age=3600',
-        }
+        headers=response_headers,
+        status_code=status_code,
     )
 
 
