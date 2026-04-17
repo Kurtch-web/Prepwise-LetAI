@@ -302,89 +302,164 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   // Show quiz list
   if (selectedQuizType && !selectedQuiz) {
     return (
-      <section className={`${cardShellClasses} space-y-4 sm:space-y-6 mx-4 sm:mx-0`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-              {quizTypeInfo[selectedQuizType]?.emoji} {quizTypeInfo[selectedQuizType]?.label}
-            </h3>
-            <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-              Select a practice quiz to study
-            </p>
+      <>
+        <section className={`${cardShellClasses} space-y-4 sm:space-y-6 mx-4 sm:mx-0`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                {quizTypeInfo[selectedQuizType]?.emoji} {quizTypeInfo[selectedQuizType]?.label}
+              </h3>
+              <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                Select a practice quiz to study
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedQuizType(null);
+              }}
+              className={`${accentButtonClasses} text-xs`}
+            >
+              ← Change Type
+            </button>
           </div>
-          <button
-            onClick={() => {
-              setSelectedQuizType(null);
-            }}
-            className={`${accentButtonClasses} text-xs`}
-          >
-            ← Change Type
-          </button>
-        </div>
 
-        {error && (
-          <div className={`rounded-2xl border px-4 py-3 text-sm ${
-            isLightMode
-              ? 'border-red-300 bg-red-50 text-red-700'
-              : 'border-red-500/30 bg-red-900/20 text-red-300'
-          }`}>
-            ❌ {error}
-          </div>
-        )}
+          {error && (
+            <div className={`rounded-2xl border px-4 py-3 text-sm ${
+              isLightMode
+                ? 'border-red-300 bg-red-50 text-red-700'
+                : 'border-red-500/30 bg-red-900/20 text-red-300'
+            }`}>
+              ❌ {error}
+            </div>
+          )}
 
-        {loading ? (
-          <div className={`text-center py-8 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-            <p>Loading quizzes...</p>
-          </div>
-        ) : quizzes.length === 0 ? (
-          <div className={`rounded-2xl border border-dashed p-8 text-center ${
-            isLightMode
-              ? 'border-slate-300 bg-slate-50'
-              : 'border-white/20 bg-white/5'
-          }`}>
-            <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-              No practice quizzes available in this category.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-3">
-            {quizzes.map(quiz => (
-              <button
-                key={quiz.id}
-                onClick={() => handleSelectQuiz(quiz)}
-                className={`rounded-2xl border p-4 sm:p-5 transition cursor-pointer text-left ${
-                  isLightMode
-                    ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
-                    : 'border-emerald-500/20 bg-emerald-900/10 hover:bg-emerald-900/20'
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h4 className={`font-semibold truncate ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                      {quiz.title}
-                    </h4>
-                    {quiz.description && (
-                      <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
-                        {quiz.description}
-                      </p>
-                    )}
-                    <p className={`text-xs mt-1 ${isLightMode ? 'text-slate-500' : 'text-white/50'}`}>
-                      ❓ {quiz.total_questions} questions
-                    </p>
-                  </div>
-                  <div className={`text-sm font-semibold px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${
+          {loading ? (
+            <div className={`text-center py-8 ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+              <p>Loading quizzes...</p>
+            </div>
+          ) : quizzes.length === 0 ? (
+            <div className={`rounded-2xl border border-dashed p-8 text-center ${
+              isLightMode
+                ? 'border-slate-300 bg-slate-50'
+                : 'border-white/20 bg-white/5'
+            }`}>
+              <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
+                No practice quizzes available in this category.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {quizzes.map(quiz => (
+                <button
+                  key={quiz.id}
+                  onClick={() => handleSelectQuiz(quiz)}
+                  className={`rounded-2xl border p-4 sm:p-5 transition cursor-pointer text-left ${
                     isLightMode
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-emerald-600/40 text-emerald-300'
-                  }`}>
-                    Study
+                      ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100'
+                      : 'border-emerald-500/20 bg-emerald-900/10 hover:bg-emerald-900/20'
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`font-semibold truncate ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                        {quiz.title}
+                      </h4>
+                      {quiz.description && (
+                        <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
+                          {quiz.description}
+                        </p>
+                      )}
+                      <p className={`text-xs mt-1 ${isLightMode ? 'text-slate-500' : 'text-white/50'}`}>
+                        ❓ {quiz.total_questions} questions
+                      </p>
+                    </div>
+                    <div className={`text-sm font-semibold px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${
+                      isLightMode
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-emerald-600/40 text-emerald-300'
+                    }`}>
+                      Study
+                    </div>
                   </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {showDifficultyModal && pendingQuiz && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <section className={`${cardShellClasses} space-y-4 sm:space-y-6 w-full max-w-lg`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
+                    Choose Difficulty
+                  </h3>
+                  <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
+                    Short Quiz • {pendingQuiz.title}
+                  </p>
                 </div>
-              </button>
-            ))}
+                <button
+                  onClick={() => {
+                    setShowDifficultyModal(false);
+                    setPendingQuiz(null);
+                  }}
+                  className={`text-2xl flex-shrink-0 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  onClick={async () => {
+                    setTimerSecondsPerCard(60);
+                    setTimerCount(60);
+                    setShowDifficultyModal(false);
+                    const quiz = pendingQuiz;
+                    setPendingQuiz(null);
+                    await loadQuizForFlashcards(quiz);
+                  }}
+                  className="w-full rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-4 text-center hover:bg-emerald-500/20 transition"
+                >
+                  <div className="text-lg font-semibold text-emerald-300">Easy</div>
+                  <div className="text-xs text-white/60 mt-1">60s per card</div>
+                </button>
+
+                <button
+                  onClick={async () => {
+                    setTimerSecondsPerCard(30);
+                    setTimerCount(30);
+                    setShowDifficultyModal(false);
+                    const quiz = pendingQuiz;
+                    setPendingQuiz(null);
+                    await loadQuizForFlashcards(quiz);
+                  }}
+                  className="w-full rounded-2xl border border-yellow-400/30 bg-yellow-500/10 px-4 py-4 text-center hover:bg-yellow-500/20 transition"
+                >
+                  <div className="text-lg font-semibold text-yellow-300">Medium</div>
+                  <div className="text-xs text-white/60 mt-1">30s per card</div>
+                </button>
+
+                <button
+                  onClick={async () => {
+                    setTimerSecondsPerCard(10);
+                    setTimerCount(10);
+                    setShowDifficultyModal(false);
+                    const quiz = pendingQuiz;
+                    setPendingQuiz(null);
+                    await loadQuizForFlashcards(quiz);
+                  }}
+                  className="w-full rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-4 text-center hover:bg-red-500/20 transition"
+                >
+                  <div className="text-lg font-semibold text-red-300">Hard</div>
+                  <div className="text-xs text-white/60 mt-1">10s per card</div>
+                </button>
+              </div>
+            </section>
           </div>
         )}
-      </section>
+      </>
     );
   }
 
