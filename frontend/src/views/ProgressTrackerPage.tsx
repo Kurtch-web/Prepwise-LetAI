@@ -790,19 +790,6 @@ function AnalyticsTab({ isLightMode }: { isLightMode: boolean }) {
                   <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                     {video.videoTitle}
                   </p>
-                  <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                    {video.category}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                    {Math.floor(video.watchedSeconds / 60)}m
-                  </p>
-                  {video.isCompleted && (
-                    <p className={`text-xs ${isLightMode ? 'text-green-600' : 'text-green-400'}`}>
-                      ✓ Completed
-                    </p>
-                  )}
                 </div>
               </div>
             ))}
