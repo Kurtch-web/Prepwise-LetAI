@@ -37,7 +37,6 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizAborted, setQuizAborted] = useState(false);
   const [quizStarted, setQuizStarted] = useState(false);
-  const [easyModeTime, setEasyModeTime] = useState(30);
   const [selectedTimerPerQuestion, setSelectedTimerPerQuestion] = useState(10);
   const [quizDifficulty, setQuizDifficulty] = useState<QuizDifficulty | null>(null);
   const [connectionLost, setConnectionLost] = useState(false);
@@ -379,7 +378,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
     setQuizFinished(true);
   };
 
-  const startQuizWithDifficulty = (difficulty: QuizDifficulty, customTime?: number) => {
+  const startQuizWithDifficulty = (difficulty: QuizDifficulty) => {
     const questionsToShuffle = flashcard?.parsedData?.questions || [];
     const shuffled: Question[] = shuffleArray(questionsToShuffle as Question[]);
     setShuffledQuestions(shuffled);
@@ -389,9 +388,9 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
     if (difficulty === 'hard') {
       timePerQuestion = 10;
     } else if (difficulty === 'medium') {
-      timePerQuestion = 20;
-    } else if (difficulty === 'easy' && customTime && customTime >= 30) {
-      timePerQuestion = customTime;
+      timePerQuestion = 30;
+    } else if (difficulty === 'easy') {
+      timePerQuestion = 60;
     } else if (difficulty === 'practice') {
       timePerQuestion = 0;
     }
@@ -617,7 +616,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
             setQuizStarted(false);
             setQuizFinished(false);
             setQuizAborted(false);
-            setEasyModeTime(30);
+            setQuizTimer(selectedTimerPerQuestion);
             setShuffledQuestions([]);
             setQuizDifficulty(null);
           }}
@@ -902,7 +901,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
                 <div className="text-4xl">⚡</div>
                 <div>
                   <h4 className="text-lg font-semibold text-yellow-300">Medium</h4>
-                  <p className="text-xs text-white/60 mt-1">20 seconds per question</p>
+                  <p className="text-xs text-white/60 mt-1">30 seconds per question</p>
                   <p className="text-xs text-yellow-300/60 mt-2">No AI assistance</p>
                 </div>
                 <div className="text-sm font-semibold text-white group-hover:text-yellow-300 transition">
@@ -911,29 +910,17 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
               </button>
 
               <button
-                onClick={() => startQuizWithDifficulty('easy', easyModeTime)}
+                onClick={() => startQuizWithDifficulty('easy')}
                 className="group rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-6 hover:bg-emerald-500/20 transition space-y-4 text-center"
               >
                 <div className="text-4xl">🌿</div>
                 <div>
                   <h4 className="text-lg font-semibold text-emerald-300">Easy</h4>
-                  <p className="text-xs text-white/60 mt-1">Custom time per question</p>
+                  <p className="text-xs text-white/60 mt-1">60 seconds per question</p>
                   <p className="text-xs text-emerald-300/60 mt-2">No AI assistance</p>
                 </div>
-                <div className="space-y-2 mt-2">
-                  <div className="flex items-center gap-2 justify-center">
-                    <input
-                      type="number"
-                      min="30"
-                      value={easyModeTime}
-                      onChange={e => setEasyModeTime(Math.max(30, parseInt(e.target.value) || 30))}
-                      className="w-16 rounded-lg border border-white/20 bg-white/5 px-2 py-1 text-center text-sm font-semibold text-white"
-                    />
-                    <span className="text-xs text-white/60">seconds</span>
-                  </div>
-                  <div className="text-sm font-semibold text-white group-hover:text-emerald-300 transition">
-                    Start Quiz
-                  </div>
+                <div className="text-sm font-semibold text-white group-hover:text-emerald-300 transition">
+                  Start Quiz
                 </div>
               </button>
 
