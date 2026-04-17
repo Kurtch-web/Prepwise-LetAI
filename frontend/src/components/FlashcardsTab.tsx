@@ -51,6 +51,9 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedQuiz, setSelectedQuiz] = useState<PracticeQuiz | null>(null);
   const [showFlashcardModal, setShowFlashcardModal] = useState(false);
+  const [showDifficultyModal, setShowDifficultyModal] = useState(false);
+  const [pendingQuiz, setPendingQuiz] = useState<PracticeQuiz | null>(null);
+  const [timerSecondsPerCard, setTimerSecondsPerCard] = useState(5);
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -92,17 +95,17 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
     } else if (timerCount === 0) {
       // Auto-flip when timer reaches 0
       setIsFlipped(true);
-      setTimerCount(5); // Reset timer
+      setTimerCount(timerSecondsPerCard);
     }
-  }, [timerCount, selectedQuiz, quizQuestions.length, isFlipped, isTimerPaused]);
+  }, [timerCount, selectedQuiz, quizQuestions.length, isFlipped, isTimerPaused, timerSecondsPerCard]);
 
   // Reset timer when moving to next question
   useEffect(() => {
     if (selectedQuiz && quizQuestions.length > 0) {
-      setTimerCount(5);
+      setTimerCount(timerSecondsPerCard);
       setIsFlipped(false);
     }
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, selectedQuiz, quizQuestions.length, timerSecondsPerCard]);
 
   const quizTypeInfo: Record<string, { emoji: string; label: string }> = {
     'diagnostic-test': { emoji: '🔍', label: 'Diagnostic Test' },
@@ -131,7 +134,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
     setQuizzes(transformedQuizzes);
   };
 
-  const handleSelectQuiz = async (quiz: PracticeQuiz) => {
+  const loadQuizForFlashcards = async (quiz: PracticeQuiz) => {
     setSelectedQuiz(quiz);
     setLoading(true);
     setError(null);
@@ -202,6 +205,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
       setQuizQuestions(formattedQuestions);
       setCurrentQuestionIndex(0);
       setIsFlipped(false);
+      setTimerCount(timerSecondsPerCard);
       setShowFlashcardModal(true);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to load quiz';
@@ -211,6 +215,16 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectQuiz = async (quiz: PracticeQuiz) => {
+    if (selectedQuizType === 'short-quiz') {
+      setPendingQuiz(quiz);
+      setShowDifficultyModal(true);
+      return;
+    }
+
+    await loadQuizForFlashcards(quiz);
   };
 
   const playFlipSound = () => {
@@ -797,6 +811,79 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 </section>
               </div>
             )}
+          </section>
+        </div>
+      )}
+
+      {showDifficultyModal && pendingQuiz && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <section className={`${cardShellClasses} space-y-4 sm:space-y-6 w-full max-w-lg`}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
+                  Choose Difficulty
+                </h3>
+                <p className={`text-xs sm:text-sm ${isLightMode ? 'text-slate-600' : 'text-white/60'} truncate`}>
+                  Short Quiz • {pendingQuiz.title}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDifficultyModal(false);
+                  setPendingQuiz(null);
+                }}
+                className={`text-2xl flex-shrink-0 ${isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-white/60 hover:text-white'}`}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button
+                onClick={async () => {
+                  setTimerSecondsPerCard(60);
+                  setTimerCount(60);
+                  setShowDifficultyModal(false);
+                  const quiz = pendingQuiz;
+                  setPendingQuiz(null);
+                  await loadQuizForFlashcards(quiz);
+                }}
+                className="w-full rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-4 text-center hover:bg-emerald-500/20 transition"
+              >
+                <div className="text-lg font-semibold text-emerald-300">Easy</div>
+                <div className="text-xs text-white/60 mt-1">60s per card</div>
+              </button>
+
+              <button
+                onClick={async () => {
+                  setTimerSecondsPerCard(30);
+                  setTimerCount(30);
+                  setShowDifficultyModal(false);
+                  const quiz = pendingQuiz;
+                  setPendingQuiz(null);
+                  await loadQuizForFlashcards(quiz);
+                }}
+                className="w-full rounded-2xl border border-yellow-400/30 bg-yellow-500/10 px-4 py-4 text-center hover:bg-yellow-500/20 transition"
+              >
+                <div className="text-lg font-semibold text-yellow-300">Medium</div>
+                <div className="text-xs text-white/60 mt-1">30s per card</div>
+              </button>
+
+              <button
+                onClick={async () => {
+                  setTimerSecondsPerCard(10);
+                  setTimerCount(10);
+                  setShowDifficultyModal(false);
+                  const quiz = pendingQuiz;
+                  setPendingQuiz(null);
+                  await loadQuizForFlashcards(quiz);
+                }}
+                className="w-full rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-4 text-center hover:bg-red-500/20 transition"
+              >
+                <div className="text-lg font-semibold text-red-300">Hard</div>
+                <div className="text-xs text-white/60 mt-1">10s per card</div>
+              </button>
+            </div>
           </section>
         </div>
       )}

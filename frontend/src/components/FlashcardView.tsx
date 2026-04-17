@@ -872,7 +872,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
           </div>
         ) : studyMode === 'quiz' && !quizStarted ? (
           // Timer Selection Screen
-          <div className="space-y-6 sm:space-y-8 flex flex-col items-center justify-start py-8 overflow-y-auto">
+          <div className="space-y-5 sm:space-y-8 flex flex-col items-center justify-start py-6 sm:py-8 overflow-y-auto">
             <div className="text-center space-y-2 w-full">
               <h3 className="text-2xl sm:text-3xl font-semibold text-white">Choose Your Mode</h3>
               <p className="text-sm text-white/60">Select a difficulty level or practice mode</p>
@@ -881,7 +881,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl">
               <button
                 onClick={() => startQuizWithDifficulty('hard')}
-                className="group rounded-2xl border border-red-400/30 bg-red-500/10 p-6 hover:bg-red-500/20 transition space-y-4 text-center"
+                className="group w-full rounded-2xl border border-red-400/30 bg-red-500/10 p-4 sm:p-6 hover:bg-red-500/20 transition space-y-4 text-center"
               >
                 <div className="text-4xl">🔥</div>
                 <div>
@@ -896,7 +896,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
 
               <button
                 onClick={() => startQuizWithDifficulty('medium')}
-                className="group rounded-2xl border border-yellow-400/30 bg-yellow-500/10 p-6 hover:bg-yellow-500/20 transition space-y-4 text-center"
+                className="group w-full rounded-2xl border border-yellow-400/30 bg-yellow-500/10 p-4 sm:p-6 hover:bg-yellow-500/20 transition space-y-4 text-center"
               >
                 <div className="text-4xl">⚡</div>
                 <div>
@@ -911,7 +911,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
 
               <button
                 onClick={() => startQuizWithDifficulty('easy')}
-                className="group rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-6 hover:bg-emerald-500/20 transition space-y-4 text-center"
+                className="group w-full rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 sm:p-6 hover:bg-emerald-500/20 transition space-y-4 text-center"
               >
                 <div className="text-4xl">🌿</div>
                 <div>
@@ -926,7 +926,7 @@ export function FlashcardView({ flashcardId, onBack }: FlashcardViewProps) {
 
               <button
                 onClick={() => startQuizWithDifficulty('practice')}
-                className="group rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-6 hover:bg-emerald-500/20 transition space-y-4 text-center"
+                className="group w-full rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 sm:p-6 hover:bg-emerald-500/20 transition space-y-4 text-center"
               >
                 <div className="text-4xl">📚</div>
                 <div>
