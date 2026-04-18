@@ -480,6 +480,31 @@ async def stream_video(video_id: str, request: Request, db: AsyncSession = Depen
 
     range_header = request.headers.get('range')
 
+    # Pre-fetch upstream status/headers so we can return the correct status code.
+    upstream_status: int = status.HTTP_200_OK
+    upstream_content_range: Optional[str] = None
+    upstream_content_length: Optional[str] = None
+    upstream_content_type: Optional[str] = None
+
+    if range_header:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    file_url,
+                    headers={
+                        'Range': range_header,
+                        # Avoid gzip/br compression so byte offsets match.
+                        'Accept-Encoding': 'identity',
+                    },
+                ) as resp:
+                    upstream_status = resp.status
+                    upstream_content_range = resp.headers.get('Content-Range')
+                    upstream_content_length = resp.headers.get('Content-Length')
+                    upstream_content_type = resp.headers.get('Content-Type')
+        except Exception:
+            # If the metadata fetch fails, fall back to a normal 200 stream.
+            range_header = None
+
     async def iterate_file():
         """Stream file from storage in chunks."""
         try:
@@ -487,6 +512,7 @@ async def stream_video(video_id: str, request: Request, db: AsyncSession = Depen
                 upstream_headers = {}
                 if range_header:
                     upstream_headers['Range'] = range_header
+                    upstream_headers['Accept-Encoding'] = 'identity'
 
                 async with session.get(file_url, headers=upstream_headers) as resp:
                     if resp.status not in (200, 206):
@@ -503,20 +529,15 @@ async def stream_video(video_id: str, request: Request, db: AsyncSession = Depen
         'Cache-Control': 'public, max-age=3600',
     }
 
-    # If the client requested a byte range, propagate relevant headers so the browser can seek.
     if range_header:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(file_url, headers={'Range': range_header}) as head_resp:
-                # Some storage providers return 206 with Content-Range/Content-Length.
-                # We forward what we can to support HTML5 seeking.
-                content_range = head_resp.headers.get('Content-Range')
-                content_length = head_resp.headers.get('Content-Length')
-                if content_range:
-                    response_headers['Content-Range'] = content_range
-                if content_length:
-                    response_headers['Content-Length'] = content_length
-
-        status_code = status.HTTP_206_PARTIAL_CONTENT
+        # Forward range metadata if upstream supports it.
+        if upstream_content_range:
+            response_headers['Content-Range'] = upstream_content_range
+        if upstream_content_length:
+            response_headers['Content-Length'] = upstream_content_length
+        if upstream_content_type:
+            response_headers['Content-Type'] = upstream_content_type
+        status_code = upstream_status
     else:
         status_code = status.HTTP_200_OK
 

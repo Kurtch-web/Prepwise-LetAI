@@ -28,6 +28,8 @@ export function QuestionsBank() {
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
 
+  const PDF_EXTRACTOR_API = 'https://cheiken021-pdfextactor.hf.space/extract';
+
   const [view, setView] = useState<'list' | 'upload-pdf' | 'review-detected' | 'create-manual'>('list');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
@@ -126,35 +128,69 @@ export function QuestionsBank() {
       // Create form data with PDF file
       const formData = new FormData();
       formData.append('file', pdfFile);
-      formData.append('category', pdfCategory);
 
-      // Get auth token
-      const token = localStorage.getItem('auth_token');
-
-      // Call MCQ detection endpoint
-      const response = await fetch(`${API_BASE}/api/questions/detect-from-pdf`, {
+      const response = await fetch(PDF_EXTRACTOR_API, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData,
-        credentials: 'include'
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Failed to detect MCQs from PDF');
+        const message = (errorData as { error?: string; detail?: string }).error ??
+          (errorData as { detail?: string }).detail ??
+          'Failed to extract questions from PDF';
+        throw new Error(message);
       }
 
-      const data: { mcqs?: DetectedMCQ[]; warnings?: string[] } = await response.json();
+      const data = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+        total_questions?: number;
+        questions?: Array<{
+          original_number?: number;
+          question_text?: string;
+          choices?: Array<{ letter?: string; text?: string }>;
+          answer?: string | null;
+        }>;
+      };
 
-      if (data.mcqs && data.mcqs.length > 0) {
-        // Show detected MCQs for review
-        setDetectedMCQs(data.mcqs);
-        setSelectedMCQs(new Set(data.mcqs.map((_, idx) => idx))); // Select all by default
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to extract questions from PDF');
+      }
+
+      const extracted = (data.questions || []).map((q) => {
+        const choices = (q.choices || [])
+          .map((c) => {
+            const letter = (c.letter || '').toUpperCase();
+            const text = (c.text || '').trim();
+            if (!text) return '';
+            return letter ? `${letter}.) ${text}` : text;
+          })
+          .filter(Boolean);
+
+        const answer = (q.answer || '').toUpperCase();
+        const validAnswer = /^[A-D]$/.test(answer) ? answer : 'A';
+
+        const needsReview = choices.length < 2 || !/^[A-D]$/.test(answer);
+
+        const mcq: DetectedMCQ = {
+          question_text: (q.question_text || '').trim(),
+          choices,
+          correct_answer: validAnswer,
+          category: pdfCategory,
+          needs_review: needsReview,
+          source: 'pdf_import'
+        };
+
+        return mcq;
+      }).filter((mcq) => mcq.question_text && mcq.choices.length > 0);
+
+      if (extracted.length > 0) {
+        setDetectedMCQs(extracted);
+        setSelectedMCQs(new Set(extracted.map((_, idx) => idx))); // Select all by default
         setView('review-detected');
       } else {
-        setError(data.warnings?.[0] || 'No MCQs detected in the PDF');
+        setError('No questions found. Make sure the PDF has numbered questions with A/B/C/D choices and an answer key.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process PDF');
