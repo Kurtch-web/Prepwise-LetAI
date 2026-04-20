@@ -916,6 +916,18 @@ export function QuestionsBank() {
             <label className={`block text-sm font-semibold mb-4 ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Choose PDF File
             </label>
+            <p className={`text-sm mb-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`}>
+              PDF format must follow:
+              {' '}
+              <a
+                href="https://drive.google.com/drive/folders/1fzvuCw-3uRl3ezYZaJVC1iSPRoWxyc37?usp=sharing"
+                target="_blank"
+                rel="noreferrer"
+                className={isLightMode ? 'text-blue-600 underline hover:text-blue-700' : 'text-blue-400 underline hover:text-blue-300'}
+              >
+                https://drive.google.com/drive/folders/1fzvuCw-3uRl3ezYZaJVC1iSPRoWxyc37?usp=sharing
+              </a>
+            </p>
             <div className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
               isLightMode
                 ? 'border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50'
