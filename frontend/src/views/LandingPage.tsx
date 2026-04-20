@@ -178,8 +178,6 @@ export function LandingPage() {
               </span>
             </div>
             <div className="flex items-center gap-3 lg:gap-4">
-              <a href="#features" className="hidden sm:inline text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">Features</a>
-              <a href="#timeline" className="hidden sm:inline text-base font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">Why PrepWise</a>
               <button
                 className={`px-6 py-3 rounded-2xl font-semibold text-base transition-all duration-200 ${
                   isLightMode
