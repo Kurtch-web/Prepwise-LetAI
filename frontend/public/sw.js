@@ -139,10 +139,16 @@ self.addEventListener('fetch', event => {
   const isVideoRequest = request.destination === 'video' || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(url.pathname);
   const isBunnyCdn = url.hostname.endsWith('b-cdn.net');
   const isRangeRequest = request.headers.has('range');
+  const accept = request.headers.get('accept') || '';
+  const isNavigation = request.mode === 'navigate' || accept.includes('text/html');
 
   // Let the browser handle video/CDN/range requests directly.
   // Service worker interception can break streaming performance and seeking.
   if (request.method === 'GET' && (isVideoRequest || isBunnyCdn || isRangeRequest)) {
+    return;
+  }
+
+  if (!isNavigation) {
     return;
   }
 
@@ -152,24 +158,10 @@ self.addEventListener('fetch', event => {
       fetch(request, { cache: 'no-store' }).catch(error => {
         console.log('[SW] Network request failed:', error.message);
 
-        const accept = request.headers.get('accept') || '';
-        const isNavigation = request.mode === 'navigate' || accept.includes('text/html');
-
-        if (isNavigation) {
-          return new Response(OFFLINE_HTML, {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: { 'Content-Type': 'text/html; charset=utf-8' }
-          });
-        }
-
-        return new Response(JSON.stringify({
-          error: 'Network error - cannot reach server',
-          offline: true
-        }), {
+        return new Response(OFFLINE_HTML, {
           status: 503,
           statusText: 'Service Unavailable',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
       })
     );

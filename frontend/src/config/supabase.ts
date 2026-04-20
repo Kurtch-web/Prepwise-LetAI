@@ -5,7 +5,7 @@
  */
 
 export const SUPABASE_CONFIG = {
-  url: import.meta.env.VITE_SUPABASE_URL ?? 'https://wytsgzbnbkjfxolcymjo.supabase.co',
-  anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5dHNnemJuYmtqZnhvbGN5bWpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MDY0MjYsImV4cCI6MjA3NTM4MjQyNn0.EOEw77Z9JLPfUJcF_6o6bRFlc2jNO9gEvuykkvD2n-k',
+  url: (import.meta.env.VITE_SUPABASE_URL || 'https://wytsgzbnbkjfxolcymjo.supabase.co').trim(),
+  anonKey: (import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5dHNnemJuYmtqZnhvbGN5bWpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk4MDY0MjYsImV4cCI6MjA3NTM4MjQyNn0.EOEw77Z9JLPfUJcF_6o6bRFlc2jNO9gEvuykkvD2n-k').trim(),
   bucket: 'community-files'
 } as const;
