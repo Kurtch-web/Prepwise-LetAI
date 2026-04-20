@@ -24,7 +24,6 @@ export default function VideoLessonsPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [useStreamFallback, setUseStreamFallback] = useState(false);
   const watchIdRef = useRef<string | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -251,17 +250,9 @@ export default function VideoLessonsPage() {
               ) : (
                 <video
                   ref={videoRef}
-                  src={
-                    useStreamFallback
-                      ? `${API_BASE}/api/videos/${selectedVideo.id}/stream`
-                      : selectedVideo.file_url
-                  }
+                  src={selectedVideo.file_url}
                   controls
                   className="player-element"
-                  onError={() => {
-                    // Prefer direct CDN playback (Bunny/R2). If it fails (often due to CORS), fall back to backend streaming.
-                    setUseStreamFallback(true);
-                  }}
                 />
               )}
             </div>
