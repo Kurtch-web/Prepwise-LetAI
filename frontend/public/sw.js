@@ -135,6 +135,17 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
 
+  const url = new URL(request.url);
+  const isVideoRequest = request.destination === 'video' || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(url.pathname);
+  const isBunnyCdn = url.hostname.endsWith('b-cdn.net');
+  const isRangeRequest = request.headers.has('range');
+
+  // Let the browser handle video/CDN/range requests directly.
+  // Service worker interception can break streaming performance and seeking.
+  if (request.method === 'GET' && (isVideoRequest || isBunnyCdn || isRangeRequest)) {
+    return;
+  }
+
   // Always fetch fresh from server, never cache
   if (request.method === 'GET') {
     event.respondWith(
