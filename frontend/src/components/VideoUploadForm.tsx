@@ -298,19 +298,6 @@ export default function VideoUploadForm({ onSuccess, onCancel }: VideoUploadForm
           </>
         )}
 
-        <div className="form-group checkbox-group">
-          <label htmlFor="downloadable">
-            <input
-              id="downloadable"
-              type="checkbox"
-              checked={isDownloadable}
-              onChange={(e) => setIsDownloadable(e.target.checked)}
-              disabled={isLoading}
-            />
-            Allow users to download this video
-          </label>
-        </div>
-
         {error && <div className="error-message">{error}</div>}
 
         <div className="form-actions">

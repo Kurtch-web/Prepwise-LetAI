@@ -193,22 +193,6 @@ export function VideoEditModal({ isOpen, video, categories, onClose, onSuccess }
               />
             </div>
 
-            {/* Downloadable Checkbox */}
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="is-downloadable"
-                checked={isDownloadable}
-                onChange={(e) => setIsDownloadable(e.target.checked)}
-                className="w-4 h-4 rounded cursor-pointer"
-              />
-              <label htmlFor="is-downloadable" className={`text-sm font-medium cursor-pointer ${
-                isLightMode ? 'text-slate-900' : 'text-white'
-              }`}>
-                Allow students to download this video
-              </label>
-            </div>
-
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
               <button
