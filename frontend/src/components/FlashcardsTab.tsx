@@ -68,6 +68,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [confirmationAction, setConfirmationAction] = useState<'restart' | 'ratings' | null>(null);
 
   // Load all practice test sessions on mount
   useEffect(() => {
@@ -127,6 +128,18 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
         return;
       }
     }
+  };
+
+  const confirmReset = () => {
+    if (confirmationAction === 'restart') {
+      setIsFlipped(false);
+      setCurrentQuestionIndex(0);
+      clearConfidence();
+    } else if (confirmationAction === 'ratings') {
+      clearConfidence();
+    }
+
+    setConfirmationAction(null);
   };
 
   // Auto-flip timer for flashcards
@@ -728,9 +741,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
-                  onClick={() => {
-                    clearConfidence();
-                  }}
+                  onClick={() => setConfirmationAction('ratings')}
                   className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
                     isLightMode
                       ? 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
@@ -920,11 +931,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 Previous
               </button>
               <button
-                onClick={() => {
-                  setIsFlipped(false);
-                  setCurrentQuestionIndex(0);
-                  clearConfidence();
-                }}
+                onClick={() => setConfirmationAction('restart')}
                 className={`flex-1 ${accentButtonClasses}`}
               >
                 Restart
@@ -944,8 +951,48 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
             </div>
 
             <p className={`text-xs font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-              Restarting flashcard resets your ratings
+              Restarting flashcards also resets your ratings
             </p>
+
+            {confirmationAction && (
+              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
+                <section
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="flashcard-reset-confirmation-title"
+                  className={`${cardShellClasses} w-full max-w-md space-y-5`}
+                >
+                  <div className="space-y-2">
+                    <h2
+                      id="flashcard-reset-confirmation-title"
+                      className={`text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}
+                    >
+                      {confirmationAction === 'restart' ? 'Restart flashcards?' : 'Reset ratings?'}
+                    </h2>
+                    <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>
+                      {confirmationAction === 'restart'
+                        ? 'This will restart your progress and remove all ratings.'
+                        : 'This will remove all of your flashcard ratings.'}
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setConfirmationAction(null)}
+                      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                        isLightMode
+                          ? 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                    <button onClick={confirmReset} className={accentButtonClasses}>
+                      Okay
+                    </button>
+                  </div>
+                </section>
+              </div>
+            )}
 
             {/* AI Explanation Modal */}
             {showAiModal && (
