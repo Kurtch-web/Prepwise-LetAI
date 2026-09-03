@@ -971,7 +971,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                     </h2>
                     <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>
                       {confirmationAction === 'restart'
-                        ? 'This will restart your progress and remove all ratings.'
+                        ? 'This will restart your progress and send you at the start.'
                         : 'This will remove all of your flashcard ratings.'}
                     </p>
                   </div>
