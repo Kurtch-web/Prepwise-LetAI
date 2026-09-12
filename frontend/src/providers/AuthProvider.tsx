@@ -6,7 +6,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  signup: (full_name: string, username: string, email: string, password: string, password_confirm: string, review_type: string, target_exam_date?: string) => Promise<void>;
+  signup: (full_name: string, username: string, email: string, password: string, password_confirm: string, review_type: string, major: string, target_exam_date?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -45,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password: string,
       password_confirm: string,
       review_type: string,
+      major: string,
       target_exam_date?: string
     ) => {
       setIsLoading(true);
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           password,
           password_confirm,
           review_type,
+          major,
           target_exam_date
         });
         if (response.success && response.user) {
