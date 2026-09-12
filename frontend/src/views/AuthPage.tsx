@@ -35,6 +35,7 @@ export function AuthPage() {
     password: '',
     password_confirm: '',
     review_type: 'GenEd',
+    major: '',
     target_exam_date: '',
     instructor_id: ''
   });
@@ -131,6 +132,10 @@ export function AuthPage() {
       newErrors.email = 'Email is required';
     } else if (!signUpData.email.endsWith('@cvsu.edu.ph')) {
       newErrors.email = 'Strictly use CVSU email (@cvsu.edu.ph)';
+    }
+
+    if (!signUpData.major) {
+      newErrors.major = 'Please select a major';
     }
 
     if (signUpData.password.length < 8) {
@@ -260,6 +265,7 @@ export function AuthPage() {
           password: signUpData.password,
           password_confirm: signUpData.password_confirm,
           review_type: signUpData.review_type,
+          major: signUpData.major,
           target_exam_date: signUpData.target_exam_date || undefined,
           instructor_id: signUpData.instructor_id ? parseInt(signUpData.instructor_id) : null,
           verification_code: verificationCode
@@ -293,6 +299,7 @@ export function AuthPage() {
           password: '',
           password_confirm: '',
           review_type: 'GenEd',
+          major: '',
           target_exam_date: '',
           instructor_id: ''
         });
@@ -881,7 +888,7 @@ export function AuthPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className={`block text-sm font-semibold mb-1.5 ${
                       isLightMode ? 'text-slate-900' : 'text-white'
@@ -900,6 +907,37 @@ export function AuthPage() {
                       <option value="GenEd">📚 GenEd</option>
                       <option value="ProfEd">🎓 ProfEd</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-semibold mb-1.5 ${
+                      isLightMode ? 'text-slate-900' : 'text-white'
+                    }`}>
+                      Major <span className="text-emerald-600">*</span>
+                    </label>
+                    <select
+                      value={signUpData.major}
+                      onChange={(e) => {
+                        setSignUpData(prev => ({ ...prev, major: e.target.value }));
+                        if (signUpErrors.major) {
+                          setSignUpErrors(prev => ({ ...prev, major: '' }));
+                        }
+                      }}
+                      className={`w-full rounded-lg px-3 py-2.5 text-xs font-medium transition-all ${
+                        isLightMode
+                          ? 'bg-white border border-slate-300 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
+                          : 'bg-slate-700/50 border border-slate-600 text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20'
+                      } outline-none`}
+                    >
+                      <option value="">Select Major</option>
+                      <option value="Math Major">Math Major</option>
+                      <option value="English Major">English Major</option>
+                    </select>
+                    {signUpErrors.major && (
+                      <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <span>⚠️</span> {signUpErrors.major}
+                      </p>
+                    )}
                   </div>
 
                   <div>
