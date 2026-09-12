@@ -19,6 +19,7 @@ class UserAccount(Base):
     password_hash: Mapped[str] = mapped_column(String(256))
     full_name: Mapped[str] = mapped_column(String(255), nullable=True)
     review_type: Mapped[str] = mapped_column(String(16), default='GenEd', nullable=True)
+    major: Mapped[str] = mapped_column(String(32), nullable=True)
     target_exam_date: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     role: Mapped[str] = mapped_column(String(16))
     instructor_id: Mapped[Optional[int]] = mapped_column(ForeignKey('user_accounts.id', ondelete='SET NULL'), index=True, nullable=True)
