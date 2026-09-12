@@ -15,6 +15,7 @@ export function SignUpPage() {
     password: '',
     password_confirm: '',
     review_type: 'GenEd',
+    major: '',
     target_exam_date: ''
   });
 
@@ -43,6 +44,10 @@ export function SignUpPage() {
 
     if (formData.password !== formData.password_confirm) {
       newErrors.password_confirm = 'Passwords do not match';
+    }
+
+    if (!formData.major.trim()) {
+      newErrors.major = 'Major is required';
     }
 
     if (!agreed) {
@@ -83,6 +88,7 @@ export function SignUpPage() {
         formData.password,
         formData.password_confirm,
         formData.review_type,
+        formData.major,
         formData.target_exam_date || undefined
       );
       navigate('/dashboard');
@@ -205,8 +211,8 @@ export function SignUpPage() {
               )}
             </div>
 
-            {/* Review Type & Target Exam Date in Two Columns */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Review Type, Major & Target Exam Date in Three Columns */}
+            <div className="grid grid-cols-3 gap-4">
               {/* Review Type */}
               <div>
                 <label className={`block text-sm font-semibold mb-2 ${
@@ -227,6 +233,34 @@ export function SignUpPage() {
                   <option value="GenEd">📚 GenEd</option>
                   <option value="ProfEd">🎓 ProfEd</option>
                 </select>
+              </div>
+
+              {/* Major */}
+              <div>
+                <label className={`block text-sm font-semibold mb-2 ${
+                  isLightMode ? 'text-slate-900' : 'text-white'
+                }`}>
+                  Major <span className="text-emerald-600 font-bold">*</span>
+                </label>
+                <select
+                  name="major"
+                  value={formData.major}
+                  onChange={handleChange}
+                  className={`w-full rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                    isLightMode
+                      ? 'bg-white border border-slate-300 text-slate-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
+                      : 'bg-slate-700/50 border border-slate-600 text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20'
+                  } outline-none`}
+                >
+                  <option value="">Select Major</option>
+                  <option value="Math Major">🔢 Math Major</option>
+                  <option value="English Major">📖 English Major</option>
+                </select>
+                {errors.major && (
+                  <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                    <span>⚠️</span> {errors.major}
+                  </p>
+                )}
               </div>
 
               {/* Target Exam Date */}
