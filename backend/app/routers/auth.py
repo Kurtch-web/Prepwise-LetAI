@@ -33,6 +33,7 @@ class SignUpRequest(BaseModel):
     password: str = Field(..., min_length=8, max_length=128)
     password_confirm: str = Field(..., min_length=8, max_length=128)
     review_type: str = Field(default='GenEd')  # GenEd or ProfEd
+    major: str = Field(..., min_length=1, max_length=32)  # Math Major or English Major
     target_exam_date: Optional[str] = None
     instructor_id: Optional[int] = None
     verification_code: str = Field(..., min_length=6, max_length=6)
@@ -177,6 +178,7 @@ async def signup(request: SignUpRequest, response: Response, session: AsyncSessi
         password_hash=password_hash,
         full_name=request.full_name,
         review_type=request.review_type,
+        major=request.major,
         target_exam_date=request.target_exam_date,
         instructor_id=request.instructor_id,
         role='user'
