@@ -80,12 +80,6 @@ export function UserProfileCard({ user }: { user: UserProfile }) {
               </div>
             )}
 
-            {user.instructorId && (
-              <div>
-                <p className={`text-xs uppercase tracking-wide ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>Assigned Instructor</p>
-                <p className={`text-sm ${isLightMode ? 'text-slate-700' : 'text-white/90'}`}>ID: {user.instructorId}</p>
-              </div>
-            )}
           </div>
         </div>
 
