@@ -7,6 +7,7 @@ export interface SignUpData {
   password: string;
   password_confirm: string;
   review_type: string;
+  major: string;
   target_exam_date?: string;
 }
 
