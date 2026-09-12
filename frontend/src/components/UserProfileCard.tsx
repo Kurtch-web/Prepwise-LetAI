@@ -46,6 +46,13 @@ export function UserProfileCard({ user }: { user: UserProfile }) {
               </div>
             )}
 
+            {user.major && (
+              <div>
+                <p className={`text-xs uppercase tracking-wide ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>Major</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-700' : 'text-white/90'}`}>{user.major}</p>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 pt-2">
               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${roleColor}`}>
                 {user.role === 'admin' ? '👑 Admin' : '👤 User'}
