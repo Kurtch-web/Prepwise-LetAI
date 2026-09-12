@@ -99,6 +99,7 @@ async def list_users_with_profiles(
             'fullName': user.full_name,
             'role': user.role,
             'reviewType': user.review_type,
+            'major': user.major,
             'targetExamDate': user.target_exam_date,
             'instructorId': user.instructor_id,
             'createdAt': user.created_at.isoformat(),
