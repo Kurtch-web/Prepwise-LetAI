@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
 
+
 export function SignUpPage() {
   const navigate = useNavigate();
   const { theme } = useTheme();
