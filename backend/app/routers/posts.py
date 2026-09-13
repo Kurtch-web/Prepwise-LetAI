@@ -16,6 +16,20 @@ from ..dependencies import get_current_user
 
 router = APIRouter()
 
+MAJOR_POST_CATEGORIES = {
+    'math_major': 'Math Major',
+    'english_major': 'English Major',
+}
+MAJOR_TO_POST_CATEGORY = {
+    major: category for category, major in MAJOR_POST_CATEGORIES.items()
+}
+ANNOUNCEMENT_CATEGORIES = [
+    'admin',
+    'news',
+    'important',
+    *MAJOR_POST_CATEGORIES.keys(),
+]
+
 
 class AttachmentResponse(BaseModel):
     id: str
@@ -100,9 +114,16 @@ def _post_visibility_clause(current_user: UserAccount):
     group_clause = _post_group_clause(current_user)
     if current_user.role == 'admin':
         return group_clause
+
+    major_category = MAJOR_TO_POST_CATEGORY.get(current_user.major)
+    major_clause = Post.category.notin_(list(MAJOR_POST_CATEGORIES))
+    if major_category is not None:
+        major_clause = or_(major_clause, Post.category == major_category)
+
     return and_(
         group_clause,
         or_(Post.is_flagged.is_(False), Post.author_id == current_user.id),
+        major_clause,
     )
 
 
@@ -115,6 +136,11 @@ def _can_view_post(post: Post, current_user: UserAccount) -> bool:
         return False
     if current_user.instructor_id is None:
         return False
+
+    required_major = MAJOR_POST_CATEGORIES.get(post.category)
+    if required_major is not None and current_user.major != required_major:
+        return False
+
     return (
         (post.author.role == 'admin' and post.author.id == current_user.instructor_id)
         or (
@@ -200,9 +226,11 @@ async def create_post(
     
     Categories:
     - 'user': Regular user posts
-    - 'admin': Admin/news posts (admin only)
+    - 'admin': Admin posts (admin only)
     - 'news': News posts (admin only)
     - 'important': Important announcements (admin only)
+    - 'math_major': Math Major posts (admin only)
+    - 'english_major': English Major posts (admin only)
     """
     if not content.strip():
         raise HTTPException(
@@ -210,15 +238,15 @@ async def create_post(
             detail='Content cannot be empty',
         )
 
-    # Only admins can create admin/news/important posts
-    if category in ['admin', 'news', 'important'] and current_user.role != 'admin':
+    # Only admins can create announcements and major-targeted posts.
+    if category in ANNOUNCEMENT_CATEGORIES and current_user.role != 'admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Only admins can create admin/news/important posts',
+            detail='Only admins can create announcement and major posts',
         )
 
     # Validate category
-    if category not in ['user', 'admin', 'news', 'important']:
+    if category not in ['user', *ANNOUNCEMENT_CATEGORIES]:
         category = 'user'
 
     post = Post(
@@ -347,9 +375,9 @@ async def list_announcement_posts(
         select(Post)
         .where(
             and_(
-                Post.category.in_(['admin', 'news', 'important']),
+                Post.category.in_(ANNOUNCEMENT_CATEGORIES),
                 Post.is_flagged.is_(False),
-                _post_group_clause(current_user),
+                _post_visibility_clause(current_user),
             )
         )
         .options(
