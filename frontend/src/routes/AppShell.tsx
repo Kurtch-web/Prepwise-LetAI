@@ -32,6 +32,7 @@ function NotificationsButton() {
   const [loading, setLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [ring, setRing] = useState(false);
+  const [visibleAuthorIds, setVisibleAuthorIds] = useState<number[]>([]);
 
   const storageKey = user?.id ? `announcement_read_ids_${user.id}` : 'announcement_read_ids';
 
@@ -76,31 +77,39 @@ function NotificationsButton() {
   };
 
   useEffect(() => {
-    if (!user) return;
-    refresh(false);
-    let refreshTimeout: number | undefined;
+    if (!user) {
+      setVisibleAuthorIds([]);
+      return;
+    }
 
-    const scheduleRefresh = (triggerRing: boolean) => {
+    refresh(false);
+    postsService.fetchPostVisibility()
+      .then(({ authorIds }) => setVisibleAuthorIds(authorIds))
+      .catch(() => setVisibleAuthorIds([]));
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user || visibleAuthorIds.length === 0) return;
+
+    let refreshTimeout: number | undefined;
+    const scheduleRefresh = (payload: any) => {
       if (refreshTimeout) window.clearTimeout(refreshTimeout);
-      refreshTimeout = window.setTimeout(() => refresh(triggerRing), 350);
+      const isAnnouncement = payload.eventType === 'INSERT'
+        && ['admin', 'news', 'important'].includes(payload.new?.category);
+      refreshTimeout = window.setTimeout(() => refresh(isAnnouncement), 350);
     };
 
     const channel = supabase
       .channel(`announcements_${user.id}_${Date.now()}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts', filter: 'category=eq.admin' },
-        (payload: any) => scheduleRefresh(payload.eventType === 'INSERT'),
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts', filter: 'category=eq.news' },
-        (payload: any) => scheduleRefresh(payload.eventType === 'INSERT'),
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'posts', filter: 'category=eq.important' },
-        (payload: any) => scheduleRefresh(payload.eventType === 'INSERT'),
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts',
+          filter: `author_id=in.(${visibleAuthorIds.join(',')})`,
+        },
+        scheduleRefresh,
       )
       .subscribe();
 
@@ -108,7 +117,7 @@ function NotificationsButton() {
       if (refreshTimeout) window.clearTimeout(refreshTimeout);
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, visibleAuthorIds]);
 
   const markRead = (postId: string) => {
     const readIds = loadReadIds();
