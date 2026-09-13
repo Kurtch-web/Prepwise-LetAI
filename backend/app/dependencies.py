@@ -1,11 +1,13 @@
 from typing import Optional
 import jwt
 from datetime import datetime
+from typing import Optional
 
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .config import JWT_SECRET_KEY
 from .db import AsyncSessionLocal, get_db
 from .services.events import EventStore
 from .services.users import UserStore
@@ -14,8 +16,6 @@ from .models import UserAccount
 _user_store = UserStore(AsyncSessionLocal)
 _event_store = EventStore(AsyncSessionLocal)
 
-# JWT Configuration - Should match auth.py
-SECRET_KEY = 'your-secret-key-change-in-production'
 ALGORITHM = 'HS256'
 
 
@@ -41,7 +41,7 @@ async def get_current_user(
     try:
         # Handle "Bearer <token>" format
         token = authorization.replace('Bearer ', '') if authorization.startswith('Bearer ') else authorization
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get('sub')
 
         if not username:
