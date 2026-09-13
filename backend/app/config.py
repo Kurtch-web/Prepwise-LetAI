@@ -12,6 +12,11 @@ DATA_DIR = BASE_DIR / 'data'
 USERS_FILE = DATA_DIR / 'users.json'
 
 SESSION_TTL_MINUTES = int(os.getenv('SESSION_TTL_MINUTES', '360'))
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
+if not JWT_SECRET_KEY:
+    if os.getenv('DATABASE_URL'):
+        raise RuntimeError('JWT_SECRET_KEY must be configured when DATABASE_URL is set')
+    JWT_SECRET_KEY = 'local-development-only'
 
 # Support multiple FRONTEND_ORIGIN values (comma-separated for production)
 # Examples:
