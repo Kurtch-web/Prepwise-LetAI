@@ -19,6 +19,7 @@ export function PostFeed() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<PostSortOption>('new');
   const [categoryFilter, setCategoryFilter] = useState<PostCategory>('all');
+  const [visibleAuthorIds, setVisibleAuthorIds] = useState<number[]>([]);
 
   const loadPosts = useCallback(async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
@@ -28,8 +29,12 @@ export function PostFeed() {
     }
     setError(null);
     try {
-      const result = await postsService.fetchPosts(0, 50);
+      const [result, visibility] = await Promise.all([
+        postsService.fetchPosts(0, 50),
+        postsService.fetchPostVisibility(),
+      ]);
       setPosts(result.posts);
+      setVisibleAuthorIds(visibility.authorIds);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load posts');
     } finally {
@@ -41,25 +46,49 @@ export function PostFeed() {
 
   useEffect(() => {
     loadPosts();
+  }, [loadPosts]);
 
+  useEffect(() => {
     let refreshTimeout: number | undefined;
     const scheduleRefresh = () => {
       if (refreshTimeout) window.clearTimeout(refreshTimeout);
       refreshTimeout = window.setTimeout(() => loadPosts({ silent: true }), 350);
     };
 
-    const channel = supabase
+    if (visibleAuthorIds.length === 0) {
+      return () => {
+        if (refreshTimeout) window.clearTimeout(refreshTimeout);
+      };
+    }
+
+    let channel = supabase
       .channel(`posts_feed_live_${Date.now()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, scheduleRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'comments' }, scheduleRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'likes' }, scheduleRefresh)
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts',
+          filter: `author_id=in.(${visibleAuthorIds.join(',')})`,
+        },
+        scheduleRefresh,
+      );
+
+    const visiblePostIds = posts.map((post) => post.id);
+    if (visiblePostIds.length > 0) {
+      const postFilter = `post_id=in.(${visiblePostIds.join(',')})`;
+      channel = channel
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: postFilter }, scheduleRefresh)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'likes', filter: postFilter }, scheduleRefresh);
+    }
+
+    channel.subscribe();
 
     return () => {
       if (refreshTimeout) window.clearTimeout(refreshTimeout);
       supabase.removeChannel(channel);
     };
-  }, [loadPosts]);
+  }, [loadPosts, visibleAuthorIds, posts]);
 
   const handlePostCreated = async () => {
     await loadPosts();
