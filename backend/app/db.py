@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import AsyncGenerator, Optional, Tuple
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
-from sqlalchemy import NullPool
+from sqlalchemy import NullPool, event
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -71,6 +71,14 @@ else:
 
 engine = create_async_engine(DB_URL, **engine_kwargs)
 
+if DB_URL.startswith('sqlite+'):
+    @event.listens_for(engine.sync_engine, 'connect')
+    def _enable_sqlite_foreign_keys(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute('PRAGMA foreign_keys=ON')
+        cursor.close()
+
+
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
@@ -88,6 +96,41 @@ async def init_models() -> None:
 
         # Handle schema updates for existing databases
         if DB_URL.startswith('postgresql+asyncpg://'):
+            result = await conn.execute(text("""
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name='user_accounts' AND column_name='is_archived'
+            """))
+            if result.scalar() is None:
+                await conn.execute(text("""
+                    ALTER TABLE user_accounts
+                    ADD COLUMN is_archived BOOLEAN NOT NULL DEFAULT false
+                """))
+
+            result = await conn.execute(text("""
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name='user_accounts' AND column_name='archived_at'
+            """))
+            if result.scalar() is None:
+                await conn.execute(text("""
+                    ALTER TABLE user_accounts
+                    ADD COLUMN archived_at TIMESTAMP WITH TIME ZONE
+                """))
+
+            result = await conn.execute(text("""
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name='user_accounts' AND column_name='deletion_scheduled_at'
+            """))
+            if result.scalar() is None:
+                await conn.execute(text("""
+                    ALTER TABLE user_accounts
+                    ADD COLUMN deletion_scheduled_at TIMESTAMP WITH TIME ZONE
+                """))
+
+            await conn.execute(text("""
+                CREATE INDEX IF NOT EXISTS ix_user_accounts_deletion_scheduled_at
+                ON user_accounts(deletion_scheduled_at)
+            """))
+
             # Check if is_archived column exists in quizzes table
             result = await conn.execute(text("""
                 SELECT 1 FROM information_schema.columns
@@ -125,6 +168,29 @@ async def init_models() -> None:
                     print(f"Note: Could not add expires_at column: {e}")
         else:
             # SQLite
+            result = await conn.execute(text("PRAGMA table_info(user_accounts)"))
+            user_account_columns = {row[1] for row in result.fetchall()}
+
+            if 'is_archived' not in user_account_columns:
+                await conn.execute(text("""
+                    ALTER TABLE user_accounts
+                    ADD COLUMN is_archived BOOLEAN NOT NULL DEFAULT 0
+                """))
+            if 'archived_at' not in user_account_columns:
+                await conn.execute(text("""
+                    ALTER TABLE user_accounts
+                    ADD COLUMN archived_at DATETIME
+                """))
+            if 'deletion_scheduled_at' not in user_account_columns:
+                await conn.execute(text("""
+                    ALTER TABLE user_accounts
+                    ADD COLUMN deletion_scheduled_at DATETIME
+                """))
+            await conn.execute(text("""
+                CREATE INDEX IF NOT EXISTS ix_user_accounts_deletion_scheduled_at
+                ON user_accounts(deletion_scheduled_at)
+            """))
+
             try:
                 await conn.execute(text("""
                     ALTER TABLE quizzes
