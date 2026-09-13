@@ -750,10 +750,10 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
 
       {/* Flashcard Modal */}
       {showFlashcardModal && selectedQuiz && quizQuestions.length > 0 && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <section className={`${cardShellClasses} space-y-4 sm:space-y-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <section className={`${cardShellClasses} space-y-4 sm:space-y-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto !p-4 sm:!p-7`}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between sticky top-0 -m-7 mb-4 p-7 bg-inherit rounded-t-3xl">
+            <div className="flex items-center justify-between sticky top-0 !-m-4 mb-4 !p-4 sm:!-m-7 sm:!p-7 bg-inherit rounded-t-3xl">
               <div className="min-w-0">
                 <h3 className={`text-lg sm:text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'} truncate`}>
                   {selectedQuiz.title}
@@ -805,7 +805,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
             </div>
 
             {/* Flashcard */}
-            <div className="flex justify-center items-center min-h-80">
+            <div className="flex justify-center items-center min-h-[24rem] sm:min-h-80">
               <style>{`
                 @keyframes cardFlip {
                   0% { transform: rotateY(0deg); }
@@ -834,11 +834,18 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  padding: 2rem;
+                  padding: 1rem;
                   text-align: center;
                   border-radius: 1.5rem;
                   border: 1px solid rgba(255,255,255,0.2);
                   background: rgba(11,17,26,0.8);
+                  overflow-y: auto;
+                }
+                @media (min-width: 640px) {
+                  .flip-card-front,
+                  .flip-card-back {
+                    padding: 2rem;
+                  }
                 }
                 .flip-card-back {
                   transform: rotateY(180deg);
@@ -847,7 +854,7 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 }
               `}</style>
               <div
-                className="w-full max-w-2xl flip-card-container h-80"
+                className="w-full max-w-2xl flip-card-container h-[24rem] sm:h-80"
                 onClick={() => {
                   playFlipSound();
                   setIsFlipped(!isFlipped);
@@ -864,15 +871,15 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                           {timerCount}s
                         </div>
                       </div>
-                      <p className="text-base sm:text-lg text-white leading-relaxed mb-4">{quizQuestions[currentQuestionIndex].question_text}</p>
+                      <p className="text-base sm:text-lg text-white leading-relaxed mb-4 whitespace-pre-wrap break-words">{quizQuestions[currentQuestionIndex].question_text}</p>
                       <div className="space-y-2">
                         {quizQuestions[currentQuestionIndex].choices.map((choice, idx) => (
-                          <div key={idx} className="text-sm text-white/80 bg-white/5 rounded-lg p-2 border border-white/10">
+                          <div key={idx} className="text-base sm:text-sm text-white/80 bg-white/5 rounded-lg px-3 py-2 border border-white/10 break-words">
                             <span className="font-semibold text-emerald-400">{String.fromCharCode(65 + idx)}.</span> {choice}
                           </div>
                         ))}
                       </div>
-                      <p className="text-xs text-white/50 mt-4">Auto-reveal in {timerCount}s or click to reveal</p>
+                      <p className="text-xs text-white/50 mt-3 sm:mt-4">Auto-reveal in {timerCount}s or click to reveal</p>
                     </div>
                   </div>
                   <div className="flip-card-back">
