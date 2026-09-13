@@ -4,6 +4,8 @@ Email service for sending professional HTML emails
 
 import os
 import smtplib
+from datetime import datetime
+from html import escape
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
@@ -56,13 +58,28 @@ class EmailService:
     async def send_password_reset_success(self, email: str, full_name: str) -> bool:
         """Send confirmation email after password reset"""
         subject = '✅ Your Password Has Been Reset'
-        
+
         html_content = self._render_password_reset_success_template(
             full_name=full_name
         )
-        
+
         return await self._send_email(email, subject, html_content)
-    
+
+    async def send_account_archived_email(
+        self,
+        email: str,
+        full_name: Optional[str],
+        username: str,
+        deletion_scheduled_at: datetime,
+    ) -> bool:
+        subject = 'Your LET Review Hub account has been archived'
+        html_content = self._render_account_archived_template(
+            full_name=full_name or username,
+            username=username,
+            deletion_scheduled_at=deletion_scheduled_at,
+        )
+        return await self._send_email(email, subject, html_content)
+
     async def _send_email(self, to_email: str, subject: str, html_content: str) -> bool:
         """Send email using SMTP"""
         try:
@@ -589,6 +606,34 @@ class EmailService:
                     <p>© 2026 LET Review Hub. All rights reserved.</p>
                 </div>
             </div>
+        </body>
+        </html>
+        """
+
+    def _render_account_archived_template(
+        self,
+        full_name: str,
+        username: str,
+        deletion_scheduled_at: datetime,
+    ) -> str:
+        safe_name = escape(full_name)
+        safe_username = escape(username)
+        deletion_date = deletion_scheduled_at.strftime('%B %d, %Y at %H:%M UTC')
+        return f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Account Archived</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
+            <h1>LET Review Hub account archived</h1>
+            <p>Hi {safe_name},</p>
+            <p>Your account <strong>{safe_username}</strong> has been placed in archive status.</p>
+            <p>You can still use LET Review Hub while your account is archived. Please contact your instructor if this was a mistake.</p>
+            <p>Your account is eligible for permanent deletion on <strong>{deletion_date}</strong> unless an administrator restores it first.</p>
+            <p>If you need help, please contact your instructor or the LET Review Hub administrator.</p>
         </body>
         </html>
         """
