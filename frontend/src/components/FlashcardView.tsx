@@ -1336,29 +1336,32 @@ Important instructions:
                   </div>
 
                   <div className="flip-card-back">
-                    <div>
+                    <div className="w-full text-left">
                       <p className="text-xs font-semibold text-emerald-300 mb-4">
                         Answer
                       </p>
 
-                      <p className="text-base sm:text-lg text-white leading-relaxed">
-                        {(() => {
-                          const answerIndex =
-                            currentQuestion.correct_answer.charCodeAt(
-                              0
-                            ) - 65;
+                      <div className="space-y-2">
+                        {currentQuestion.choices.map((choice, idx) => {
+                          const choiceLetter = choice.charAt(0);
+                          const isCorrectChoice = choiceLetter === currentQuestion.correct_answer;
 
                           return (
-                            currentQuestion
-                              .choices[
-                              answerIndex
-                            ] ||
-                            currentQuestion.correct_answer
+                            <div
+                              key={idx}
+                              className={`text-sm rounded-lg p-2 border ${
+                                isCorrectChoice
+                                  ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200'
+                                  : 'bg-red-500/10 border-red-400/30 text-red-200/70'
+                              }`}
+                            >
+                              {choice}
+                            </div>
                           );
-                        })()}
-                      </p>
+                        })}
+                      </div>
 
-                      <p className="text-xs text-white/50 mt-6">
+                      <p className="text-xs text-white/50 mt-4">
                         Click to see question
                       </p>
                     </div>
