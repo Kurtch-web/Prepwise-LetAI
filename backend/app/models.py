@@ -23,6 +23,9 @@ class UserAccount(Base):
     target_exam_date: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     role: Mapped[str] = mapped_column(String(16))
     instructor_id: Mapped[Optional[int]] = mapped_column(ForeignKey('user_accounts.id', ondelete='SET NULL'), index=True, nullable=True)
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
+    archived_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    deletion_scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
