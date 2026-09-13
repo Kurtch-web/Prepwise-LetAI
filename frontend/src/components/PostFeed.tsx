@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
-import { Post, postsService } from '../services/postsService';
+import { Post, PostCategory, postsService } from '../services/postsService';
 import { supabase } from '../config/supabaseClient';
 import { CreatePostForm } from './CreatePostForm';
 import { PostCard } from './PostCard';
 
 type PostSortOption = 'new' | 'old' | 'liked';
-type PostCategory = 'all' | 'user' | 'admin' | 'news' | 'important';
+type PostFeedCategory = 'all' | PostCategory;
 
 export function PostFeed() {
   const { theme } = useTheme();
@@ -18,7 +18,7 @@ export function PostFeed() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<PostSortOption>('new');
-  const [categoryFilter, setCategoryFilter] = useState<PostCategory>('all');
+  const [categoryFilter, setCategoryFilter] = useState<PostFeedCategory>('all');
   const [visibleAuthorIds, setVisibleAuthorIds] = useState<number[]>([]);
 
   const loadPosts = useCallback(async (options?: { silent?: boolean }) => {
@@ -243,6 +243,34 @@ export function PostFeed() {
           >
             ⚠️ Important
           </button>
+          {(user?.role === 'admin' || user?.major === 'English Major') && (
+            <button
+              onClick={() => setCategoryFilter('english_major')}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                categoryFilter === 'english_major'
+                  ? 'bg-indigo-600 text-white'
+                  : isLightMode
+                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              📘 English Major
+            </button>
+          )}
+          {(user?.role === 'admin' || user?.major === 'Math Major') && (
+            <button
+              onClick={() => setCategoryFilter('math_major')}
+              className={`px-4 py-2 rounded-lg font-semibold text-sm transition ${
+                categoryFilter === 'math_major'
+                  ? 'bg-blue-600 text-white'
+                  : isLightMode
+                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              }`}
+            >
+              🧮 Math Major
+            </button>
+          )}
         </div>
 
         {/* Sort Filter */}
