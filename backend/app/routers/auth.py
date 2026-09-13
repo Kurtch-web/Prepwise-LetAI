@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..config import SESSION_TTL_MINUTES
+from ..config import JWT_SECRET_KEY, SESSION_TTL_MINUTES
 from ..models import UserAccount, VerificationCode, EventLog
 from ..db import get_db
 from ..security import hash_password, verify_password
@@ -20,8 +20,6 @@ from ..dependencies import get_current_user
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
-# JWT Configuration - Should be from env variable in production
-SECRET_KEY = 'your-secret-key-change-in-production'
 ALGORITHM = 'HS256'
 CODE_EXPIRY_MINUTES = 10  # Verification codes expire after 10 minutes
 
@@ -94,7 +92,7 @@ def create_access_token(username: str, role: str, is_temp: bool = False) -> str:
         'exp': expires,
         'iat': datetime.now(timezone.utc)
     }
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
 
 def generate_verification_code() -> str:
@@ -341,7 +339,7 @@ async def verify_code(request: VerifyCodeRequest, response: Response, session: A
 
     # Decode temp token to get username
     try:
-        payload = jwt.decode(request.tempToken, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(request.tempToken, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get('sub')
         token_type = payload.get('type')
 
@@ -620,7 +618,7 @@ def get_current_user_from_header(authorization: Optional[str] = None) -> Dict:
     try:
         # Handle "Bearer <token>" format
         token = authorization.replace('Bearer ', '') if authorization.startswith('Bearer ') else authorization
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get('sub')
         if not username:
             raise HTTPException(
