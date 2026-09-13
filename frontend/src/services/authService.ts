@@ -23,6 +23,7 @@ export interface AuthUser {
   fullName?: string;
   email?: string;
   reviewType?: string;
+  major?: string;
   targetExamDate?: string;
 }
 
