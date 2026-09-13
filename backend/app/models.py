@@ -113,7 +113,7 @@ class Post(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     author_id: Mapped[int] = mapped_column(ForeignKey('user_accounts.id', ondelete='CASCADE'), index=True)
     content: Mapped[str] = mapped_column(Text)
-    category: Mapped[str] = mapped_column(String(32), default='user', index=True)  # 'user', 'admin', 'news', 'important'
+    category: Mapped[str] = mapped_column(String(32), default='user', index=True)  # 'user', 'admin', 'news', 'important', 'math_major', 'english_major'
     view_count: Mapped[int] = mapped_column(Integer, default=0)
     is_flagged: Mapped[bool] = mapped_column(default=False, index=True)
     flag_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
