@@ -32,6 +32,10 @@ export function AdminPortalPage() {
   const [quizType, setQuizType] = useState<'diagnostic-test' | 'drills' | 'short-quiz' | 'preboard'>('diagnostic-test');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [majorFilter, setMajorFilter] = useState<'all' | 'Math Major' | 'English Major'>('all');
+  const [userStatusFilter, setUserStatusFilter] = useState<'active' | 'archived' | 'all'>('active');
+  const [userActionLoading, setUserActionLoading] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showVideoUploadForm, setShowVideoUploadForm] = useState(false);
@@ -70,9 +74,10 @@ export function AdminPortalPage() {
       setError(null);
       const response = await api.fetchUsersWithProfiles();
       setUsers(response.users);
-      if (response.users.length > 0 && !selectedUser) {
-        setSelectedUser(response.users[0]);
-      }
+      setSelectedUser((current) => {
+        if (!current) return response.users.find((user) => !user.isArchived) ?? response.users[0] ?? null;
+        return response.users.find((user) => user.id === current.id) ?? response.users.find((user) => !user.isArchived) ?? response.users[0] ?? null;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch users');
     } finally {
@@ -83,6 +88,68 @@ export function AdminPortalPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const filteredUsers = users.filter((user) => {
+    const normalizedSearch = userSearch.trim().toLowerCase();
+    const matchesSearch = !normalizedSearch || [user.username, user.fullName, user.email]
+      .filter(Boolean)
+      .some((value) => value!.toLowerCase().includes(normalizedSearch));
+    const matchesMajor = majorFilter === 'all' || user.major === majorFilter;
+    const matchesStatus = userStatusFilter === 'all'
+      || (userStatusFilter === 'archived' ? user.isArchived : !user.isArchived);
+    return matchesSearch && matchesMajor && matchesStatus;
+  });
+
+  const handleArchiveUser = async (userId: number) => {
+    if (!window.confirm('Archive this student? They can continue using the system, and the account will become eligible for manual deletion after 7 days.')) {
+      return;
+    }
+    setUserActionLoading(userId);
+    setError(null);
+    try {
+      await api.archiveUser(userId);
+      setUserStatusFilter('archived');
+      await fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to archive student');
+    } finally {
+      setUserActionLoading(null);
+    }
+  };
+
+  const handleRestoreUser = async (userId: number) => {
+    if (!window.confirm('Restore this student and cancel the deletion countdown?')) {
+      return;
+    }
+    setUserActionLoading(userId);
+    setError(null);
+    try {
+      await api.restoreUser(userId);
+      setUserStatusFilter('active');
+      await fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to restore student');
+    } finally {
+      setUserActionLoading(null);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    if (!window.confirm('Permanently delete this student account and its owned data? This cannot be undone.')) {
+      return;
+    }
+    setUserActionLoading(userId);
+    setError(null);
+    try {
+      await api.deleteUser(userId);
+      setUsers((current) => current.filter((user) => user.id !== userId));
+      setSelectedUser((current) => current?.id === userId ? null : current);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete student');
+    } finally {
+      setUserActionLoading(null);
+    }
+  };
 
   const fetchVideoCategories = async () => {
     try {
@@ -371,14 +438,65 @@ export function AdminPortalPage() {
           {/* Users List */}
           <div className={`${cardShellClasses} lg:col-span-1`}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Users</h3>
+              <h3 className={`text-lg font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>Students</h3>
               <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
                 isLightMode
                   ? 'bg-emerald-100 text-emerald-700'
                   : 'bg-emerald-500/20 text-emerald-300'
               }`}>
-                {users.length}
+                {filteredUsers.length} / {users.length}
               </span>
+            </div>
+
+            <div className="mb-4 space-y-3">
+              <input
+                type="search"
+                value={userSearch}
+                onChange={(event) => setUserSearch(event.target.value)}
+                placeholder="Search students..."
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none transition focus:border-emerald-500 ${
+                  isLightMode
+                    ? 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400'
+                    : 'border-white/10 bg-white/5 text-white placeholder:text-white/40'
+                }`}
+              />
+
+              <div className={`flex rounded-xl border p-1 ${isLightMode ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'}`}>
+                {[
+                  { value: 'all' as const, label: 'All majors' },
+                  { value: 'Math Major' as const, label: 'Math' },
+                  { value: 'English Major' as const, label: 'English' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setMajorFilter(option.value)}
+                    className={`flex-1 rounded-lg px-2 py-2 text-xs font-semibold transition ${
+                      majorFilter === option.value
+                        ? 'bg-emerald-600 text-white'
+                        : isLightMode
+                        ? 'text-slate-600 hover:bg-white hover:text-slate-900'
+                        : 'text-white/60 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <select
+                value={userStatusFilter}
+                onChange={(event) => setUserStatusFilter(event.target.value as typeof userStatusFilter)}
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-emerald-500 ${
+                  isLightMode
+                    ? 'border-slate-300 bg-white text-slate-900'
+                    : 'border-white/10 bg-slate-900 text-white'
+                }`}
+              >
+                <option value="active">Active students</option>
+                <option value="archived">Archived students</option>
+                <option value="all">All students</option>
+              </select>
             </div>
 
             {loading ? (
@@ -393,13 +511,17 @@ export function AdminPortalPage() {
               }`}>
                 {error}
               </div>
+            ) : filteredUsers.length === 0 ? (
+              <p className={`rounded-2xl border border-dashed p-5 text-center text-sm ${isLightMode ? 'border-slate-300 text-slate-600' : 'border-white/20 text-white/60'}`}>
+                No students match these filters.
+              </p>
             ) : (
               <div className="space-y-2">
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <button
                     key={user.id}
                     onClick={() => setSelectedUser(user)}
-                    className={`w-full rounded-2xl border transition-all px-3 py-2 text-left ${
+                    className={`w-full rounded-2xl border px-3 py-2 text-left transition-all ${
                       selectedUser?.id === user.id
                         ? isLightMode
                           ? 'border-emerald-600 bg-emerald-50'
@@ -411,9 +533,12 @@ export function AdminPortalPage() {
                   >
                     <p className={`text-sm font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>{user.username}</p>
                     <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                      {user.role === 'admin' ? '👑 Admin' : '👤 User'}
+                      {user.major || 'Major not set'}
                     </p>
-                    {user.assessment && (
+                    {user.isArchived && (
+                      <p className={`text-xs font-semibold ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>Pending deletion</p>
+                    )}
+                    {!user.isArchived && user.assessment && (
                       <p className={`text-xs ${isLightMode ? 'text-emerald-700' : 'text-emerald-400'}`}>✓ Assessment</p>
                     )}
                   </button>
@@ -425,7 +550,13 @@ export function AdminPortalPage() {
           {/* Selected User Profile */}
           <div className="lg:col-span-3">
             {selectedUser ? (
-              <UserProfileCard user={selectedUser} />
+              <UserProfileCard
+                user={selectedUser}
+                onArchive={() => handleArchiveUser(selectedUser.id)}
+                onRestore={() => handleRestoreUser(selectedUser.id)}
+                onDelete={() => handleDeleteUser(selectedUser.id)}
+                actionLoading={userActionLoading === selectedUser.id}
+              />
             ) : (
               <div className={cardShellClasses}>
                 <div className="flex items-center justify-center py-12 text-center">
