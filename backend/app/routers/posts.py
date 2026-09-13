@@ -398,6 +398,42 @@ async def list_announcement_posts(
     return {'posts': posts_response}
 
 
+@router.get('/posts/visibility')
+async def get_post_visibility(
+    db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
+) -> Dict[str, List[int]]:
+    if current_user.role == 'admin':
+        query = select(UserAccount.id).where(
+            or_(
+                UserAccount.id == current_user.id,
+                and_(
+                    UserAccount.role == 'user',
+                    UserAccount.instructor_id == current_user.id,
+                ),
+            )
+        )
+    elif current_user.instructor_id is not None:
+        query = select(UserAccount.id).where(
+            or_(
+                UserAccount.id == current_user.id,
+                and_(
+                    UserAccount.id == current_user.instructor_id,
+                    UserAccount.role == 'admin',
+                ),
+                and_(
+                    UserAccount.role == 'user',
+                    UserAccount.instructor_id == current_user.instructor_id,
+                ),
+            )
+        )
+    else:
+        return {'authorIds': [current_user.id]}
+
+    author_ids = list((await db.scalars(query)).all())
+    return {'authorIds': author_ids}
+
+
 @router.get('/posts/{post_id}')
 async def get_post(
     post_id: str,
