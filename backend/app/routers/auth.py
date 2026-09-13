@@ -255,6 +255,7 @@ async def signup(request: SignUpRequest, response: Response, session: AsyncSessi
             'role': new_user.role,
             'fullName': new_user.full_name,
             'reviewType': new_user.review_type,
+            'major': new_user.major,
             'targetExamDate': new_user.target_exam_date,
             'instructorId': new_user.instructor_id
         },
@@ -340,6 +341,7 @@ async def login(request: LoginRequest, response: Response, session: AsyncSession
             'role': user.role,
             'fullName': user.full_name,
             'reviewType': user.review_type,
+            'major': user.major,
             'targetExamDate': user.target_exam_date
         },
         token=token
@@ -430,6 +432,7 @@ async def verify_code(request: VerifyCodeRequest, response: Response, session: A
             'fullName': user.full_name,
             'email': user.email,
             'reviewType': user.review_type,
+            'major': user.major,
             'targetExamDate': user.target_exam_date
         }
     )
@@ -697,6 +700,7 @@ async def update_profile(
             'username': user.username,
             'fullName': user.full_name,
             'reviewType': user.review_type,
+            'major': user.major,
             'targetExamDate': user.target_exam_date,
             'email': user.email
         }
