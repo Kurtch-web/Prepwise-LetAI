@@ -421,12 +421,16 @@ export function SettingsPage() {
                             post.category === 'user' ? 'bg-purple-100 text-purple-700' :
                             post.category === 'admin' ? 'bg-red-100 text-red-700' :
                             post.category === 'news' ? 'bg-orange-100 text-orange-700' :
+                            post.category === 'english_major' ? 'bg-indigo-100 text-indigo-700' :
+                            post.category === 'math_major' ? 'bg-blue-100 text-blue-700' :
                             'bg-yellow-100 text-yellow-700'
                           }`}>
                             {post.category === 'user' && '👤'}
                             {post.category === 'admin' && '🛡️'}
                             {post.category === 'news' && '📰'}
                             {post.category === 'important' && '⚠️'}
+                            {post.category === 'english_major' && '📘'}
+                            {post.category === 'math_major' && '🧮'}
                           </span>
                           {post.is_flagged && (
                             <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
@@ -477,12 +481,16 @@ export function SettingsPage() {
                   selectedPost.category === 'user' ? 'bg-purple-100 text-purple-700' :
                   selectedPost.category === 'admin' ? 'bg-red-100 text-red-700' :
                   selectedPost.category === 'news' ? 'bg-orange-100 text-orange-700' :
+                  selectedPost.category === 'english_major' ? 'bg-indigo-100 text-indigo-700' :
+                  selectedPost.category === 'math_major' ? 'bg-blue-100 text-blue-700' :
                   'bg-yellow-100 text-yellow-700'
                 }`}>
                   {selectedPost.category === 'user' && '👤 User'}
                   {selectedPost.category === 'admin' && '🛡️ Admin'}
                   {selectedPost.category === 'news' && '📰 News'}
                   {selectedPost.category === 'important' && '⚠️ Important'}
+                  {selectedPost.category === 'english_major' && '📘 English Major'}
+                  {selectedPost.category === 'math_major' && '🧮 Math Major'}
                 </span>
                 {selectedPost.is_flagged && (
                   <span className={`text-xs px-3 py-1 rounded-full font-semibold ${
