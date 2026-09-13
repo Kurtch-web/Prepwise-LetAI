@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
-import { Post, postsService } from '../services/postsService';
+import { Post, PostCategory, postsService } from '../services/postsService';
 import { supabase } from '../config/supabaseClient';
 import { formatRelativeTime } from '../utils/dateFormatter';
 import { AdminPortalPage } from '../views/AdminPortalPage';
@@ -20,6 +20,33 @@ import { QuestionBankPage } from '../views/QuestionBankPage';
 import VideoLessonsPage from '../views/VideoLessonsPage';
 import { ProgressTrackerPage } from '../views/ProgressTrackerPage';
 import { OfflineOverlay } from '../components/OfflineOverlay';
+
+const announcementCategories: PostCategory[] = [
+  'admin',
+  'news',
+  'important',
+  'english_major',
+  'math_major',
+];
+
+function categoryLabel(category: PostCategory): string {
+  return {
+    user: '👤 User Posts',
+    admin: '🛡️ Admin',
+    news: '📰 News',
+    important: '⚠️ Important',
+    english_major: '📘 English Major',
+    math_major: '🧮 Math Major',
+  }[category];
+}
+
+function categoryBadgeClass(category: PostCategory): string {
+  if (category === 'admin') return 'bg-red-100 text-red-700';
+  if (category === 'news') return 'bg-orange-100 text-orange-700';
+  if (category === 'english_major') return 'bg-indigo-100 text-indigo-700';
+  if (category === 'math_major') return 'bg-blue-100 text-blue-700';
+  return 'bg-yellow-100 text-yellow-700';
+}
 
 function NotificationsButton() {
   const { theme } = useTheme();
@@ -95,7 +122,7 @@ function NotificationsButton() {
     const scheduleRefresh = (payload: any) => {
       if (refreshTimeout) window.clearTimeout(refreshTimeout);
       const isAnnouncement = payload.eventType === 'INSERT'
-        && ['admin', 'news', 'important'].includes(payload.new?.category);
+        && announcementCategories.includes(payload.new?.category);
       refreshTimeout = window.setTimeout(() => refresh(isAnnouncement), 350);
     };
 
@@ -178,7 +205,7 @@ function NotificationsButton() {
                     Notifications
                   </h3>
                   <p className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-                    🛡️ Admin, 📰 News, ⚠️ Important
+                    🛡️ Admin, 📰 News, ⚠️ Important, 📘 English Major, 🧮 Math Major
                   </p>
                 </div>
                 <button
@@ -201,16 +228,8 @@ function NotificationsButton() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                          selectedPost.category === 'admin'
-                            ? 'bg-red-100 text-red-700'
-                            : selectedPost.category === 'news'
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {selectedPost.category === 'admin' && '🛡️ Admin'}
-                          {selectedPost.category === 'news' && '📰 News'}
-                          {selectedPost.category === 'important' && '⚠️ Important'}
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${categoryBadgeClass(selectedPost.category)}`}>
+                          {categoryLabel(selectedPost.category)}
                         </span>
                         <span className={`text-xs ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
                           {formatRelativeTime(selectedPost.created_at)}
@@ -283,16 +302,8 @@ function NotificationsButton() {
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                                    p.category === 'admin'
-                                      ? 'bg-red-100 text-red-700'
-                                      : p.category === 'news'
-                                      ? 'bg-orange-100 text-orange-700'
-                                      : 'bg-yellow-100 text-yellow-700'
-                                  }`}>
-                                    {p.category === 'admin' && '🛡️ Admin'}
-                                    {p.category === 'news' && '📰 News'}
-                                    {p.category === 'important' && '⚠️ Important'}
+                                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${categoryBadgeClass(p.category)}`}>
+                                    {categoryLabel(p.category)}
                                   </span>
                                   {isUnread && <span className="h-2 w-2 rounded-full bg-red-500" />}
                                 </div>
