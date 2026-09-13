@@ -168,6 +168,19 @@ async def signup(request: SignUpRequest, response: Response, session: AsyncSessi
             detail='Username already exists'
         )
 
+    if request.instructor_id is not None:
+        instructor = await session.scalar(
+            select(UserAccount).where(
+                UserAccount.id == request.instructor_id,
+                UserAccount.role == 'admin',
+            )
+        )
+        if not instructor:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='Invalid instructor assignment',
+            )
+
     # Create new user
     password_hash = hash_password(request.password)
     new_user = UserAccount(
