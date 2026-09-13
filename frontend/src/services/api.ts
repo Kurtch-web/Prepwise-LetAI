@@ -88,6 +88,9 @@ export interface UserProfile {
   targetExamDate: string | null;
   instructorId?: number | null;
   createdAt: string;
+  isArchived: boolean;
+  archivedAt: string | null;
+  deletionScheduledAt: string | null;
   assessment: AssessmentItem | null;
 }
 
@@ -362,6 +365,18 @@ export const api = {
   fetchUsersWithProfiles: () =>
     request<{ users: UserProfile[] }>('/admin/users-profiles', {
       method: 'GET'
+    }),
+  archiveUser: (userId: number) =>
+    request<{ message: string; user: UserProfile }>(`/admin/users/${userId}/archive`, {
+      method: 'POST'
+    }),
+  restoreUser: (userId: number) =>
+    request<{ message: string; user: UserProfile }>(`/admin/users/${userId}/restore`, {
+      method: 'POST'
+    }),
+  deleteUser: (userId: number) =>
+    request<{ message: string }>(`/admin/users/${userId}`, {
+      method: 'DELETE'
     }),
   fetchAssessmentInsights: (templateId?: string) =>
     request<{
