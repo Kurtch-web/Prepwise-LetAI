@@ -1,10 +1,29 @@
+import { useEffect, useState } from 'react';
 import type { UserProfile } from '../services/api';
 import { useTheme } from '../providers/ThemeProvider';
 
 const darkCardClasses = 'rounded-3xl border border-emerald-500/20 bg-[#064e3b]/80 p-6 shadow-[0_18px_40px_rgba(6,78,59,0.45)] backdrop-blur-xl';
 const lightCardClasses = 'rounded-3xl border border-emerald-200 bg-white/95 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.08)] backdrop-blur-xl';
 
-export function UserProfileCard({ user }: { user: UserProfile }) {
+function formatDuration(milliseconds: number): string {
+  if (milliseconds <= 0) return 'Eligible now';
+  const totalMinutes = Math.floor(milliseconds / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  return `${days}d ${hours}h ${minutes}m`;
+}
+
+type UserProfileCardProps = {
+  user: UserProfile;
+  onArchive?: () => void;
+  onRestore?: () => void;
+  onDelete?: () => void;
+  actionLoading?: boolean;
+};
+
+export function UserProfileCard({ user, onArchive, onRestore, onDelete, actionLoading = false }: UserProfileCardProps) {
+  const [now, setNow] = useState(() => Date.now());
   const { theme } = useTheme();
   const isLightMode = theme === 'light';
   const cardClasses = isLightMode ? lightCardClasses : darkCardClasses;
@@ -19,13 +38,34 @@ export function UserProfileCard({ user }: { user: UserProfile }) {
   
   const userCreatedDate = new Date(user.createdAt).toLocaleDateString();
 
+  useEffect(() => {
+    if (!user.isArchived) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 60000);
+    return () => window.clearInterval(timer);
+  }, [user.isArchived]);
+
+  const archivedDuration = user.archivedAt ? now - new Date(user.archivedAt).getTime() : 0;
+  const deletionCountdown = user.deletionScheduledAt
+    ? new Date(user.deletionScheduledAt).getTime() - now
+    : 0;
+  const canDelete = user.isArchived && Boolean(user.deletionScheduledAt) && deletionCountdown <= 0;
+
   return (
     <div className={cardClasses}>
       <div className="mb-6 grid gap-4 md:grid-cols-2">
         {/* User Info */}
         <div>
-          <h3 className={`mb-4 text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>User Profile</h3>
-          
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <h3 className={`text-xl font-bold ${isLightMode ? 'text-slate-900' : 'text-white'}`}>User Profile</h3>
+            {user.isArchived && (
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                isLightMode ? 'bg-amber-100 text-amber-700' : 'bg-amber-500/20 text-amber-300'
+              }`}>
+                Pending deletion
+              </span>
+            )}
+          </div>
+
           <div className="space-y-3">
             <div>
               <p className={`text-xs uppercase tracking-wide ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>Username</p>
@@ -80,6 +120,61 @@ export function UserProfileCard({ user }: { user: UserProfile }) {
               </div>
             )}
 
+            {user.instructorId && (
+              <div>
+                <p className={`text-xs uppercase tracking-wide ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>Assigned Instructor</p>
+                <p className={`text-sm ${isLightMode ? 'text-slate-700' : 'text-white/90'}`}>ID: {user.instructorId}</p>
+              </div>
+            )}
+
+            {user.isArchived && (
+              <div className={`rounded-2xl border p-4 ${
+                isLightMode ? 'border-amber-200 bg-amber-50' : 'border-amber-500/20 bg-amber-500/10'
+              }`}>
+                <p className={`text-xs uppercase tracking-wide ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>Archived for</p>
+                <p className={`text-sm font-semibold ${isLightMode ? 'text-amber-800' : 'text-amber-200'}`}>{formatDuration(archivedDuration)}</p>
+                <p className={`mt-2 text-xs uppercase tracking-wide ${isLightMode ? 'text-amber-700' : 'text-amber-300'}`}>Deletion eligible in</p>
+                <p className={`text-sm font-semibold ${isLightMode ? 'text-amber-800' : 'text-amber-200'}`}>{formatDuration(deletionCountdown)}</p>
+              </div>
+            )}
+
+            {(onArchive || onRestore || onDelete) && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {user.isArchived ? (
+                  <>
+                    {onRestore && (
+                      <button
+                        type="button"
+                        onClick={onRestore}
+                        disabled={actionLoading}
+                        className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Restore
+                      </button>
+                    )}
+                    {onDelete && canDelete && (
+                      <button
+                        type="button"
+                        onClick={onDelete}
+                        disabled={actionLoading}
+                        className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Delete permanently
+                      </button>
+                    )}
+                  </>
+                ) : onArchive ? (
+                  <button
+                    type="button"
+                    onClick={onArchive}
+                    disabled={actionLoading}
+                    className="rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Archive student
+                  </button>
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
 
