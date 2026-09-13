@@ -68,7 +68,6 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
   const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [confirmationAction, setConfirmationAction] = useState<'restart' | 'ratings' | null>(null);
 
   // Load all practice test sessions on mount
   useEffect(() => {
@@ -128,18 +127,6 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
         return;
       }
     }
-  };
-
-  const confirmReset = () => {
-    if (confirmationAction === 'restart') {
-      setIsFlipped(false);
-      setCurrentQuestionIndex(0);
-      clearConfidence();
-    } else if (confirmationAction === 'ratings') {
-      clearConfidence();
-    }
-
-    setConfirmationAction(null);
   };
 
   // Auto-flip timer for flashcards
@@ -335,6 +322,42 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
       console.warn('Failed to clear API cache:', err);
     }
   };
+
+  const renderAiExplanation = (explanation: string) =>
+    explanation.split('\n').map((line, index) => {
+      const match = line.match(/^\s*([A-D])_(correct|wrong):\s*(.*)$/i);
+
+      if (!match) {
+        return (
+          <p key={`${line}-${index}`} className="whitespace-pre-wrap break-words">
+            {line || '\u00a0'}
+          </p>
+        );
+      }
+
+      const [, choice, outcome, content] = match;
+      const isCorrect = outcome.toLowerCase() === 'correct';
+
+      return (
+        <div
+          key={`${choice}-${outcome}-${index}`}
+          className={`rounded-xl border px-4 py-3 ${
+            isCorrect
+              ? isLightMode
+                ? 'border-emerald-300 bg-emerald-50 text-emerald-950'
+                : 'border-emerald-400/50 bg-emerald-500/15 text-emerald-50'
+              : isLightMode
+                ? 'border-red-300 bg-red-50 text-red-950'
+                : 'border-red-400/50 bg-red-500/15 text-red-50'
+          }`}
+        >
+          <p className="font-semibold">
+            {choice}_{isCorrect ? 'correct' : 'wrong'}
+          </p>
+          <p className="mt-1 whitespace-pre-wrap break-words">{content}</p>
+        </div>
+      );
+    });
 
   const handleAiExplain = async () => {
     setShowAiModal(true);
@@ -741,7 +764,9 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
-                  onClick={() => setConfirmationAction('ratings')}
+                  onClick={() => {
+                    clearConfidence();
+                  }}
                   className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
                     isLightMode
                       ? 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
@@ -931,7 +956,11 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                 Previous
               </button>
               <button
-                onClick={() => setConfirmationAction('restart')}
+                onClick={() => {
+                  setIsFlipped(false);
+                  setCurrentQuestionIndex(0);
+                  clearConfidence();
+                }}
                 className={`flex-1 ${accentButtonClasses}`}
               >
                 Restart
@@ -951,48 +980,8 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
             </div>
 
             <p className={`text-xs font-semibold ${isLightMode ? 'text-slate-600' : 'text-white/60'}`}>
-              Restarting flashcards also resets your ratings
+              Restarting flashcard resets your ratings
             </p>
-
-            {confirmationAction && (
-              <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
-                <section
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="flashcard-reset-confirmation-title"
-                  className={`${cardShellClasses} w-full max-w-md space-y-5`}
-                >
-                  <div className="space-y-2">
-                    <h2
-                      id="flashcard-reset-confirmation-title"
-                      className={`text-xl font-semibold ${isLightMode ? 'text-slate-900' : 'text-white'}`}
-                    >
-                      {confirmationAction === 'restart' ? 'Restart flashcards?' : 'Reset ratings?'}
-                    </h2>
-                    <p className={`text-sm ${isLightMode ? 'text-slate-600' : 'text-white/70'}`}>
-                      {confirmationAction === 'restart'
-                        ? 'This will restart your progress and send you at the start.'
-                        : 'This will remove all of your flashcard ratings.'}
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => setConfirmationAction(null)}
-                      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                        isLightMode
-                          ? 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                          : 'border-white/10 bg-white/5 text-white/80 hover:bg-white/10'
-                      }`}
-                    >
-                      Cancel
-                    </button>
-                    <button onClick={confirmReset} className={accentButtonClasses}>
-                      Okay
-                    </button>
-                  </div>
-                </section>
-              </div>
-            )}
 
             {/* AI Explanation Modal */}
             {showAiModal && (
@@ -1029,12 +1018,8 @@ export function FlashcardsTab({ isAdmin }: FlashcardsTabProps) {
                     </div>
                   ) : (
                     <div className={`rounded-2xl p-6 ${isLightMode ? 'bg-indigo-50' : 'bg-indigo-900/20'}`}>
-                      <div className={`text-sm leading-relaxed ${isLightMode ? 'text-slate-800' : 'text-white'}`}>
-                        {aiExplanation && (
-                          <div className="whitespace-pre-wrap break-words">
-                            {aiExplanation}
-                          </div>
-                        )}
+                      <div className={`space-y-3 text-sm leading-relaxed ${isLightMode ? 'text-slate-800' : 'text-white'}`}>
+                        {aiExplanation && renderAiExplanation(aiExplanation)}
                       </div>
                     </div>
                   )}
