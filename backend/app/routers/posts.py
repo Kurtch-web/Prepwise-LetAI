@@ -58,6 +58,80 @@ class CreatePostRequest(BaseModel):
     content: str
 
 
+def _post_group_clause(current_user: UserAccount):
+    if current_user.role == 'admin':
+        return or_(
+            Post.author_id == current_user.id,
+            Post.author_id.in_(
+                select(UserAccount.id).where(
+                    and_(
+                        UserAccount.role == 'user',
+                        UserAccount.instructor_id == current_user.id,
+                    )
+                )
+            ),
+        )
+
+    group_clause = Post.author_id == current_user.id
+    if current_user.instructor_id is not None:
+        group_clause = or_(
+            group_clause,
+            Post.author_id.in_(
+                select(UserAccount.id).where(
+                    and_(
+                        UserAccount.id == current_user.instructor_id,
+                        UserAccount.role == 'admin',
+                    )
+                )
+            ),
+            Post.author_id.in_(
+                select(UserAccount.id).where(
+                    and_(
+                        UserAccount.role == 'user',
+                        UserAccount.instructor_id == current_user.instructor_id,
+                    )
+                )
+            ),
+        )
+    return group_clause
+
+
+def _post_visibility_clause(current_user: UserAccount):
+    group_clause = _post_group_clause(current_user)
+    if current_user.role == 'admin':
+        return group_clause
+    return and_(
+        group_clause,
+        or_(Post.is_flagged.is_(False), Post.author_id == current_user.id),
+    )
+
+
+def _can_view_post(post: Post, current_user: UserAccount) -> bool:
+    if post.author_id == current_user.id:
+        return True
+    if current_user.role == 'admin':
+        return post.author.role == 'user' and post.author.instructor_id == current_user.id
+    if post.is_flagged:
+        return False
+    if current_user.instructor_id is None:
+        return False
+    return (
+        (post.author.role == 'admin' and post.author.id == current_user.instructor_id)
+        or (
+            post.author.role == 'user'
+            and post.author.instructor_id == current_user.instructor_id
+        )
+    )
+
+
+def _ensure_post_visible(post: Post, current_user: UserAccount) -> None:
+    if not _can_view_post(post, current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='You do not have permission to access this post',
+        )
+
+
 def _get_file_type(filename: str) -> str:
     """Determine file type from extension"""
     filename_lower = filename.lower()
@@ -187,16 +261,8 @@ async def list_posts(
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, List]:
-    """List posts filtered by visibility based on instructor assignment.
-
-    Visibility rules:
-    - If post author is an instructor, only their assigned students can see it
-    - If post author is a regular user, all admins can see it, plus their instructor
-    """
-    # User is already authenticated via dependency injection
-
+    """List posts visible to the current admin group."""
     # Build visibility query
-    # Start with all posts with their authors loaded
     base_query = select(Post).options(
         selectinload(Post.author),
         selectinload(Post.attachments),
@@ -204,40 +270,7 @@ async def list_posts(
         selectinload(Post.comments).selectinload(Comment.user),
     )
 
-    # Filter posts based on visibility
-    # If current user is admin, they can see all posts
-    if current_user and current_user.role == 'admin':
-        # Admins can see all posts
-        pass
-    elif current_user:
-        # Regular users (students) can see:
-        # 1. Posts from their assigned instructor
-        # 2. Posts from other students (if they have the same instructor)
-        # 3. Non-flagged posts OR their own flagged posts (so they can appeal)
-        base_query = base_query.where(
-            and_(
-                or_(
-                    # Posts from their assigned instructor
-                    and_(
-                        Post.author_id == current_user.instructor_id,
-                        Post.author_id.isnot(None)
-                    ),
-                    # Posts from other students with same instructor
-                    Post.author_id.in_(
-                        select(UserAccount.id).where(
-                            and_(
-                                UserAccount.instructor_id == current_user.instructor_id,
-                                UserAccount.role == 'user'
-                            )
-                        )
-                    ),
-                ),
-                or_(
-                    Post.is_flagged == False,  # Show non-flagged posts
-                    Post.author_id == current_user.id  # Show own flagged posts (for appeal)
-                )
-            )
-        )
+    base_query = base_query.where(_post_visibility_clause(current_user))
 
     result = await db.execute(
         base_query
@@ -315,7 +348,8 @@ async def list_announcement_posts(
         .where(
             and_(
                 Post.category.in_(['admin', 'news', 'important']),
-                Post.is_flagged == False,
+                Post.is_flagged.is_(False),
+                _post_group_clause(current_user),
             )
         )
         .options(
@@ -388,28 +422,7 @@ async def get_post(
             detail='Post not found',
         )
 
-    # Check visibility
-    # Admins can see all posts
-    if current_user.role != 'admin':
-        # Students can only see posts from their instructor or other students with same instructor
-        post_author = post.author
-
-        # Check if student can access this post
-        can_view = False
-
-        if current_user and current_user.instructor_id:
-            # Can view posts from their instructor
-            if post_author.id == current_user.instructor_id:
-                can_view = True
-            # Can view posts from other students with same instructor
-            elif post_author.instructor_id == current_user.instructor_id and post_author.role == 'user':
-                can_view = True
-
-        if not can_view:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail='You do not have permission to view this post',
-            )
+    _ensure_post_visible(post, current_user)
 
     user_liked = any(like.user_id == current_user.id for like in post.likes)
 
@@ -452,12 +465,17 @@ async def like_post(
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
     """Like a post"""
-    post = await db.scalar(select(Post).where(Post.id == post_id))
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.author))
+    )
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Post not found',
         )
+    _ensure_post_visible(post, current_user)
 
     existing_like = await db.scalar(
         select(Like).where(
@@ -488,6 +506,15 @@ async def unlike_post(
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
     """Unlike a post"""
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.author))
+    )
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Post not found')
+    _ensure_post_visible(post, current_user)
+
     like = await db.scalar(
         select(Like).where(
             and_(Like.post_id == post_id, Like.user_id == current_user.id)
@@ -513,12 +540,17 @@ async def create_comment(
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict:
     """Add a comment to a post"""
-    post = await db.scalar(select(Post).where(Post.id == post_id))
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.author))
+    )
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Post not found',
         )
+    _ensure_post_visible(post, current_user)
 
     if not content.strip():
         raise HTTPException(
@@ -551,14 +583,20 @@ async def get_comments(
     skip: int = 0,
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
+    current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, List]:
     """Get comments for a post"""
-    post = await db.scalar(select(Post).where(Post.id == post_id))
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.author))
+    )
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Post not found',
         )
+    _ensure_post_visible(post, current_user)
 
     result = await db.execute(
         select(Comment)
@@ -592,6 +630,15 @@ async def delete_comment(
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
     """Delete a comment (user or admin only)"""
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.author))
+    )
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Post not found')
+    _ensure_post_visible(post, current_user)
+
     comment = await db.scalar(
         select(Comment).where(
             and_(Comment.id == comment_id, Comment.post_id == post_id)
@@ -625,7 +672,7 @@ async def delete_post(
     post = await db.scalar(
         select(Post)
         .where(Post.id == post_id)
-        .options(selectinload(Post.attachments))
+        .options(selectinload(Post.attachments), selectinload(Post.author))
     )
     if not post:
         raise HTTPException(
@@ -633,19 +680,20 @@ async def delete_post(
             detail='Post not found',
         )
 
-    # Allow user to delete their own post, or admin to delete any post
-    if post.author_id != current_user.id and current_user.role != 'admin':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail='You can only delete your own posts',
-        )
+    if post.author_id != current_user.id:
+        if current_user.role != 'admin':
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail='You can only delete your own posts',
+            )
+        _ensure_post_visible(post, current_user)
 
     # Delete attachments from storage
     storage = get_supabase_storage()
     for attachment in post.attachments:
         try:
             if storage:
-                storage.delete(f"community/{post_id}/{attachment.id}/{attachment.original_filename}")
+                storage.delete(build_attachment_path(post_id, attachment.id, attachment.original_filename))
         except Exception:
             pass
 
@@ -669,12 +717,17 @@ async def flag_post(
             detail='Only admins can flag posts',
         )
 
-    post = await db.scalar(select(Post).where(Post.id == post_id))
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.author))
+    )
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Post not found',
         )
+    _ensure_post_visible(post, current_user)
 
     if not reason.strip():
         raise HTTPException(
@@ -696,19 +749,24 @@ async def unflag_post(
     db: AsyncSession = Depends(get_db),
     current_user: UserAccount = Depends(get_current_user),
 ) -> Dict[str, str]:
-    """Unflag a post (admin only). Post will be visible to all users again."""
+    """Unflag a post in the current admin group."""
     if current_user.role != 'admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='Only admins can unflag posts',
         )
 
-    post = await db.scalar(select(Post).where(Post.id == post_id))
+    post = await db.scalar(
+        select(Post)
+        .where(Post.id == post_id)
+        .options(selectinload(Post.author))
+    )
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Post not found',
         )
+    _ensure_post_visible(post, current_user)
 
     post.is_flagged = False
     post.flag_reason = None
@@ -778,13 +836,14 @@ async def deny_appeal(
     post = await db.scalar(
         select(Post)
         .where(Post.id == post_id)
-        .options(selectinload(Post.attachments))
+        .options(selectinload(Post.attachments), selectinload(Post.author))
     )
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='Post not found',
         )
+    _ensure_post_visible(post, current_user)
 
     if not post.has_appeal:
         raise HTTPException(
@@ -797,7 +856,7 @@ async def deny_appeal(
     for attachment in post.attachments:
         try:
             if storage:
-                storage.delete(f"community/{post_id}/{attachment.id}/{attachment.original_filename}")
+                storage.delete(build_attachment_path(post_id, attachment.id, attachment.original_filename))
         except Exception:
             pass
 
@@ -824,6 +883,7 @@ async def get_posts_for_moderation(
 
     result = await db.execute(
         select(Post)
+        .where(_post_group_clause(current_user))
         .options(
             selectinload(Post.author),
             selectinload(Post.attachments),
