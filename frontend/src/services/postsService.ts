@@ -179,6 +179,12 @@ export const postsService = {
       cache: 'no-store'
     }),
 
+  fetchPostVisibility: () =>
+    request<{ authorIds: number[] }>(`/posts/visibility?_t=${Date.now()}`, {
+      method: 'GET',
+      cache: 'no-store'
+    }),
+
   // Fetch a single post (no caching - always fresh)
   fetchPost: (postId: string) =>
     request<Post>(`/posts/${postId}?_t=${Date.now()}`, {
