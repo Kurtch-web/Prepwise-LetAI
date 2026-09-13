@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { useAuth } from '../providers/AuthProvider';
-import { postsService } from '../services/postsService';
+import { PostCategory, postsService } from '../services/postsService';
 
 interface CreatePostFormProps {
   onPostCreated: () => void;
@@ -13,7 +13,7 @@ export function CreatePostForm({ onPostCreated, isLoading = false }: CreatePostF
   const { user } = useAuth();
   const isLightMode = theme === 'light';
   const [content, setContent] = useState('');
-  const [category, setCategory] = useState<'user' | 'admin' | 'news' | 'important'>('user');
+  const [category, setCategory] = useState<PostCategory>('user');
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,8 +105,8 @@ export function CreatePostForm({ onPostCreated, isLoading = false }: CreatePostF
             }`}>
               📂 Post Category
             </label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {(['user', 'admin', 'news', 'important'] as const).map((cat) => (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {(['user', 'admin', 'news', 'important', 'english_major', 'math_major'] as const).map((cat) => (
                 <button
                   key={cat}
                   type="button"
@@ -125,6 +125,8 @@ export function CreatePostForm({ onPostCreated, isLoading = false }: CreatePostF
                   {cat === 'admin' && '🛡️ Admin'}
                   {cat === 'news' && '📰 News'}
                   {cat === 'important' && '⚠️ Important'}
+                  {cat === 'english_major' && '📘 English Major'}
+                  {cat === 'math_major' && '🧮 Math Major'}
                 </button>
               ))}
             </div>
