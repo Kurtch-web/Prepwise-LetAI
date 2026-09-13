@@ -38,12 +38,20 @@ export interface Like {
   created_at: string;
 }
 
+export type PostCategory =
+  | 'user'
+  | 'admin'
+  | 'news'
+  | 'important'
+  | 'math_major'
+  | 'english_major';
+
 export interface Post {
   id: string;
   author_id: number;
   author_username: string;
   content: string;
-  category: 'user' | 'admin' | 'news' | 'important';
+  category: PostCategory;
   attachments: PostAttachment[];
   comments?: Comment[];
   likes?: Like[];
@@ -154,7 +162,7 @@ async function requestForm<T>(path: string, form: FormData, options: RequestInit
 
 export const postsService = {
   // Create a new post with optional attachments
-  createPost: (content: string, files: File[] = [], category: string = 'user') => {
+  createPost: (content: string, files: File[] = [], category: PostCategory = 'user') => {
     const form = new FormData();
     form.append('content', content);
     form.append('category', category);
